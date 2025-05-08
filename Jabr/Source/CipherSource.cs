@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using static Jabr.CustomFunctions;
 using static System.Console;
 
@@ -6,7 +6,7 @@ namespace Jabr
 {
     internal class CipherSource
     {
-        static public string En_J10(string Decoded, string Alphabet, int Shift)
+        static public string En_RE10(string Decoded, string Alphabet, int Shift)
         {
             string Encoded = "";
 
@@ -19,8 +19,7 @@ namespace Jabr
             }
             return Encoded;
         }
-
-        static public string De_J10(string Encoded, string Alphabet, int Shift)
+        static public string De_RE10(string Encoded, string Alphabet, int Shift)
         {
             string Decoded = "";
 
@@ -34,7 +33,7 @@ namespace Jabr
             return Decoded;
         }
 
-        static public string En_J13(string Decoded, string Alphabet, int Shift)
+        static public string En_RE13(string Decoded, string Alphabet, int Shift)
         {
             string Encoded = "";
 
@@ -47,8 +46,7 @@ namespace Jabr
             }
             return Encoded;
         }
-
-        static public string De_J13(string Encoded, string Alphabet, int Shift)
+        static public string De_RE13(string Encoded, string Alphabet, int Shift)
         {
             string Decoded = "";
 
@@ -62,7 +60,7 @@ namespace Jabr
             return Decoded;
         }
 
-        static public string En_J14(string Decoded, string Alphabet, int Shift)
+        static public string En_RE14(string Decoded, string Alphabet, int Shift)
         {
             string Encoded = "";
             int[] EnID = new int[Decoded.Length];
@@ -77,8 +75,7 @@ namespace Jabr
             }
             return Encoded;
         }
-
-        static public string De_J14(string Encoded, string Alphabet, int Shift)
+        static public string De_RE14(string Encoded, string Alphabet, int Shift)
         {
             string Decoded = "";
             int[] DeID = new int[Encoded.Length];
@@ -97,7 +94,8 @@ namespace Jabr
             return Decoded;
         }
 
-        static public void En_J10_Details(string Encoded, string Decoded, string Alphabet, int Shift)
+        //-------------------------------------------------------------------------------//
+        static public void En_RE10_Details(string Encoded, string Decoded, string Alphabet, int Shift)
         {
             Write("\n\t\t[i]  - "); //Write info on the first encoded character
             Write((Alphabet.IndexOf(Decoded[0]) + 1) + "+" + Shift + "=" + (Alphabet.IndexOf(Encoded[0]) + 1) + "/" + Encoded[0] + "  ");
@@ -110,8 +108,7 @@ namespace Jabr
             }
             Write("(mod " + Alphabet.Length + ")");
         }
-
-        static public void De_J10_Details(string Encoded, string Decoded, string Alphabet, int Shift)
+        static public void De_RE10_Details(string Encoded, string Decoded, string Alphabet, int Shift)
         {
             Write("\n\t\t[i]  - "); //Write info about the first decoded character
             Write(Alphabet.IndexOf(Encoded[0]) + "-" + Shift + "=" + (Alphabet.IndexOf(Decoded[0]) + 1) + "/");
@@ -127,7 +124,7 @@ namespace Jabr
             Write("(mod " + Alphabet.Length + ")");
         }
 
-        static public void En_J13_Details(string Encoded, string Decoded, string Alphabet, int Shift)
+        static public void En_RE13_Details(string Encoded, string Decoded, string Alphabet, int Shift)
         {
             Write("\n\t\t[i]  - "); //Write info on the first encoded character
             Write(Alphabet.IndexOf(Decoded[0]) + "+" + Shift + "=" + Alphabet.IndexOf(Encoded[0]) + "/" + Encoded[0] + "  ");
@@ -141,8 +138,7 @@ namespace Jabr
             }
             Write("(mod " + Alphabet.Length + ")");
         }
-
-        static public void De_J13_Details(string Encoded, string Decoded, string Alphabet, int Shift)
+        static public void De_RE13_Details(string Encoded, string Decoded, string Alphabet, int Shift)
         {
             Write("\n\t\t[i]  - "); //Write info about the first decoded character
             Write(Alphabet.IndexOf(Encoded[0]) + "-" + Shift + "=" + Alphabet.IndexOf(Decoded[0]) + "/");
@@ -158,7 +154,7 @@ namespace Jabr
             Write("(mod " + Alphabet.Length + ")");
         }
 
-        static public void En_J14_Details(string Encoded, string Decoded, string Alphabet, int Shift)
+        static public void En_RE14_Details(string Encoded, string Decoded, string Alphabet, int Shift)
         {
             Write("\n\t\t[i]  - "); //Write info about the first decoded character
             Write((Alphabet.IndexOf(Decoded[0]) - Shift) + "+" + Shift + "=" + Alphabet.IndexOf(Decoded[0]) + "/");
@@ -173,8 +169,7 @@ namespace Jabr
             }
             Write("(mod " + Alphabet.Length + ")");
         }
-
-        static public void De_J14_Details(string Encoded, string Decoded, string Alphabet, int Shift)
+        static public void De_RE14_Details(string Encoded, string Decoded, string Alphabet, int Shift)
         {
             Write("\n\t\t[i]  - "); //Write info on the first encoded character
             Write(Alphabet.IndexOf(Encoded[0]) + "-" + Shift + "=" + Alphabet.IndexOf(Decoded[0]) + "/");
@@ -193,6 +188,5 @@ namespace Jabr
             }
             Write("(mod " + Alphabet.Length + ")");
         }
-
     }
 }
