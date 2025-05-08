@@ -1,31 +1,37 @@
-﻿using System;
+﻿//using System;
 using static System.Console;
 using static Jabr.CustomFunctions;
-using static Jabr.CipherSource;
+//using static Jabr.CipherSource;
 
 namespace Jabr 
 {
     internal class Program
     {
+        
         static void Main(string[] args)
         {
-            Title = "Jabr - encoder/decoder - v1.4.1";
+            OutputEncoding = System.Text.Encoding.UTF8;
+            Title = "Jabr - encoder/decoder - v1.4.2 beta";
 
-            Write("\n\n\n\t\t\t   Добро пожаловать в Jabr!");
-            short OurTask = GetUserTask();
+            Write("\n\n\n\t\t\t   Добро пожаловать в Jabr v1.4.2 beta!");
+            short OurTask = GetUserTask(gUseShortcuts, gClearUsed);
 
             while (OurTask != 0)
             {
                 switch (OurTask)
                 {
+                    case 1:
+                        // Write info about the program, show a tutorial to the ciphers
+                        break; //Currently in development
+
                     case 2:
                         GetInfo(0); //0 = encoding   1 = decoding
-                        Encode(gVersion, gAdvInfo);
+                        Encrypt(gVersion, gAdvInfo, gDecrypted, gEncrypted, gAlphabet, gShift);
                         break;
 
                     case 3:
                         GetInfo(1); //0 = encoding   1 = decoding
-                        Decode(gVersion, gAdvInfo);
+                        Decrypt(gVersion, gAdvInfo, gDecrypted, gEncrypted, gAlphabet, gShift);
                         break;
 
                     case 4:
@@ -35,7 +41,7 @@ namespace Jabr
                     default:
                         break;
                 }
-                OurTask = GetUserTask();
+                OurTask = GetUserTask(gUseShortcuts, gClearUsed);
             }
         }
     }
