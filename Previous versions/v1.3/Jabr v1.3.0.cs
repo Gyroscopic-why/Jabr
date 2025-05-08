@@ -16,7 +16,7 @@ namespace Jabr
 
         static void Main(string[] args)
         {
-            Title = "Jabr - encoder/decoder - v1.3_C";  // C - Cleaned up version
+            Title = "Jabr - encoder/decoder - v1.3.0";  // Optimised version without dev info
 
             Write("\n\n\n\t\t\t\tДобро пожаловать в Jabr!");
             short OurTask = GetUserTask();
@@ -28,12 +28,22 @@ namespace Jabr
                     case 2:
                         GetInfoForEncoding();
                         EncodedMessageG = EncodeWithRE(OriginalMessageG, AlphabetG, ShiftCodeG);
-                        WriteEncodingDetails(OriginalMessageG, EncodedMessageG, AlphabetG, ShiftCodeG);
+                        //WriteEncodingDetails(OriginalMessageG, EncodedMessageG, AlphabetG, ShiftCodeG);
+                        Write("\n\t\t[=]  - Закодированное сообщение: ");
+                        BackgroundColor = ConsoleColor.DarkGreen;
+                        Write(EncodedMessageG); //Write the result
+                        BackgroundColor = ConsoleColor.Black;
+                        Write(" ");
                         break;
                     case 3:
                         GetInfoForDecoding();
                         DecodedMessageG = DecodeWithRE(EncodedMessageG, AlphabetG, ShiftCodeG);
-                        WriteDecodingDetails(EncodedMessageG,  DecodedMessageG, AlphabetG, ShiftCodeG);
+                        //WriteDecodingDetails(EncodedMessageG,  DecodedMessageG, AlphabetG, ShiftCodeG);
+                        Write("\n\t\t[=]  - Декодированное сообщение: ");
+                        BackgroundColor = ConsoleColor.DarkGreen;
+                        Write(DecodedMessageG); //Write the result
+                        BackgroundColor = ConsoleColor.Black;
+                        Write(" ");
                         break;
                     default:
                         break;
@@ -249,7 +259,7 @@ namespace Jabr
             //--------------------------------------------------------------------------------------//
         }
 
-        static void WriteEncodingDetails(string OriginalMessage, string EncodedMessage, string Alphabet, int ShiftCode)
+        /*static void WriteEncodingDetails(string OriginalMessage, string EncodedMessage, string Alphabet, int ShiftCode)
         {
             Write("\t\t[i]  - "); //Write info on the first encoded character of the message
             Write(((Alphabet.IndexOf(OriginalMessage[0]) + ShiftCode) % Alphabet.Length) + "-" + EncodedMessage[0] + "  ");
@@ -267,9 +277,9 @@ namespace Jabr
             Write(EncodedMessage); //Write the result
             BackgroundColor = ConsoleColor.Black;
             Write(" ");
-        }
+        }*/
 
-        static void WriteDecodingDetails(string EncodedMessage, string DecodedMessage, string Alphabet, int ShiftCode)
+        /*static void WriteDecodingDetails(string EncodedMessage, string DecodedMessage, string Alphabet, int ShiftCode)
         {
             Write("\t\t[i]  - "); //Write info about the first decoded character of the message
             Write(Alphabet.IndexOf(Alphabet[(Alphabet.IndexOf(EncodedMessage[0]) - ShiftCode + Alphabet.Length * 2) % Alphabet.Length]) + "-" + DecodedMessage[0] + "  ");
@@ -286,7 +296,7 @@ namespace Jabr
             Write(DecodedMessage); //Write the result
             BackgroundColor = ConsoleColor.Black;
             Write(" ");
-        }
+        }*/
 
         static string EncodeWithRE(string OriginalMessage, string Alphabet, int ShiftCode)
         {

@@ -16,7 +16,7 @@ namespace Jabr
 
         static void Main(string[] args)
         {
-            Title = "Jabr - encoder/decoder - v1.3 beta";
+            Title = "Jabr - encoder/decoder - v1.3.0";  // Optimised version without dev info
 
             Write("\n\n\n\t\t\t\tДобро пожаловать в Jabr!");
             short OurTask = GetUserTask();
@@ -28,12 +28,22 @@ namespace Jabr
                     case 2:
                         GetInfoForEncoding();
                         EncodedMessageG = EncodeWithRE(OriginalMessageG, AlphabetG, ShiftCodeG);
-                        WriteEncodingDetails(OriginalMessageG, EncodedMessageG, AlphabetG, ShiftCodeG);
+                        //WriteEncodingDetails(OriginalMessageG, EncodedMessageG, AlphabetG, ShiftCodeG);
+                        Write("\n\t\t[=]  - Закодированное сообщение: ");
+                        BackgroundColor = ConsoleColor.DarkGreen;
+                        Write(EncodedMessageG); //Write the result
+                        BackgroundColor = ConsoleColor.Black;
+                        Write(" ");
                         break;
                     case 3:
                         GetInfoForDecoding();
                         DecodedMessageG = DecodeWithRE(EncodedMessageG, AlphabetG, ShiftCodeG);
-                        WriteDecodingDetails(EncodedMessageG,  DecodedMessageG, AlphabetG, ShiftCodeG);
+                        //WriteDecodingDetails(EncodedMessageG,  DecodedMessageG, AlphabetG, ShiftCodeG);
+                        Write("\n\t\t[=]  - Декодированное сообщение: ");
+                        BackgroundColor = ConsoleColor.DarkGreen;
+                        Write(DecodedMessageG); //Write the result
+                        BackgroundColor = ConsoleColor.Black;
+                        Write(" ");
                         break;
                     default:
                         break;
@@ -161,29 +171,6 @@ namespace Jabr
                 else Write("\t\t[!]  - Некорректный ввод, пожалуйста, повторите попытку");
             } //Try again if errors ocured
             //--------------------------------------------------------------------------------------//
-
-
-            /*
-            Write("\t\t[i]  - "); //Encode 1st character of the message
-            EncodedMessage += Alphabet[(Alphabet.IndexOf(OriginalMessage[0]) + ShiftCode) % Alphabet.Length];
-            Write(((Alphabet.IndexOf(OriginalMessage[0]) + ShiftCode) % Alphabet.Length) + "-" + EncodedMessage[0] + "  ");
-            
-
-            //Encode the rest of the message
-            for (int i = 1; i < OriginalMessage.Length; i++) //Encode the rest of the message
-            {
-                Write((Alphabet.IndexOf(OriginalMessage[i]) + "+" + Alphabet.IndexOf(EncodedMessage[i - 1])) + "/");
-                EncodedMessage += Alphabet[(Alphabet.IndexOf(OriginalMessage[i]) + Alphabet.IndexOf(EncodedMessage[i - 1])) % Alphabet.Length];
-                Write((Alphabet.IndexOf(OriginalMessage[i]) + Alphabet.IndexOf(EncodedMessage[i - 1])) % Alphabet.Length + "-");
-                if (EncodedMessage[i] != ' ') Write(EncodedMessage[i] + "  ");
-                else Write("Space  ");
-            }
-
-            Write("\n\t\t[=]  - Закодированное сообщение: ");
-            BackgroundColor = ConsoleColor.DarkGreen;
-            Write(EncodedMessage); //Write the result
-            BackgroundColor = ConsoleColor.Black;
-            return EncodedMessage;*/
         }
 
         static void GetInfoForDecoding() //Getting decoding info
@@ -256,59 +243,6 @@ namespace Jabr
             }//Try again if errors ocured
             //--------------------------------------------------------------------------------------//
 
-            /*
-            //--------------------------------------------------------------------------------------//
-            //Try to get the message and the alphabet
-            while (AlphabetErrors != "")
-            {
-                AlphabetErrors = "";
-                Write("\n\t\tВведите закодированное сообщение: ");
-                BackgroundColor = ConsoleColor.Blue; 
-                EncodedMessage = ReadLine(); //Got the message
-                BackgroundColor = ConsoleColor.Black;
-
-                while (AlphabetDuplicates != "")
-                {
-                    AlphabetDuplicates = "";
-                    Write("\n\t\tВведите алфавит с помощью которого будет декодированно сообщение: ");
-                    BackgroundColor = ConsoleColor.Magenta;
-                    Alphabet = ReadLine(); //Got the alphabet
-                    BackgroundColor = ConsoleColor.Black;
-
-                    for (int i = 0; i < Alphabet.Length; i++) //Check for duplicate letters in the alphabet
-                    {
-                        if (Alphabet.IndexOf(Alphabet[i]) != i && AlphabetDuplicates.IndexOf(Alphabet[i]) == -1) AlphabetDuplicates += Alphabet[i];
-                    }
-                    if (AlphabetDuplicates != "") Write("\t\tАлфавит содержит повторяющиеся буквы, повторите ввод.\n");
-                }
-
-                Write("\n\t\tНомера букв сообщения в алфавите: "); //Write extra info
-                for (int i = 0; i < EncodedMessage.Length; i++) //Search for missing letters in tha alphabet
-                {
-                    Write(Alphabet.IndexOf(EncodedMessage[i]) + " ");
-                    if (Alphabet.IndexOf(EncodedMessage[i]) == -1 && AlphabetErrors.IndexOf(EncodedMessage[i]) == -1) AlphabetErrors += EncodedMessage[i];
-                }
-                if (AlphabetErrors == " ")
-                {
-                    Alphabet += " ";
-                    Write("\n\t\tАлфавит будет изменён, для содержания пробела\n\t\tНовый алфавит: ");
-                    BackgroundColor = ConsoleColor.Magenta;
-                    Write(Alphabet);
-                    BackgroundColor = ConsoleColor.Black;
-                    AlphabetErrors = "";
-                }
-                else if (AlphabetErrors != "") //Write error message
-                {
-                    AlphabetErrors = AlphabetErrors.Replace(" ", "");
-                    Write("\n\t\tВ алфавите нет необходимых букв из сообщения: ");
-                    for (int i = 0; i < AlphabetErrors.Length - 1; i++) Write(AlphabetErrors[i] + ", ");
-                    Write(AlphabetErrors[AlphabetErrors.Length - 1] + "\n");
-                }
-            } //Try again if errors ocured
-            //--------------------------------------------------------------------------------------//
-            */
-
-
             //Get the open key
             while (!SuccessfulParse)
             {
@@ -323,30 +257,9 @@ namespace Jabr
                 else Write("\t\t[!]  - Некорректный ввод, пожалуйста, повторите попытку");
             } //Try again if errors ocured
             //--------------------------------------------------------------------------------------//
-
-            
-            /*
-            Write("\t\t[i]  - "); //Decode 1st character of the message
-            DecodedMessage += Alphabet[Alphabet.IndexOf(Alphabet[(Alphabet.IndexOf(EncodedMessage[0]) - ShiftCode + Alphabet.Length * 2) % Alphabet.Length])];
-            Write(Alphabet.IndexOf(Alphabet[(Alphabet.IndexOf(EncodedMessage[0]) - ShiftCode + Alphabet.Length * 2) % Alphabet.Length]) + "-" + DecodedMessage[0] + "  ");
-
-            for (int i = 1; i < EncodedMessage.Length; i++) //Decode the rest of the message
-            {
-                DecodedMessage += Alphabet[Alphabet.IndexOf(Alphabet[(Alphabet.IndexOf(EncodedMessage[i]) - Alphabet.IndexOf(EncodedMessage[i - 1]) + Alphabet.Length * (i + 2)) % Alphabet.Length])];
-                Write(Alphabet.IndexOf(Alphabet[(Alphabet.IndexOf(EncodedMessage[i]) - Alphabet.IndexOf(EncodedMessage[i - 1]) + Alphabet.Length * (i + 2)) % Alphabet.Length]) + "-");
-                if (EncodedMessage[i] != ' ') Write(EncodedMessage[i] + "  ");
-                else Write("Space  ");
-            }
-
-            Write("\n\t\t[=]  - Декодированное сообщение: ");
-            BackgroundColor = ConsoleColor.DarkGreen;
-            Write(DecodedMessage); //Write the result
-            BackgroundColor = ConsoleColor.Black;
-            return DecodedMessage;
-            */
         }
 
-        static void WriteEncodingDetails(string OriginalMessage, string EncodedMessage, string Alphabet, int ShiftCode)
+        /*static void WriteEncodingDetails(string OriginalMessage, string EncodedMessage, string Alphabet, int ShiftCode)
         {
             Write("\t\t[i]  - "); //Write info on the first encoded character of the message
             Write(((Alphabet.IndexOf(OriginalMessage[0]) + ShiftCode) % Alphabet.Length) + "-" + EncodedMessage[0] + "  ");
@@ -364,9 +277,9 @@ namespace Jabr
             Write(EncodedMessage); //Write the result
             BackgroundColor = ConsoleColor.Black;
             Write(" ");
-        }
+        }*/
 
-        static void WriteDecodingDetails(string EncodedMessage, string DecodedMessage, string Alphabet, int ShiftCode)
+        /*static void WriteDecodingDetails(string EncodedMessage, string DecodedMessage, string Alphabet, int ShiftCode)
         {
             Write("\t\t[i]  - "); //Write info about the first decoded character of the message
             Write(Alphabet.IndexOf(Alphabet[(Alphabet.IndexOf(EncodedMessage[0]) - ShiftCode + Alphabet.Length * 2) % Alphabet.Length]) + "-" + DecodedMessage[0] + "  ");
@@ -383,31 +296,17 @@ namespace Jabr
             Write(DecodedMessage); //Write the result
             BackgroundColor = ConsoleColor.Black;
             Write(" ");
-        }
+        }*/
 
         static string EncodeWithRE(string OriginalMessage, string Alphabet, int ShiftCode)
         {
             string EncodedMessage = "" ;
 
-            //Write("\t\t[i]  - "); //Encode 1st character of the message
             EncodedMessage += Alphabet[(Alphabet.IndexOf(OriginalMessage[0]) + ShiftCode) % Alphabet.Length];
-            //Write(((Alphabet.IndexOf(OriginalMessage[0]) + ShiftCode) % Alphabet.Length) + "-" + EncodedMessage[0] + "  ");
-
-
-            //Encode the rest of the message
             for (int i = 1; i < OriginalMessage.Length; i++) //Encode the rest of the message
             {
-                //Write((Alphabet.IndexOf(OriginalMessage[i]) + "+" + Alphabet.IndexOf(EncodedMessage[i - 1])) + "/");
                 EncodedMessage += Alphabet[(Alphabet.IndexOf(OriginalMessage[i]) + Alphabet.IndexOf(EncodedMessage[i - 1])) % Alphabet.Length];
-                //Write((Alphabet.IndexOf(OriginalMessage[i]) + Alphabet.IndexOf(EncodedMessage[i - 1])) % Alphabet.Length + "-");
-                //if (EncodedMessage[i] != ' ') Write(EncodedMessage[i] + "  ");
-                //else Write("Space  ");
             }
-
-            //Write("\n\t\t[=]  - Закодированное сообщение: ");
-            //BackgroundColor = ConsoleColor.DarkGreen;
-            //Write(EncodedMessage); //Write the result
-            //BackgroundColor = ConsoleColor.Black;
             return EncodedMessage;
         }
 
@@ -415,22 +314,11 @@ namespace Jabr
         {
             string DecodedMessage = "";
 
-            //Write("\t\t[i]  - "); //Decode 1st character of the message
             DecodedMessage += Alphabet[Alphabet.IndexOf(Alphabet[(Alphabet.IndexOf(EncodedMessage[0]) - ShiftCode + Alphabet.Length * 2) % Alphabet.Length])];
-            //Write(Alphabet.IndexOf(Alphabet[(Alphabet.IndexOf(EncodedMessage[0]) - ShiftCode + Alphabet.Length * 2) % Alphabet.Length]) + "-" + DecodedMessage[0] + "  ");
-
             for (int i = 1; i < EncodedMessage.Length; i++) //Decode the rest of the message
             {
                 DecodedMessage += Alphabet[Alphabet.IndexOf(Alphabet[(Alphabet.IndexOf(EncodedMessage[i]) - Alphabet.IndexOf(EncodedMessage[i - 1]) + Alphabet.Length * (i + 2)) % Alphabet.Length])];
-                //Write(Alphabet.IndexOf(Alphabet[(Alphabet.IndexOf(EncodedMessage[i]) - Alphabet.IndexOf(EncodedMessage[i - 1]) + Alphabet.Length * (i + 2)) % Alphabet.Length]) + "-");
-                //if (EncodedMessage[i] != ' ') Write(EncodedMessage[i] + "  ");
-                //else Write("Space  ");
             }
-
-            //Write("\n\t\t[=]  - Декодированное сообщение: ");
-            //BackgroundColor = ConsoleColor.DarkGreen;
-            //Write(DecodedMessage); //Write the result
-            //BackgroundColor = ConsoleColor.Black;
             return DecodedMessage;
         }
     }
