@@ -52,10 +52,10 @@ namespace JabrAPI
 
 
             public string PrimaryAlphabet => _primaryAlphabet;
-            public Int32  PrAlLength => _primaryAlphabet.Length;
+            public Int32  PrLength => _primaryAlphabet.Length;
 
             public string ExternalAlphabet => _externalAlphabet;
-            public Int32  ExAlLength => _externalAlphabet.Length;
+            public Int32  ExLength => _externalAlphabet.Length;
 
             public Int32[] Shifts => _shifts;
 
@@ -583,7 +583,7 @@ namespace JabrAPI
 
                 Random random = new Random();
                 Int32 buffer, bufferId;
-                _primaryAlphabet = "";
+                _externalAlphabet = "";
 
                 while (necessary.Count > 0)
                 {
@@ -596,7 +596,7 @@ namespace JabrAPI
                     buffer = random.Next(0, allowed.Count);
                     bufferId = random.Next(0, _externalAlphabet.Length);
 
-                    _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
+                    _externalAlphabet = _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
                 }
             }
             public void GenerateRandomExternal(string necessary, string allowed, Int32 maxLength)
@@ -622,7 +622,7 @@ namespace JabrAPI
 
                 Random random = new Random();
                 Int32 buffer, bufferId;
-                _primaryAlphabet = "";
+                _externalAlphabet = "";
 
                 while (necessary.Length > 0)
                 {
@@ -635,7 +635,7 @@ namespace JabrAPI
                     buffer = random.Next(0, allowed.Length);
                     bufferId = random.Next(0, _externalAlphabet.Length);
 
-                    _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
+                    _externalAlphabet = _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
                 }
             }
             public void GenerateRandomExternal(List<char> allowed, Int32 maxLength)
@@ -651,14 +651,14 @@ namespace JabrAPI
 
                 Random random = new Random();
                 Int32 buffer, bufferId;
-                _primaryAlphabet = "";
+                _externalAlphabet = "";
 
                 for (Int32 remaining = maxLength; remaining > 0; remaining--)
                 {
                     buffer = random.Next(0, allowed.Count);
                     bufferId = random.Next(0, _externalAlphabet.Length);
 
-                    _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
+                    _externalAlphabet = _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
                     allowed.RemoveAt(buffer);
                 }
             }
@@ -675,26 +675,20 @@ namespace JabrAPI
 
                 Random random = new Random();
                 Int32 buffer, bufferId;
-                _primaryAlphabet = "";
+                _externalAlphabet = "";
 
                 for (Int32 remaining = maxLength; remaining > 0; remaining--)
                 {
                     buffer = random.Next(0, allowed.Length);
                     bufferId = random.Next(0, _externalAlphabet.Length);
 
-                    _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
+                    _externalAlphabet = _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
                     allowed.Remove(buffer, 1);
                 }
             }
             public void GenerateRandomExternal()
             {
-                Random random = new Random();
-                
-                GenerateRandomExternal
-                (
-                    "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№",
-                    random.Next(2, 10)
-                );
+                //  Remove bullshit
             }
 
 
