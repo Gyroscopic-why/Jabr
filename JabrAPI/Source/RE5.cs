@@ -41,13 +41,7 @@ namespace JabrAPI
                 _primaryAlphabet = primaryAlphabet;
                 _externalAlphabet = externalAlphabet;
             }
-            public EncryptionKey()
-            {
-                SetDefault();
-                GenerateRandomPrimary();
-                GenerateRandomExternal();
-                GenerateRandomShifts();
-            }
+            public EncryptionKey() => Default();
 
 
 
@@ -265,19 +259,8 @@ namespace JabrAPI
 
             public void Next()
             {
-                try
-                {
-                    GenerateRandomPrimary();
-                    GenerateRandomExternal();
-                    GenerateRandomShifts();
-                }
-                catch 
-                {
-                    SetDefault();
-                    GenerateRandomPrimary();
-                    GenerateRandomExternal();
-                    GenerateRandomShifts();
-                }
+                try { GenerateAll(); }
+                catch { Default(); }
             }
 
 
@@ -474,14 +457,23 @@ namespace JabrAPI
             public void SetDefault()
             {
                 _primaryNecessary  = " `1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№".ToList();
-
-                //_primaryAllowed  = " `1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№".ToList();
                 _externalAllowed   = " `1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№".ToList();
 
                 _primaryMaxLength  = _primaryNecessary.Count;
                 _externalMaxLength = 8;
             }
 
+            private void Default()
+            {
+                SetDefault();
+                GenerateAll();
+            }
+            private void GenerateAll()
+            {
+                GenerateRandomPrimary();
+                GenerateRandomExternal();
+                GenerateRandomShifts();
+            }
 
 
             public void GenerateRandomPrimary(List<char> necessary, List<char> allowed, Int32 maxLength)
@@ -1822,6 +1814,24 @@ namespace JabrAPI
         }
         static public string EncryptWithConsoleInfo(string message, EncryptionKey reKey)
         {
+            try { return UnsafeEncryptWithConsoleInfo(message, reKey); }
+            catch { return null; }
+        }
+        static public string EncryptWithConsoleInfo(string message, EncryptionKey reKey, out Exception exception)
+        {
+            try
+            {
+                exception = null;
+                return UnsafeEncryptWithConsoleInfo(message, reKey);
+            }
+            catch (Exception innerException)
+            {
+                exception = innerException;
+                return null;
+            }
+        }
+        static public string UnsafeEncryptWithConsoleInfo(string message, EncryptionKey reKey)
+        {
             Int32 exLength = reKey.ExLength, messageLength = message.Length;
             Int32 shLength = reKey.Shifts != null ? reKey.Shifts.Length : 0;
             Int32[] buffer = new Int32[messageLength], shifts = shLength > 0 ? reKey.Shifts : new Int32[] { 0 };
@@ -1889,9 +1899,40 @@ namespace JabrAPI
 
 
 
-        static public string Decrypt(string message, EncryptionKey reKey)
+        static public string Decrypt(string encMessage, EncryptionKey reKey)
         {
-            return "aboba";
+            if (encMessage == null || encMessage == "" || encMessage.Length < 1)
+            {
+                throw new ArgumentException
+                (
+                    "Message is invalid - cannot be null or empty",
+                    "message"
+                );
+            }
+            else if (reKey == null)
+            {
+                throw new ArgumentException
+                (
+                    "Encryption key is undefined (null or empty)",
+                    "reKey"
+                );
+            }
+            else if (reKey.ExternalAlphabet == null || reKey.ExternalAlphabet == "" || reKey.ExLength < 2)
+            {
+                throw new ArgumentException
+                (
+                    "The external alphabet of the encryption key is undefined or too small",
+                    "reKey.ExternalAlphabet"
+                );
+            }
+
+
+            //  Replace check for IsExternalValid   <-   need to make it
+            //try { reKey.IsPrimaryValid(encMessage, true); }
+            //catch { return null; }
+
+            try { return FastDecrypt(encMessage, reKey); }
+            catch { return null; }
         }
         static public string FastDecrypt(string encMessage, EncryptionKey reKey)
         {
@@ -2122,6 +2163,24 @@ namespace JabrAPI
             }
         }
         static public string DecryptWithConsoleInfo(string encMessage, EncryptionKey reKey)
+        {
+            try { return UnsafeDecryptWithConsoleInfo(encMessage, reKey); }
+            catch { return null; }
+        }
+        static public string DecryptWithConsoleInfo(string encMessage, EncryptionKey reKey, out Exception exception)
+        {
+            try
+            {
+                exception = null;
+                return UnsafeDecryptWithConsoleInfo(encMessage, reKey);
+            }
+            catch (Exception innerException)
+            {
+                exception = innerException;
+                return null; 
+            }
+        }
+        static public string UnsafeDecryptWithConsoleInfo(string encMessage, EncryptionKey reKey)
         {
             Int32 exLength = reKey.ExLength, encMessageLength = encMessage.Length;
             Int32 shLength = reKey.Shifts != null ? reKey.Shifts.Length : 0;
