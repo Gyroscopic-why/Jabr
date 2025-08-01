@@ -273,9 +273,10 @@ namespace JabrAPI
                 }
                 catch 
                 {
-                    GenerateRandomPrimary(_primaryAlphabet, _primaryAlphabet.Length);
-                    GenerateRandomExternal(_primaryAlphabet, _externalAlphabet.Length);
-                    GenerateRandomShifts(_shifts.Length);
+                    SetDefault();
+                    GenerateRandomPrimary();
+                    GenerateRandomExternal();
+                    GenerateRandomShifts();
                 }
             }
 
@@ -472,10 +473,10 @@ namespace JabrAPI
             }
             public void SetDefault()
             {
-                _primaryNecessary  = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№".ToList();
+                _primaryNecessary  = " `1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№".ToList();
 
-                _primaryAllowed    = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№".ToList();
-                _externalAllowed   = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№".ToList();
+                //_primaryAllowed  = " `1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№".ToList();
+                _externalAllowed   = " `1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№".ToList();
 
                 _primaryMaxLength  = _primaryNecessary.Count;
                 _externalMaxLength = 8;
@@ -1550,7 +1551,78 @@ namespace JabrAPI
 
         static public string Encrypt(string message, EncryptionKey reKey)
         {
-            return "aboba";
+            if (message == null || message == "" || message.Length < 1)
+            {
+                throw new ArgumentException
+                (
+                    "Message is invalid - cannot be null or empty",
+                    "message"
+                );
+            }
+            else if (reKey == null)
+            {
+                throw new ArgumentException
+                (
+                    "Encryption key is undefined (null or empty)",
+                    "reKey"
+                );
+            }
+            else if (reKey.ExternalAlphabet == null || reKey.ExternalAlphabet == "" || reKey.ExLength < 2)
+            {
+                throw new ArgumentException
+                (
+                    "The external alphabet of the encryption key is undefined or too small",
+                    "reKey.ExternalAlphabet"
+                );
+            }
+
+            try { reKey.IsPrimaryValid(message, true); }
+            catch { return null; }
+
+            try { return FastEncrypt(message, reKey); }
+            catch { return null; }
+        }
+        static public string Encrypt(string message, EncryptionKey reKey, out Exception exception)
+        {
+            if (message == null || message == "" || message.Length < 1)
+            {
+                throw new ArgumentException
+                (
+                    "Message is invalid - cannot be null or empty",
+                    "message"
+                );
+            }
+            else if (reKey == null)
+            {
+                throw new ArgumentException
+                (
+                    "Encryption key is undefined (null or empty)",
+                    "reKey"
+                );
+            }
+            else if (reKey.ExternalAlphabet == null || reKey.ExternalAlphabet == "" || reKey.ExLength < 2)
+            {
+                throw new ArgumentException
+                (
+                    "The external alphabet of the encryption key is undefined or too small",
+                    "reKey.ExternalAlphabet"
+                );
+            }
+
+            exception = null;
+            try { reKey.IsPrimaryValid(message, true); }
+            catch (Exception innerException)
+            {
+                exception = innerException;
+                return null;  
+            }
+
+            try { return FastEncrypt(message, reKey); }
+            catch (Exception innerException)
+            {
+                exception = innerException;
+                return null;
+            }
         }
         static public string FastEncrypt(string message, EncryptionKey reKey)
         {
@@ -1569,7 +1641,7 @@ namespace JabrAPI
                 // Optimisation for base 10 encoding
                 if (exLength == 10)
                 {
-                    Int32 maxEncodingLength =
+                    Int32 maxEncodingLength = DigitsInPositive
                     (
                         (Int32) Math.Ceiling
                         (
@@ -1579,10 +1651,6 @@ namespace JabrAPI
                             ) / exLength
                         )
                     );
-                    maxEncodingLength = maxEncodingLength < 10 ?
-                        1 : maxEncodingLength < 100 ?
-                        2 : maxEncodingLength < 1000 ?
-                        3 : maxEncodingLength < 10000 ? 4 : 5;
 
                     Int32 bufferId = buffer[0] / exLength;
                     char encodingDefault = reKey.ExternalAlphabet[0];
@@ -1666,7 +1734,7 @@ namespace JabrAPI
                 // Optimisation for base 10 encoding
                 if (exLength == 10)
                 {
-                    Int32 maxEncodingLength =
+                    Int32 maxEncodingLength = DigitsInPositive
                     (
                         (Int32)Math.Ceiling
                         (
@@ -1676,11 +1744,6 @@ namespace JabrAPI
                             ) / exLength
                         )
                     );
-                    maxEncodingLength = maxEncodingLength < 10 ?
-                        1 : maxEncodingLength < 100 ?
-                        2 : maxEncodingLength < 1000 ?
-                        3 : maxEncodingLength < 10000 ? 4 : 5;
-
 
                     Int32 bufferId = buffer[0] / exLength;
                     char encodingDefault = reKey.ExternalAlphabet[0];
@@ -1757,8 +1820,66 @@ namespace JabrAPI
                 }
             }
         }
+        static public string EncryptWithConsoleInfo(string message, EncryptionKey reKey)
+        {
+            Int32 exLength = reKey.ExLength, messageLength = message.Length;
+            Int32 shLength = reKey.Shifts != null ? reKey.Shifts.Length : 0;
+            Int32[] buffer = new Int32[messageLength], shifts = shLength > 0 ? reKey.Shifts : new Int32[] { 0 };
+            shLength = shLength > 0 ? shLength : 1; //  prevent division by 0
+
+            List<Int32> ids = new List<Int32>();
+            for (Int32 curChar = 0; curChar < messageLength; curChar++)
+                ids.Add(reKey.PrimaryAlphabet.IndexOf(message[curChar]));
+
+            Int32 maxEncodingLength = Numsys.AutoAsList
+            (
+                Math.Ceiling
+                (
+                    (float)
+                    (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                        reKey.PrimaryAlphabet.Length * 2 + shifts.Max() - 4
+                    ) / exLength
+                ).ToString(),
+                10,
+                exLength
+            ).Count;
+
+
+            buffer[0] = ids[0] + shifts[0];
+            string encoding = Numsys.ToCustomAsString
+            (
+                (buffer[0] / exLength).ToString(),
+                10,
+                exLength,
+                reKey.ExternalAlphabet,
+                maxEncodingLength
+            );
+
+
+            string encrypted = reKey.ExternalAlphabet[buffer[0] % exLength].ToString() + encoding;
+
+            for (Int32 curId = 1; curId < messageLength; curId++)
+            {
+                buffer[curId] = ids[curId] + shifts[curId % shLength] + ids[curId - 1];
+                encoding = Numsys.ToCustomAsString
+                (
+                    (buffer[curId] / exLength).ToString(),
+                    10,
+                    exLength,
+                    reKey.ExternalAlphabet,
+                    maxEncodingLength
+                );
+
+                encrypted += reKey.ExternalAlphabet[buffer[curId] % exLength] + encoding;
+            }
+
+            EncryptingInfo(buffer, exLength, maxEncodingLength, shifts, shLength, ids, encrypted, message, messageLength);
+            return encrypted;
+        }
         static public List<Byte> EncryptToBytes(EncryptionKey reKey)
         {
+            BinaryReadyKey binReKey = new BinaryReadyKey();
+
             return null;
         }
         static public List<Byte> EncryptToBytes(BinaryReadyKey binReKey)
@@ -1789,7 +1910,7 @@ namespace JabrAPI
                 // Optimisation for base 10 encoding
                 if (exLength == 10)
                 {
-                    Int32 maxEncodingLength =
+                    Int32 maxEncodingLength = DigitsInPositive
                     (
                         (Int32)Math.Ceiling
                         (
@@ -1799,10 +1920,6 @@ namespace JabrAPI
                             ) / exLength
                         )
                     );
-                    maxEncodingLength = maxEncodingLength < 10 ? 
-                        1 : maxEncodingLength < 100 ? 
-                        2 : maxEncodingLength < 1000 ? 
-                        3 : maxEncodingLength < 10000 ? 4 : 5;
 
                     Int32 realMessageLength = encMessageLength / (maxEncodingLength + 1);
                     Int32[] decodedIds = new Int32[realMessageLength];
@@ -1902,7 +2019,7 @@ namespace JabrAPI
                 // Optimisation for base 10 encoding
                 if (exLength == 10)
                 {
-                    Int32 maxEncodingLength =
+                    Int32 maxEncodingLength = DigitsInPositive
                     (
                         (Int32)Math.Ceiling
                         (
@@ -1912,11 +2029,6 @@ namespace JabrAPI
                             ) / exLength
                         )
                     );
-                    maxEncodingLength = maxEncodingLength < 10 ?
-                        1 : maxEncodingLength < 100 ?
-                        2 : maxEncodingLength < 1000 ?
-                        3 : maxEncodingLength < 10000 ? 4 : 5;
-
 
                     Int32 realMessageLength = encMessageLength / (maxEncodingLength + 1);
                     Int32[] decodedIds = new Int32[realMessageLength];
@@ -2009,9 +2121,318 @@ namespace JabrAPI
                 }
             }
         }
+        static public string DecryptWithConsoleInfo(string encMessage, EncryptionKey reKey)
+        {
+            Int32 exLength = reKey.ExLength, encMessageLength = encMessage.Length;
+            Int32 shLength = reKey.Shifts != null ? reKey.Shifts.Length : 0;
+            Int32[] buffer = new Int32[encMessageLength];
+
+            List<Int32> ids = new List<Int32>();
+            for (Int32 curChar = 0; curChar < encMessageLength; curChar++)
+                ids.Add(reKey.ExternalAlphabet.IndexOf(encMessage[curChar]));
+
+            buffer[0] = ids[0] - reKey.Shifts[0];
+
+            Int32 maxEncodingLength = Numsys.AsList
+            (
+                Math.Ceiling
+                (
+                    (float)
+                    (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                        reKey.PrimaryAlphabet.Length * 2 + reKey.Shifts.Max() - 4
+                    ) / exLength
+                ).ToString(),
+                10,
+                exLength
+            ).Count;
+
+            Int32 realMessageLength = encMessageLength / (maxEncodingLength + 1);
+            Int32[] decodedIds = new Int32[realMessageLength];
+
+            string encoding = Numsys.FromCustomAsString
+            (
+                encMessage.Substring(1, maxEncodingLength).ToString(),
+                exLength,
+                10,
+                reKey.ExternalAlphabet
+            );
+
+
+            //  Decode 1st message character
+            Int32.TryParse(encoding, out Int32 parsedEncoding);
+            decodedIds[0] = buffer[0] + parsedEncoding * exLength;
+            string decrypted = reKey.PrimaryAlphabet[decodedIds[0]].ToString();
+
+
+            for (Int32 curId = 1; curId < realMessageLength; curId++)
+            {
+                buffer[curId] = ids[curId * (maxEncodingLength + 1)] - decodedIds[curId - 1] - reKey.Shifts[curId % shLength];
+
+                encoding = Numsys.FromCustomAsString
+                (
+                    encMessage.Substring(curId * (maxEncodingLength + 1) + 1, maxEncodingLength).ToString(),
+                    exLength,
+                    10,
+                    reKey.ExternalAlphabet
+                );
+
+                Int32.TryParse(encoding, out parsedEncoding);
+                decodedIds[curId] = buffer[curId] + parsedEncoding * exLength;
+                decrypted += reKey.PrimaryAlphabet[decodedIds[curId]].ToString();
+            }
+
+            DecryptingInfo(buffer, exLength, maxEncodingLength, reKey.Shifts, shLength, ids, decodedIds, encMessage, decrypted, realMessageLength);
+            return decrypted;
+
+        }
         static public string DecryptFromBytes()
         {
             return "aboba";
+        }
+
+
+
+        static public bool IsPrimaryValid(string message, string primary, bool throwException = false) => EncryptionKey.IsPrimaryValid(message, primary, throwException);
+
+
+        static private void EncryptingInfo(Int32[] buffer, Int32 exLength, Int32 maxEncodingLength, Int32[] shifts, Int32 shLength, List<Int32> ids, string encrypted, string message, Int32 messageLength)
+        {
+            //  margin = for ids, bf = buffer, sh = shifts, el = externalAlphabet.Length, sz = message length
+            Int32 margin   = DigitsAmount(ids.Max());
+            Int32 marginBf = DigitsAmount(buffer.Max()),  marginSh = DigitsAmount(shifts.Max());
+            Int32 marginSz = DigitsAmount(messageLength), marginEl = DigitsAmount(exLength);
+
+
+            //---  First character (its encryption is a bit different so we do it manually)
+            Write("\n\t");
+            for (Int32 ext = 1; ext < marginSz; ext++) Write(" ");
+            Write("0] total:  ");
+
+            for (Int32 ext = DigitsAmount(buffer[0]); ext < marginBf; ext++) Write(" ");
+            Write(buffer[0] + " (");
+
+            for (Int32 ext = DigitsAmount(buffer[0] % exLength); ext < marginEl; ext++) Write(" ");
+            ForegroundColor = ConsoleColor.Magenta;
+            Write(buffer[0] % exLength);
+            ForegroundColor = ConsoleColor.Gray;
+            Write(") = ");
+
+            for (Int32 ext = DigitsAmount(shifts[0]); ext < marginSh; ext++) Write(" ");
+            ForegroundColor = shifts[0] == 0 ? ConsoleColor.Red : ConsoleColor.Cyan;
+            Write(shifts[0]);
+            ForegroundColor = ConsoleColor.Gray;
+            Write(" + ");
+
+            for (Int32 ext = DigitsAmount(ids[0]); ext < margin; ext++) Write(" ");
+            ForegroundColor = ConsoleColor.Green;
+            Write(ids[0]);
+            ForegroundColor = ConsoleColor.Gray;
+
+            for (Int32 ext = 0; ext < margin * 2; ext++) Write(" ");
+            Write("   out: ");
+            ForegroundColor = ConsoleColor.DarkCyan;
+            Write(encrypted[0]);
+            ForegroundColor = ConsoleColor.Gray;
+
+
+            //  Rest of the message
+            for (Int32 curId = 1; curId < messageLength; curId++)
+            {
+                Write("\n\t");
+                for (Int32 ext = DigitsAmount(curId); ext < marginSz; ext++) Write(" ");
+                Write(curId + "] total:  ");
+                
+                for (Int32 ext = DigitsAmount(buffer[curId]); ext < marginBf; ext++) Write(" ");
+                Write(buffer[curId] + " (");
+
+                for (Int32 ext = DigitsAmount(buffer[0] % exLength); ext < marginEl; ext++) Write(" ");
+                ForegroundColor = ConsoleColor.Magenta;
+                Write(buffer[curId] % exLength);
+                ForegroundColor = ConsoleColor.Gray;
+                Write(") = ");
+
+                for (Int32 ext = DigitsAmount(shifts[curId % shLength]); ext < marginSh; ext++) Write(" ");
+                ForegroundColor = shifts[curId % shLength] == 0 ? ConsoleColor.Red : ConsoleColor.Cyan;
+                Write(shifts[curId % shLength]);
+                ForegroundColor = ConsoleColor.Gray;
+                Write(" + ");
+
+                for (Int32 ext = DigitsAmount(ids[curId]); ext < margin; ext++) Write(" ");
+                ForegroundColor = curId % 2 == 0 ? ConsoleColor.Green : ConsoleColor.DarkYellow;
+                Write(ids[curId]);
+                ForegroundColor = ConsoleColor.Gray;
+                Write(" + ");
+
+                for (Int32 ext = DigitsAmount(ids[curId - 1]); ext < margin; ext++) Write(" ");
+                ForegroundColor = curId % 2 == 0 ? ConsoleColor.DarkYellow : ConsoleColor.Green;
+                Write(ids[curId - 1]);
+                ForegroundColor = ConsoleColor.Gray;
+
+                for (Int32 ext = 0; ext < margin; ext++) Write(" ");
+                Write("out: ");
+                ForegroundColor = ConsoleColor.DarkCyan;
+                Write(encrypted[curId * (maxEncodingLength + 1)]);
+                ForegroundColor = ConsoleColor.Gray;
+            }
+
+
+
+            //  Original message
+            Write("\n\tOriginal:  ");
+            for (Int32 curChar = 0; curChar < message.Length; curChar++)
+            {
+                ForegroundColor = curChar % 2 == 0 ? ConsoleColor.Green : ConsoleColor.DarkYellow;
+                Write(message[curChar]);
+
+                ForegroundColor = ConsoleColor.DarkGray;
+                for (Int32 curId = 0; curId < maxEncodingLength; curId++) Write("_");
+            }
+
+
+            //  Algorithm end result
+            ForegroundColor = ConsoleColor.Gray;
+            Write("\n\tEncrypted: ");
+            for (Int32 curChar = 0; curChar < encrypted.Length; curChar++)
+            {
+                ForegroundColor = curChar % (maxEncodingLength + 1) == 0 ? ConsoleColor.DarkCyan : ConsoleColor.Gray;
+                Write(encrypted[curChar]);
+            }
+            ForegroundColor = ConsoleColor.Gray;
+        }
+        static private void DecryptingInfo(Int32[] buffer, Int32 exLength, Int32 maxEncodingLength, Int32[] shifts, Int32 shLength, List<Int32> ids, Int32[] decodedIds, string encrypted, string decrypted, Int32 messageLength)
+        {
+            //  margin = for ids, bf = buffer, sh = shifts, el = externalAlphabet.Length, sz = message length, en = parsed encoding
+            Int32 margin   = DigitsAmount(ids.Max()), marginEn = DigitsAmount(decodedIds.Max() - buffer.Min());
+            Int32 marginSz = DigitsAmount(messageLength), marginEl = DigitsAmount(exLength);
+            Int32 marginBf = DigitsAmount(decodedIds.Max()),  marginSh = DigitsAmount(shifts.Max());
+
+
+            //---  First character (its encryption is a bit different so we do it manually)
+            Write("\n\t");
+            for (Int32 ext = 1; ext < marginSz; ext++) Write(" ");
+            Write("0] total:  ");
+
+            for (Int32 ext = DigitsAmount(decodedIds[0]); ext < marginBf; ext++) Write(" ");
+            Write(decodedIds[0] + " (");
+
+            for (Int32 ext = DigitsAmount(decodedIds[0] % exLength); ext < marginEl; ext++) Write(" ");
+            ForegroundColor = ConsoleColor.Magenta;
+            Write(decodedIds[0] % exLength);
+            ForegroundColor = ConsoleColor.Gray;
+            Write(") = ");
+
+            for (Int32 ext = DigitsAmount(decodedIds[0] - buffer[0]); ext < marginEn; ext++) Write(" ");
+            ForegroundColor = ConsoleColor.DarkGray;
+            Write(decodedIds[0] - buffer[0]);
+            ForegroundColor = ConsoleColor.Gray;
+            Write(" - ");
+
+            for (Int32 ext = DigitsAmount(shifts[0]); ext < marginSh; ext++) Write(" ");
+            ForegroundColor = shifts[0] == 0 ? ConsoleColor.Red : ConsoleColor.Cyan;
+            Write(shifts[0]);
+            ForegroundColor = ConsoleColor.Gray;
+            Write(" + ");
+
+            for (Int32 ext = DigitsAmount(ids[0]); ext < margin; ext++) Write(" ");
+            ForegroundColor = ConsoleColor.Green;
+            Write(ids[0]);
+            ForegroundColor = ConsoleColor.Gray;
+
+            for (Int32 ext = 0; ext < margin * 2; ext++) Write(" ");
+            Write("    out: ");
+            ForegroundColor = ConsoleColor.DarkCyan;
+            Write(decrypted[0]);
+            ForegroundColor = ConsoleColor.Gray;
+
+
+
+            //---  Rest of the message
+            for (Int32 curId = 1; curId < messageLength; curId++)
+            {
+                Write("\n\t");
+                for (Int32 ext = DigitsAmount(curId); ext < marginSz; ext++) Write(" ");
+                Write(curId + "] total:  ");
+
+                for (Int32 ext = DigitsAmount(decodedIds[curId]); ext < marginBf; ext++) Write(" ");
+                Write(decodedIds[curId] + " (");
+
+                for (Int32 ext = DigitsAmount(decodedIds[curId] % exLength); ext < marginEl; ext++) Write(" ");
+                ForegroundColor = ConsoleColor.Magenta;
+                Write(decodedIds[curId] % exLength);
+                ForegroundColor = ConsoleColor.Gray;
+                Write(") = ");
+
+                for (Int32 ext = DigitsAmount(decodedIds[curId] - buffer[curId]); ext < marginEn; ext++) Write(" ");
+                ForegroundColor = ConsoleColor.DarkGray;
+                Write(decodedIds[curId] - buffer[curId]);
+                ForegroundColor = ConsoleColor.Gray;
+                Write(" - ");
+
+                for (Int32 ext = DigitsAmount(shifts[curId % shLength]); ext < marginSh; ext++) Write(" ");
+                ForegroundColor = shifts[curId % shLength] == 0 ? ConsoleColor.Red : ConsoleColor.Cyan;
+                Write(shifts[curId % shLength]);
+                ForegroundColor = ConsoleColor.Gray;
+                Write(" + ");
+
+                for (Int32 ext = DigitsAmount(ids[curId * (maxEncodingLength + 1)]); ext < margin; ext++) Write(" ");
+                ForegroundColor = curId % 2 == 0 ? ConsoleColor.Green : ConsoleColor.DarkYellow;
+                Write(ids[curId * (maxEncodingLength + 1)]);
+                ForegroundColor = ConsoleColor.Gray;
+                Write(" - ");
+
+                for (Int32 ext = DigitsAmount(decodedIds[curId -1]); ext < marginBf; ext++) Write(" ");
+                ForegroundColor = curId % 2 == 0 ? ConsoleColor.DarkYellow : ConsoleColor.Green;
+                Write(decodedIds[curId - 1]);
+                ForegroundColor = ConsoleColor.Gray;
+                
+                for (Int32 ext = 0; ext < margin * 2; ext++) Write(" ");
+                Write("out: ");
+                ForegroundColor = ConsoleColor.DarkCyan;
+                Write(decrypted[curId]);
+                ForegroundColor = ConsoleColor.Gray;
+            }
+
+
+            //  Original message
+            Write("\n\tOriginal:  ");
+            for (Int32 curChar = 0; curChar < encrypted.Length; curChar++)
+            {
+                ForegroundColor = curChar % (maxEncodingLength + 1) == 0 ?
+                    ForegroundColor = (curChar / (maxEncodingLength + 1)) % 2 == 0 ? 
+                    ConsoleColor.Green : ConsoleColor.DarkYellow
+                    : ConsoleColor.Gray;
+                
+                Write(encrypted[curChar]);
+            }
+            ForegroundColor = ConsoleColor.Gray;
+
+
+            //  Algorithm result
+            Write("\n\tDecrypted: ");
+            for (Int32 curChar = 0; curChar < decrypted.Length; curChar++)
+            {
+                ForegroundColor = ConsoleColor.DarkCyan;
+                Write(decrypted[curChar]);
+
+                ForegroundColor = ConsoleColor.DarkGray;
+                for (Int32 curId = 0; curId < maxEncodingLength; curId++) Write("_");
+            }
+
+
+            //  Only readable end result
+            ForegroundColor = ConsoleColor.Gray;
+            Write("\n\tReadable:  " + decrypted);
+        }
+
+
+        static private Int32 DigitsAmount(Int32 number)
+        {
+            if (number >= 0) return DigitsInPositive(number);
+            else return number > -10 ? 1 : number > -100 ? 2 : number > -1000 ? 3 : number > -10000 ? 4 : 5;
+        }
+        static private Int32 DigitsInPositive(Int32 posNumber)
+        {
+            return posNumber < 10 ? 1 : posNumber < 100 ? 2 : posNumber < 1000 ? 3 : posNumber < 10000 ? 4 : 5;
         }
     }
 }

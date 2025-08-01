@@ -1,7 +1,7 @@
-﻿using JabrAPI.Source;
-using System;
-
+﻿using System;
 using static System.Console;
+
+using JabrAPI.Source;
 
 
 
@@ -25,17 +25,15 @@ namespace JabrAPI
             for (Int32 curShift = 0; curShift < reKey.Shifts.Length; curShift++) 
                 Write(reKey.Shifts[curShift] + " ");*/
 
-            string enc  = RE5.FastEncrypt(msg, reKey);
-            //string test = RE5.EncryptWithConsoleInfo(msg, reKey);
+            string enc  = RE5.Encrypt(msg, reKey, out Exception e);
+            string test = RE5.EncryptWithConsoleInfo(msg, reKey);
             
-            //Demo.AlgorithmTest(enc, test);
+            Demo.AlgorithmTest(enc, test);
 
-            string dec  = RE5.FastDecrypt(enc, reKey);
-            //string tset = RE5.DecryptWithConsoleInfo(test, reKey);
-
-            Write("\n\tEncrypted: " + enc);
-            Write("\n\tDecrypted: " + dec);
-            //Demo.AlgorithmTest(dec, tset);
+            string dec  = RE5.FastDecrypt(test, reKey);
+            string tset = RE5.DecryptWithConsoleInfo(test, reKey);
+            
+            Demo.AlgorithmTest(dec, tset);
             ReadKey();
 
         }
