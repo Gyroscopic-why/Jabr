@@ -229,6 +229,38 @@ namespace JabrAPI
 
                 return true;
             }
+            static public bool IsPrimaryValid(string message, string primary, bool throwException = false)
+            {
+                if (primary == null || primary == "" || primary.Length < 2)
+                {
+                    if (throwException)
+                    {
+                        throw new ArgumentException
+                        (
+                            "Primary alphabet is not set or is too short",
+                            "PrimaryAlphabet"
+                        );
+                    }
+                    return false;
+                }
+                foreach (char c in message)
+                {
+                    if (!primary.Contains(c))
+                    {
+                        if (throwException)
+                        {
+                            throw new ArgumentException
+                            (
+                                "Message contains characters not in the primary alphabet",
+                                "message, char: " + c
+                            );
+                        }
+                        return false;
+                    }
+                }
+
+                return true;
+            }
 
 
             public void Next()
@@ -1462,14 +1494,14 @@ namespace JabrAPI
             }
 
 
-            public void GenerateRandomShifts(Int32 amount)
+            public void GenerateRandomShifts(Int32 count)
             {
-                if (amount < 0)
+                if (count < 0)
                 {
                     throw new ArgumentOutOfRangeException
                     (
-                        "amount",
-                        "amount cannot be negative"
+                        "count",
+                        "count cannot be negative"
                     );
                 }
                 else if (_externalAlphabet == null || _externalAlphabet.Length < 2)
@@ -1481,10 +1513,10 @@ namespace JabrAPI
                     );
                 }
 
-                _shifts = new Int32[amount];
+                _shifts = new Int32[count];
                 Random random = new Random();
 
-                for (Int32 curId = 0; curId < amount; curId++)
+                for (Int32 curId = 0; curId < count; curId++)
                     _shifts[curId] = random.Next(0, _externalAlphabet.Length - 1);
             }
             public void GenerateRandomShifts()
@@ -1509,7 +1541,9 @@ namespace JabrAPI
 
         public class BinaryReadyKey
         {
-
+            List<Int16> _primaryAlpabet;
+            List<Int16> _externalAlphabet;
+            List<Int32> _shifts;
         }
 
 
@@ -1517,6 +1551,211 @@ namespace JabrAPI
         static public string Encrypt(string message, EncryptionKey reKey)
         {
             return "aboba";
+        }
+        static public string FastEncrypt(string message, EncryptionKey reKey)
+        {
+            Int32 exLength = reKey.ExLength, messageLength = message.Length;
+            Int32 shLength = reKey.Shifts != null ? reKey.Shifts.Length : 0;
+            Int32[] buffer = new Int32[messageLength];
+
+            List<Int32> ids = new List<Int32>();
+            for (Int32 curChar = 0; curChar < messageLength; curChar++)
+                ids.Add(reKey.PrimaryAlphabet.IndexOf(message[curChar]));
+
+            if (shLength > 1)
+            {
+                buffer[0] = ids[0] + reKey.Shifts[0];
+
+                // Optimisation for base 10 encoding
+                if (exLength == 10)
+                {
+                    Int32 maxEncodingLength =
+                    (
+                        (Int32) Math.Ceiling
+                        (
+                            (float)
+                            (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                                reKey.PrimaryAlphabet.Length * 2 + reKey.Shifts.Max() - 4
+                            ) / exLength
+                        )
+                    );
+                    maxEncodingLength = maxEncodingLength < 10 ?
+                        1 : maxEncodingLength < 100 ?
+                        2 : maxEncodingLength < 1000 ?
+                        3 : maxEncodingLength < 10000 ? 4 : 5;
+
+                    Int32 bufferId = buffer[0] / exLength;
+                    char encodingDefault = reKey.ExternalAlphabet[0];
+                    string encoding = "";
+                    while (bufferId > 0)
+                    {
+                        encoding += reKey.ExternalAlphabet[bufferId % 10];
+                        bufferId /= 10;
+                    }
+                    for (Int32 extend = encoding.Length; extend < maxEncodingLength; extend++)
+                        encoding += encodingDefault;
+
+
+                    string encrypted = reKey.ExternalAlphabet[buffer[0] % exLength] + new string(encoding.Reverse().ToArray());
+
+                    for (Int32 curId = 1; curId < messageLength; curId++)
+                    {
+                        buffer[curId] = ids[curId] + reKey.Shifts[curId % shLength] + ids[curId - 1];
+                        encoding = "";
+
+                        while (bufferId > 0)
+                        {
+                            encoding += reKey.ExternalAlphabet[bufferId % 10];
+                            bufferId /= 10;
+                        }
+                        for (Int32 extend = encoding.Length; extend < maxEncodingLength; extend++)
+                            encoding += encodingDefault;
+
+                        encrypted += reKey.ExternalAlphabet[buffer[curId] % exLength] + new string(encoding.Reverse().ToArray());
+                    }
+                    return encrypted;
+                }
+                else
+                {
+                    Int32 maxEncodingLength = Numsys.AutoAsList
+                    (
+                        Math.Ceiling
+                        (
+                            (float)
+                            (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                                reKey.PrimaryAlphabet.Length * 2 + reKey.Shifts.Max() - 4
+                            ) / exLength
+                        ).ToString(),
+                        10,
+                        exLength
+                    ).Count;
+                    string encoding = Numsys.ToCustomAsString
+                    (
+                        (buffer[0] / exLength).ToString(),
+                        10,
+                        exLength,
+                        reKey.ExternalAlphabet,
+                        maxEncodingLength
+                    );
+
+
+                    string encrypted = reKey.ExternalAlphabet[buffer[0] % exLength] + encoding;
+
+                    for (Int32 curId = 1; curId < messageLength; curId++)
+                    {
+                        buffer[curId] = ids[curId] + reKey.Shifts[curId % shLength] + ids[curId - 1];
+                        encoding = Numsys.ToCustomAsString
+                        (
+                            (buffer[curId] / exLength).ToString(),
+                            10,
+                            exLength,
+                            reKey.ExternalAlphabet,
+                            maxEncodingLength
+                        );
+
+                        encrypted += reKey.ExternalAlphabet[buffer[curId] % exLength] + encoding;
+                    }
+                    return encrypted;
+                }
+            }
+            else
+            {
+                Int32 shift = shLength > 0 ? reKey.Shifts[0] : 0;
+                buffer[0] = ids[0] + shift;
+
+                // Optimisation for base 10 encoding
+                if (exLength == 10)
+                {
+                    Int32 maxEncodingLength =
+                    (
+                        (Int32)Math.Ceiling
+                        (
+                            (float)
+                            (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                                reKey.PrimaryAlphabet.Length * 2 + shift - 4
+                            ) / exLength
+                        )
+                    );
+                    maxEncodingLength = maxEncodingLength < 10 ?
+                        1 : maxEncodingLength < 100 ?
+                        2 : maxEncodingLength < 1000 ?
+                        3 : maxEncodingLength < 10000 ? 4 : 5;
+
+
+                    Int32 bufferId = buffer[0] / exLength;
+                    char encodingDefault = reKey.ExternalAlphabet[0];
+                    string encoding = "";
+                    while (bufferId > 0)
+                    {
+                        encoding += reKey.ExternalAlphabet[bufferId % 10];
+                        bufferId /= 10;
+                    }
+                    for (Int32 extend = encoding.Length; extend < maxEncodingLength; extend++)
+                        encoding += encodingDefault;
+
+
+                    string encrypted = reKey.ExternalAlphabet[buffer[0] % exLength] + new string(encoding.Reverse().ToArray());
+
+                    for (Int32 curId = 1; curId < messageLength; curId++)
+                    {
+                        buffer[curId] = ids[curId] + shift + ids[curId - 1];
+                        encoding = "";
+
+                        while (bufferId > 0)
+                        {
+                            encoding += reKey.ExternalAlphabet[bufferId % 10];
+                            bufferId /= 10;
+                        }
+                        for (Int32 extend = encoding.Length; extend < maxEncodingLength; extend++)
+                            encoding += encodingDefault;
+
+                        encrypted += reKey.ExternalAlphabet[buffer[curId] % exLength] + new string(encoding.Reverse().ToArray());
+                    }
+                    return encrypted;
+                }
+                else
+                {
+                    Int32 maxEncodingLength = Numsys.AutoAsList
+                    (
+                        Math.Ceiling
+                        (
+                            (float)
+                            (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                                reKey.PrimaryAlphabet.Length * 2 + shift - 4
+                            ) / exLength
+                        ).ToString(),
+                        10,
+                        exLength
+                    ).Count;
+                    string encoding = Numsys.ToCustomAsString
+                    (
+                        (buffer[0] / exLength).ToString(),
+                        10,
+                        exLength,
+                        reKey.ExternalAlphabet,
+                        maxEncodingLength
+                    );
+
+
+                    string encrypted = reKey.ExternalAlphabet[buffer[0] % exLength] + encoding;
+
+                    for (Int32 curId = 1; curId < messageLength; curId++)
+                    {
+                        buffer[curId] = ids[curId] + shift + ids[curId - 1];
+                        encoding = Numsys.ToCustomAsString
+                        (
+                            (buffer[curId] / exLength).ToString(),
+                            10,
+                            exLength,
+                            reKey.ExternalAlphabet,
+                            maxEncodingLength
+                        );
+
+                        encrypted += reKey.ExternalAlphabet[buffer[curId] % exLength] + encoding;
+                    }
+                    return encrypted;
+                }
+            }
         }
         static public List<Byte> EncryptToBytes(EncryptionKey reKey)
         {
@@ -1528,9 +1767,247 @@ namespace JabrAPI
         }
 
 
+
         static public string Decrypt(string message, EncryptionKey reKey)
         {
             return "aboba";
+        }
+        static public string FastDecrypt(string encMessage, EncryptionKey reKey)
+        {
+            Int32 exLength = reKey.ExLength, encMessageLength = encMessage.Length;
+            Int32 shLength = reKey.Shifts != null ? reKey.Shifts.Length : 0;
+            Int32[] buffer = new Int32[encMessageLength];
+
+            List<Int32> ids = new List<Int32>();
+            for (Int32 curChar = 0; curChar < encMessageLength; curChar++)
+                ids.Add(reKey.ExternalAlphabet.IndexOf(encMessage[curChar]));
+
+            if (shLength > 1)
+            {
+                buffer[0] = ids[0] - reKey.Shifts[0];
+
+                // Optimisation for base 10 encoding
+                if (exLength == 10)
+                {
+                    Int32 maxEncodingLength =
+                    (
+                        (Int32)Math.Ceiling
+                        (
+                            (float)
+                            (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                                reKey.PrimaryAlphabet.Length * 2 + reKey.Shifts.Max() - 4
+                            ) / exLength
+                        )
+                    );
+                    maxEncodingLength = maxEncodingLength < 10 ? 
+                        1 : maxEncodingLength < 100 ? 
+                        2 : maxEncodingLength < 1000 ? 
+                        3 : maxEncodingLength < 10000 ? 4 : 5;
+
+                    Int32 realMessageLength = encMessageLength / (maxEncodingLength + 1);
+                    Int32[] decodedIds = new Int32[realMessageLength];
+
+                    string encoding = Numsys.FromCustomAsString
+                    (
+                        encMessage.Substring(1, maxEncodingLength).ToString(),
+                        exLength,
+                        10,
+                        reKey.ExternalAlphabet
+                    );
+
+
+                    //  Decode 1st message character
+                    Int32.TryParse(encoding, out Int32 parsedEncoding);
+                    decodedIds[0] = buffer[0] + parsedEncoding * exLength;
+                    string decrypted = reKey.PrimaryAlphabet[decodedIds[0]].ToString();
+
+
+                    for (Int32 curId = 1; curId < encMessageLength; curId++)
+                    {
+                        buffer[curId] = ids[curId * (maxEncodingLength + 1)] - decodedIds[curId - 1] - reKey.Shifts[curId % shLength];
+
+                        encoding = Numsys.FromCustomAsString
+                        (
+                            encMessage.Substring(curId * (maxEncodingLength + 1) + 1, maxEncodingLength).ToString(),
+                            exLength,
+                            10,
+                            reKey.ExternalAlphabet
+                        );
+
+                        Int32.TryParse(encoding, out parsedEncoding);
+                        decodedIds[curId] = buffer[curId] + parsedEncoding * exLength;
+                        decrypted += reKey.PrimaryAlphabet[decodedIds[curId]].ToString();
+                    }
+
+                    return decrypted;
+                }
+                else
+                {
+                    Int32 maxEncodingLength = Numsys.AsList
+                    (
+                        Math.Ceiling
+                        (
+                            (float)
+                            (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                                reKey.PrimaryAlphabet.Length * 2 + reKey.Shifts.Max() - 4
+                            ) / exLength
+                        ).ToString(),
+                        10,
+                        exLength
+                    ).Count;
+
+                    Int32 realMessageLength = encMessageLength / (maxEncodingLength + 1);
+                    Int32[] decodedIds = new Int32[realMessageLength];
+
+                    string encoding = Numsys.FromCustomAsString
+                    (
+                        encMessage.Substring(1, maxEncodingLength).ToString(),
+                        exLength,
+                        10,
+                        reKey.ExternalAlphabet
+                    );
+
+
+                    //  Decode 1st message character
+                    Int32.TryParse(encoding, out Int32 parsedEncoding);
+                    decodedIds[0] = buffer[0] + parsedEncoding * exLength;
+                    string decrypted = reKey.PrimaryAlphabet[decodedIds[0]].ToString();
+
+
+                    for (Int32 curId = 1; curId < realMessageLength; curId++)
+                    {
+                        buffer[curId] = ids[curId * (maxEncodingLength + 1)] - decodedIds[curId - 1] - reKey.Shifts[curId % shLength];
+
+                        encoding = Numsys.FromCustomAsString
+                        (
+                            encMessage.Substring(curId * (maxEncodingLength + 1) + 1, maxEncodingLength).ToString(),
+                            exLength,
+                            10,
+                            reKey.ExternalAlphabet
+                        );
+
+                        Int32.TryParse(encoding, out parsedEncoding);
+                        decodedIds[curId] = buffer[curId] + parsedEncoding * exLength;
+                        decrypted += reKey.PrimaryAlphabet[decodedIds[curId]].ToString();
+                    }
+
+                    return decrypted;
+                }
+            }
+            else
+            {
+                Int32 shift = shLength > 0 ? reKey.Shifts[0] : 0;
+                buffer[0] = ids[0] - shift;
+
+                // Optimisation for base 10 encoding
+                if (exLength == 10)
+                {
+                    Int32 maxEncodingLength =
+                    (
+                        (Int32)Math.Ceiling
+                        (
+                            (float)
+                            (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                                reKey.PrimaryAlphabet.Length * 2 + reKey.Shifts.Max() - 4
+                            ) / exLength
+                        )
+                    );
+                    maxEncodingLength = maxEncodingLength < 10 ?
+                        1 : maxEncodingLength < 100 ?
+                        2 : maxEncodingLength < 1000 ?
+                        3 : maxEncodingLength < 10000 ? 4 : 5;
+
+
+                    Int32 realMessageLength = encMessageLength / (maxEncodingLength + 1);
+                    Int32[] decodedIds = new Int32[realMessageLength];
+
+                    string encoding = Numsys.FromCustomAsString
+                    (
+                        encMessage.Substring(1, maxEncodingLength).ToString(),
+                        exLength,
+                        10,
+                        reKey.ExternalAlphabet
+                    );
+
+
+                    //  Decode 1st message character
+                    Int32.TryParse(encoding, out Int32 parsedEncoding);
+                    decodedIds[0] = buffer[0] + parsedEncoding * exLength;
+                    string decrypted = reKey.PrimaryAlphabet[decodedIds[0]].ToString();
+
+
+                    for (Int32 curId = 1; curId < encMessageLength; curId++)
+                    {
+                        buffer[curId] = ids[curId * (maxEncodingLength + 1)] - decodedIds[curId - 1] - shift;
+
+                        encoding = Numsys.FromCustomAsString
+                        (
+                            encMessage.Substring(curId * (maxEncodingLength + 1) + 1, maxEncodingLength).ToString(),
+                            exLength,
+                            10,
+                            reKey.ExternalAlphabet
+                        );
+
+                        Int32.TryParse(encoding, out parsedEncoding);
+                        decodedIds[curId] = buffer[curId] + parsedEncoding * exLength;
+                        decrypted += reKey.PrimaryAlphabet[decodedIds[curId]].ToString();
+                    }
+
+                    return decrypted;
+                }
+                else
+                {
+                    Int32 maxEncodingLength = Numsys.AsList
+                    (
+                        Math.Ceiling
+                        (
+                            (float)
+                            (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                                reKey.PrimaryAlphabet.Length * 2 + shift - 4
+                            ) / exLength
+                        ).ToString(),
+                        10,
+                        exLength
+                    ).Count;
+
+                    Int32 realMessageLength = encMessageLength / (maxEncodingLength + 1);
+                    Int32[] decodedIds = new Int32[realMessageLength];
+
+                    string encoding = Numsys.FromCustomAsString
+                    (
+                        encMessage.Substring(1, maxEncodingLength).ToString(),
+                        exLength,
+                        10,
+                        reKey.ExternalAlphabet
+                    );
+
+
+                    //  Decode 1st message character
+                    Int32.TryParse(encoding, out Int32 parsedEncoding);
+                    decodedIds[0] = buffer[0] + parsedEncoding * exLength;
+                    string decrypted = reKey.PrimaryAlphabet[decodedIds[0]].ToString();
+
+
+                    for (Int32 curId = 1; curId < realMessageLength; curId++)
+                    {
+                        buffer[curId] = ids[curId * (maxEncodingLength + 1)] - decodedIds[curId - 1] - shift;
+
+                        encoding = Numsys.FromCustomAsString
+                        (
+                            encMessage.Substring(curId * (maxEncodingLength + 1) + 1, maxEncodingLength).ToString(),
+                            exLength,
+                            10,
+                            reKey.ExternalAlphabet
+                        );
+
+                        Int32.TryParse(encoding, out parsedEncoding);
+                        decodedIds[curId] = buffer[curId] + parsedEncoding * exLength;
+                        decrypted += reKey.PrimaryAlphabet[decodedIds[curId]].ToString();
+                    }
+
+                    return decrypted;
+                }
+            }
         }
         static public string DecryptFromBytes()
         {
