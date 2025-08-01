@@ -22,6 +22,7 @@ namespace JabrAPI
             private List<char> _primaryNecessary,  _primaryAllowed,  _primaryBanned;
             private List<char> _externalNecessary, _externalAllowed, _externalBanned;
             private Int32 _primaryMaxLength = -1,  _externalMaxLength = -1;
+            private const string defaultChars = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№";
 
 
             public EncryptionKey(string primaryAlphabet, string externalAlphabet, Int32[] shifts)
@@ -52,6 +53,14 @@ namespace JabrAPI
             public Int32  ExLength => _externalAlphabet.Length;
 
             public Int32[] Shifts => _shifts;
+
+
+
+            public void Next()
+            {
+                try { GenerateAll(); }
+                catch { Default(); }
+            }
 
 
 
@@ -190,53 +199,12 @@ namespace JabrAPI
 
 
 
-            public bool IsPrimaryValid(string message, bool throwException = false)
-            {
-                string primary = _primaryAlphabet;
-                if (primary == null || primary == "" || primary.Length < 2)
-                {
-                    if (throwException)
-                    {
-                        throw new ArgumentException
-                        (
-                            "Primary alphabet is not set or is too short",
-                            "PrimaryAlphabet"
-                        );
-                    }
-                    return false;
-                }
-                foreach (char c in message)
-                {
-                    if (!primary.Contains(c))
-                    {
-                        if (throwException)
-                        {
-                            throw new ArgumentException
-                            (
-                                "Message contains characters not in the primary alphabet",
-                                "message, char: " + c
-                            );
-                        }
-                        return false;
-                    }
-                }
 
-                return true;
-            }
+            public bool IsPrimaryValid(string message, bool throwException = false)
+                => IsPrimaryValid(message, _primaryAlphabet, throwException);
             static public bool IsPrimaryValid(string message, string primary, bool throwException = false)
             {
-                if (primary == null || primary == "" || primary.Length < 2)
-                {
-                    if (throwException)
-                    {
-                        throw new ArgumentException
-                        (
-                            "Primary alphabet is not set or is too short",
-                            "PrimaryAlphabet"
-                        );
-                    }
-                    return false;
-                }
+                if (!IsPrimaryPartiallyValid(primary, throwException)) return false;
                 foreach (char c in message)
                 {
                     if (!primary.Contains(c))
@@ -256,12 +224,92 @@ namespace JabrAPI
                 return true;
             }
 
-
-            public void Next()
+            public bool IsPrimaryPartiallyValid(bool throwException = false)
+                => IsPrimaryPartiallyValid(_primaryAlphabet, throwException);
+            static public bool IsPrimaryPartiallyValid(string primary, bool throwException = false)
             {
-                try { GenerateAll(); }
-                catch { Default(); }
+                if (primary == null || primary == "" || primary.Length < 2)
+                {
+                    if (throwException)
+                    {
+                        throw new ArgumentException
+                        (
+                            "Primary alphabet is not set or is too short",
+                            "primary (or _primaryAlphabet)"
+                        );
+                    }
+                    return false;
+                }
+
+                return true;
             }
+
+
+
+            public bool IsExternalValid(string encMessage, bool throwException = false)
+                => IsExternalValid(encMessage, _externalAlphabet, throwException);
+            static public bool IsExternalValid(string encMessage, string external, bool throwException = false)
+            {
+                if (!IsExternalPartiallyValid(external, throwException)) return false;
+
+                foreach (char c in encMessage)
+                {
+                    if (!external.Contains(c))
+                    {
+                        if (throwException)
+                        {
+                            throw new ArgumentException
+                            (
+                                "Message contains characters not in the external alphabet",
+                                "message, char: " + c
+                            );
+                        }
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            public bool IsExternalPartiallyValid(bool throwException = false)
+                => IsExternalPartiallyValid(_externalAlphabet, throwException);
+            static public bool IsExternalPartiallyValid(string external, bool throwException = false)
+            {
+                if (external == null || external == "" || external.Length < 2)
+                {
+                    if (throwException)
+                    {
+                        throw new ArgumentException
+                        (
+                            "External alphabet is not set or is too short",
+                            "external (or _externalAlphabet)"
+                        );
+                    }
+                    return false;
+                }
+                for (Int32 curId = 0; curId < external.Length; curId++)
+                {
+                    for (Int32 id2 = curId + 1; id2 < external.Length; id2++)
+                    {
+                        if (external[curId] == external[id2])
+                        {
+                            if (throwException)
+                            {
+                                throw new ArgumentException
+                                (
+                                    "external alphabet contains duplicates characters",
+                                    "external (or _externalAlphabet) duplicate char: " + external[curId]
+                                );
+                            }
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            }
+
+            
 
 
 
@@ -282,19 +330,9 @@ namespace JabrAPI
             }
             public void SetDefault(string pNecessary, string pAllowed, string pBanned, Int32 pMaxLength,
                                    string eNecessary, string eAllowed, string eBanned, Int32 eMaxLength)
-            {
-                _primaryNecessary  = pNecessary.ToList();
-                _externalNecessary = eNecessary.ToList();
+                => SetDefault(pNecessary.ToList(), pAllowed.ToList(), pBanned.ToList(), pMaxLength,
+                              eNecessary.ToList(), eAllowed.ToList(), eBanned.ToList(), eMaxLength);
 
-                _primaryAllowed  = pAllowed.ToList();
-                _externalAllowed = eAllowed.ToList();
-
-                _primaryBanned  = pBanned.ToList();
-                _externalBanned = eBanned.ToList();
-
-                _primaryMaxLength  = pMaxLength;
-                _externalMaxLength = eMaxLength;
-            }
 
             public void SetDefault(List<char> pNecessary, List<char> pAllowed, Int32 pMaxLength,
                                    List<char> eNecessary, List<char> eAllowed, Int32 eMaxLength)
@@ -310,68 +348,9 @@ namespace JabrAPI
             }
             public void SetDefault(string pNecessary, string pAllowed, Int32 pMaxLength,
                                    string eNecessary, string eAllowed, Int32 eMaxLength)
-            {
-                _primaryNecessary  = pNecessary.ToList();
-                _externalNecessary = eNecessary.ToList();
+                => SetDefault(pNecessary.ToList(), pAllowed.ToList(), pMaxLength,
+                              eNecessary.ToList(), eAllowed.ToList(), eMaxLength);
 
-                _primaryAllowed  = pAllowed.ToList();
-                _externalAllowed = eAllowed.ToList();
-
-                _primaryMaxLength  = pMaxLength;
-                _externalMaxLength = eMaxLength;
-            }
-
-            public void SetDefault(List<char> necessary, List<char> allowed, List<char> banned, Int32 maxLength)
-            {
-                _primaryNecessary  = necessary;
-                _externalNecessary = necessary;
-
-                _primaryAllowed  = allowed;
-                _externalAllowed = allowed;
-
-                _primaryBanned  = banned;
-                _externalBanned = banned;
-
-                _primaryMaxLength  = maxLength;
-                _externalMaxLength = maxLength;
-            }
-            public void SetDefault(string necessary, string allowed, string banned, Int32 maxLength)
-            {
-                _primaryNecessary  = necessary.ToList();
-                _externalNecessary = necessary.ToList();
-
-                _primaryAllowed  = allowed.ToList();
-                _externalAllowed = allowed.ToList();
-
-                _primaryBanned  = banned.ToList();
-                _externalBanned = banned.ToList();
-
-                _primaryMaxLength  = maxLength;
-                _externalMaxLength = maxLength;
-            }
-
-            public void SetDefault(List<char> necessary, List<char> allowed, Int32 maxLength)
-            {
-                _primaryNecessary  = necessary;
-                _externalNecessary = necessary;
-
-                _primaryAllowed  = allowed;
-                _externalAllowed = allowed;
-
-                _primaryMaxLength  = maxLength;
-                _externalMaxLength = maxLength;
-            }
-            public void SetDefault(string necessary, string allowed, Int32 maxLength)
-            {
-                _primaryNecessary  = necessary.ToList();
-                _externalNecessary = necessary.ToList();
-
-                _primaryAllowed  = allowed.ToList();
-                _externalAllowed = allowed.ToList();
-
-                _primaryMaxLength  = maxLength;
-                _externalMaxLength = maxLength;
-            }
 
             public void SetDefault(Int32 pMaxLength, List<char> pNecessary, List<char> pBanned,
                                    Int32 eMaxLength, List<char> eNecessary, List<char> eBanned)
@@ -387,16 +366,10 @@ namespace JabrAPI
             }
             public void SetDefault(Int32 pMaxLength, string pNecessary, string pBanned,
                                    Int32 eMaxLength, string eNecessary, string eBanned)
-            {
-                _primaryNecessary  = pNecessary.ToList();
-                _externalNecessary = eNecessary.ToList();
+                => SetDefault(pMaxLength, pNecessary.ToList(), pBanned.ToList(), 
+                              eMaxLength, eNecessary.ToList(), eBanned.ToList());
 
-                _primaryBanned  = pBanned.ToList();
-                _externalBanned = eBanned.ToList();
 
-                _primaryMaxLength  = pMaxLength;
-                _externalMaxLength = eMaxLength;
-            }
             public void SetDefault(Int32 pMaxLength, List<char> pBanned,
                                    Int32 eMaxLength, List<char> eBanned)
             {
@@ -408,13 +381,40 @@ namespace JabrAPI
             }
             public void SetDefault(Int32 pMaxLength, string pBanned,
                                    Int32 eMaxLength, string eBanned)
-            {
-                _primaryBanned  = pBanned.ToList();
-                _externalBanned = eBanned.ToList();
+                => SetDefault(pMaxLength, pBanned.ToList(), 
+                              eMaxLength, eBanned.ToList());
 
-                _primaryMaxLength  = pMaxLength;
-                _externalMaxLength = eMaxLength;
+
+            public void SetDefault(List<char> necessary, List<char> allowed, List<char> banned, Int32 maxLength)
+            {
+                _primaryNecessary = necessary;
+                _externalNecessary = necessary;
+
+                _primaryAllowed = allowed;
+                _externalAllowed = allowed;
+
+                _primaryBanned = banned;
+                _externalBanned = banned;
+
+                _primaryMaxLength = maxLength;
+                _externalMaxLength = maxLength;
             }
+            public void SetDefault(string necessary, string allowed, string banned, Int32 maxLength)
+                => SetDefault(necessary.ToList(), allowed.ToList(), banned.ToList(), maxLength);
+
+            public void SetDefault(List<char> necessary, List<char> allowed, Int32 maxLength)
+            {
+                _primaryNecessary = necessary;
+                _externalNecessary = necessary;
+
+                _primaryAllowed = allowed;
+                _externalAllowed = allowed;
+
+                _primaryMaxLength = maxLength;
+                _externalMaxLength = maxLength;
+            }
+            public void SetDefault(string necessary, string allowed, Int32 maxLength)
+                => SetDefault(necessary.ToList(), allowed.ToList(), maxLength);
 
             public void SetDefault(Int32 maxLength, List<char> necessary, List<char> banned)
             {
@@ -428,16 +428,8 @@ namespace JabrAPI
                 _externalMaxLength = maxLength;
             }
             public void SetDefault(Int32 maxLength, string necessary, string banned)
-            {
-                _primaryNecessary  = necessary.ToList();
-                _externalNecessary = necessary.ToList();
-
-                _primaryBanned  = banned.ToList();
-                _externalBanned = banned.ToList();
-
-                _primaryMaxLength  = maxLength;
-                _externalMaxLength = maxLength;
-            }
+                => SetDefault(maxLength, necessary.ToList(), banned.ToList());
+            
             public void SetDefault(Int32 maxLength, List<char> banned)
             {
                 _primaryBanned  = banned;
@@ -447,22 +439,16 @@ namespace JabrAPI
                 _externalMaxLength = maxLength;
             }
             public void SetDefault(Int32 maxLength, string banned)
-            {
-                _primaryBanned  = banned.ToList();
-                _externalBanned = banned.ToList();
+                => SetDefault(maxLength, banned.ToList());
+            
 
-                _primaryMaxLength  = maxLength;
-                _externalMaxLength = maxLength;
-            }
             public void SetDefault()
             {
-                _primaryNecessary  = " `1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№".ToList();
-                _externalAllowed   = " `1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№".ToList();
-
+                _primaryNecessary  = (" " + defaultChars).ToList();
+                _externalAllowed   = defaultChars.ToList();
                 _primaryMaxLength  = _primaryNecessary.Count;
                 _externalMaxLength = 8;
             }
-
             private void Default()
             {
                 SetDefault();
@@ -474,6 +460,7 @@ namespace JabrAPI
                 GenerateRandomExternal();
                 GenerateRandomShifts();
             }
+
 
 
             public void GenerateRandomPrimary(List<char> necessary, List<char> allowed, Int32 maxLength)
@@ -570,100 +557,9 @@ namespace JabrAPI
                     allowed.RemoveAt(buffer);
                 }
             }
-            public void GenerateRandomPrimary(string necessary, string allowed, Int32 maxLength)
-            {
-                if (maxLength < 2)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is less than the lowest possible alphabet length (2)",
-                        "maxLength < 2"
-                    );
-                }
-                maxLength -= necessary.Length;
-                if (maxLength < 0)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length cannot be less than the number of necessary characters.",
-                        "Max length: " + maxLength + necessary.Length +
-                        ", Necessary characters length: " + necessary.Length
-                    );
-                }
-                else if (maxLength > allowed.Length)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length cannot be more than allowed characters length",
-                        "maxLength: " + maxLength +
-                        ", allowed length: " + allowed.Length.ToString()
-                    );
-                }
-                else if (necessary != null)
-                {
-                    for (Int32 id1 = 0; id1 < necessary.Length; id1++)
-                    {
-                        for (Int32 id2 = id1 + 1; id2 < necessary.Length; id2++)
-                        {
-                            if (necessary[id1] == necessary[id2])
-                            {
-                                throw new ArgumentException
-                                (
-                                    "necessary list cannot include duplicates",
-                                    "necessary, char: " + necessary[id1]
-                                );
-                            }
-                        }
-                    }
-                }
-                else if (allowed != null)
-                {
-                    for (Int32 id1 = 0; id1 < allowed.Length; id1++)
-                    {
-                        for (Int32 id2 = id1 + 1; id2 < allowed.Length; id2++)
-                        {
-                            if (allowed[id1] == allowed[id2])
-                            {
-                                throw new ArgumentException
-                                (
-                                    "allowed list cannot include duplicates",
-                                    "allowed, char: " + allowed[id1]
-                                );
-                            }
-                        }
-                        for (Int32 id2 = 0; id2 < _primaryNecessary.Count; id2++)
-                        {
-                            if (_primaryAllowed[id1] == _primaryNecessary[id2])
-                            {
-                                throw new ArgumentException
-                                (
-                                    "primary allowed list cannot include duplicates of necessary list",
-                                    "_primaryAllowed, char: " + _primaryAllowed[id1]
-                                );
-                            }
-                        }
-                    }
-                }
+            public void GenerateRandomPrimary(string necessary, string allowed, Int32 maxLength) 
+                => GenerateRandomPrimary(necessary.ToList(), allowed.ToList(), maxLength);
 
-                Random random = new Random();
-                Int32 buffer, bufferId;
-                _primaryAlphabet = "";
-
-                while (necessary.Length > 0)
-                {
-                    buffer = random.Next(0, necessary.Length);
-                    _primaryAlphabet += necessary[buffer];
-                    necessary.Remove(buffer, 1);
-                }
-                for (Int32 remaining = maxLength; remaining > 0; remaining--)
-                {
-                    buffer = random.Next(0, allowed.Length);
-                    bufferId = random.Next(0, _primaryAlphabet.Length);
-
-                    _primaryAlphabet = _primaryAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                    allowed.Remove(buffer, 1);
-                }
-            }
             public void GenerateRandomPrimary(List<char> allowed, Int32 maxLength)
             {
                 if (maxLength < 2)
@@ -715,55 +611,8 @@ namespace JabrAPI
                 }
             }
             public void GenerateRandomPrimary(string allowed, Int32 maxLength)
-            {
-                if (maxLength < 2)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is less than the lowest possible alphabet length (2)",
-                        "maxLength < 2"
-                    );
-                }
-                else if (allowed != null)
-                {
-                    for (Int32 id1 = 0; id1 < allowed.Length; id1++)
-                    {
-                        for (Int32 id2 = id1 + 1; id2 < allowed.Length; id2++)
-                        {
-                            if (allowed[id1] == allowed[id2])
-                            {
-                                throw new ArgumentException
-                                (
-                                    "allowed list cannot include duplicates",
-                                    "allowed, char: " + allowed[id1]
-                                );
-                            }
-                        }
-                    }
-                }
-                else if (maxLength > allowed.Length)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length cannot be more than allowed characters length",
-                        "maxLength: " + maxLength +
-                        ", allowed length: " + allowed.Length.ToString()
-                    );
-                }
+                => GenerateRandomPrimary(allowed.ToList(), maxLength);
 
-                Random random = new Random();
-                Int32 buffer, bufferId;
-                _primaryAlphabet = "";
-
-                for (Int32 remaining = maxLength; remaining > 0; remaining--)
-                {
-                    buffer = random.Next(0, allowed.Length);
-                    bufferId = random.Next(0, _primaryAlphabet.Length);
-
-                    _primaryAlphabet = _primaryAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                    allowed.Remove(buffer, 1);
-                }
-            }
             public void GenerateRandomPrimary(Int32 maxLength, List<char> necessary, List<char> banned)
             {
                 if (maxLength < 2)
@@ -810,7 +659,7 @@ namespace JabrAPI
                     }
                 }
 
-                string allowed = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№";
+                string allowed = " " + defaultChars;
                 Random random = new Random();
                 Int32 buffer, bufferId;
                 _primaryAlphabet = "";
@@ -839,79 +688,8 @@ namespace JabrAPI
                 }
             }
             public void GenerateRandomPrimary(Int32 maxLength, string necessary, string banned)
-            {
-                if (maxLength < 2)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is less than the lowest possible alphabet length (2)",
-                        "maxLength < 2"
-                    );
-                }
-                maxLength -= necessary.Length;
-                if (maxLength < 0)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length cannot be less than the number of necessary characters.",
-                        "maxLength: " + maxLength + necessary.Length +
-                        ", Necessary characters length: " + necessary.Length
-                    );
-                }
-                else if (maxLength > 163)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is more than the default array of allowed chars length (163)",
-                        "maxLength > 163"
-                    );
-                }
-                else if (necessary != null)
-                {
-                    for (Int32 id1 = 0; id1 < necessary.Length; id1++)
-                    {
-                        for (Int32 id2 = id1 + 1; id2 < necessary.Length; id2++)
-                        {
-                            if (necessary[id1] == necessary[id2])
-                            {
-                                throw new ArgumentException
-                                (
-                                    "necessary list cannot include duplicates",
-                                    "necessary, char: " + necessary[id1]
-                                );
-                            }
-                        }
-                    }
-                }
-
-                string allowed = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№";
-                Random random = new Random();
-                Int32 buffer, bufferId;
-                _primaryAlphabet = "";
-
-                while (necessary.Length > 0)
-                {
-                    buffer = random.Next(0, necessary.Length);
-                    _primaryAlphabet += necessary[buffer];
-                    necessary.Remove(buffer, 1);
-                }
-                for (Int32 remaining = maxLength; remaining > 0; remaining--)
-                {
-                    buffer = random.Next(0, allowed.Length);
-                    for (Int32 curId = 0; curId < banned.Length; curId++)
-                    {
-                        if (allowed[buffer] == banned[curId])
-                        {
-                            curId = 0;
-                            buffer = random.Next(0, allowed.Length);
-                        }
-                    }
-
-                    bufferId = random.Next(0, _externalAlphabet.Length);
-                    _primaryAlphabet = _primaryAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                    allowed.Remove(buffer, 1);
-                }
-            }
+                => GenerateRandomPrimary(maxLength, necessary.ToList(), banned.ToList());
+            
             public void GenerateRandomPrimary(Int32 maxLength, List<char> banned)
             {
                 if (maxLength < 2)
@@ -931,7 +709,7 @@ namespace JabrAPI
                     );
                 }
 
-                string allowed = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№";
+                string allowed = " " + defaultChars;
                 Random random = new Random();
                 Int32 buffer, bufferId;
                 _primaryAlphabet = "";
@@ -954,47 +732,10 @@ namespace JabrAPI
                 }
             }
             public void GenerateRandomPrimary(Int32 maxLength, string banned)
-            {
-                if (maxLength < 2)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is less than the lowest possible alphabet length (2)",
-                        "maxLength < 2"
-                    );
-                }
-                else if (maxLength > 163)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is more than the default array of allowed chars length (163)",
-                        "maxLength > 163"
-                    );
-                }
+                => GenerateRandomPrimary(maxLength, banned.ToList());
+            public void GenerateRandomPrimary(Int32 maxLength) 
+                => GenerateRandomPrimary(maxLength, "");
 
-                string allowed = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№";
-                Random random = new Random();
-                Int32 buffer, bufferId;
-                _primaryAlphabet = "";
-
-                for (Int32 remaining = maxLength; remaining > 0; remaining--)
-                {
-                    buffer = random.Next(0, allowed.Length);
-                    for (Int32 curId = 0; curId < banned.Length; curId++)
-                    {
-                        if (allowed[buffer] == banned[curId])
-                        {
-                            curId = 0;
-                            buffer = random.Next(0, allowed.Length);
-                        }
-                    }
-
-                    bufferId = random.Next(0, _primaryAlphabet.Length);
-                    _primaryAlphabet = _primaryAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                    allowed.Remove(buffer, 1);
-                }
-            }
-            public void GenerateRandomPrimary(Int32 maxLength) => GenerateRandomPrimary(maxLength, "");
             public void GenerateRandomPrimary()
             {
                 if (_primaryAllowed == null && _primaryBanned == null && _primaryNecessary == null)
@@ -1100,7 +841,7 @@ namespace JabrAPI
                 {
                     for (Int32 remaining = _primaryMaxLength - _primaryNecessary.Count; remaining > 0; remaining--)
                     {
-                        const string allowed = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№";
+                        const string allowed = " " + defaultChars;
                         buffer = random.Next(0, allowed.Length);
                         for (Int32 curId = 0; curId < _primaryBanned.Count; curId++)
                         {
@@ -1159,44 +900,8 @@ namespace JabrAPI
                 }
             }
             public void GenerateRandomExternal(string necessary, string allowed, Int32 maxLength)
-            {
-                if (maxLength < 2)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is less than the lowest possible alphabet length (2)",
-                        "maxLength < 2"
-                    );
-                }
-                maxLength -= necessary.Length;
-                if (maxLength < 0)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length cannot be less than the number of necessary characters.",
-                        "Max length: " + maxLength + necessary.Length +
-                        ", Necessary characters count: " + necessary.Length.ToString()
-                    );
-                }
+                => GenerateRandomExternal(necessary.ToList(), allowed.ToList(), maxLength);
 
-                Random random = new Random();
-                Int32 buffer, bufferId;
-                _externalAlphabet = "";
-
-                while (necessary.Length > 0)
-                {
-                    buffer = random.Next(0, necessary.Length);
-                    _externalAlphabet += necessary[buffer];
-                    necessary.Remove(buffer, 1);
-                }
-                for (Int32 remaining = maxLength; remaining > 0; remaining--)
-                {
-                    buffer = random.Next(0, allowed.Length);
-                    bufferId = random.Next(0, _externalAlphabet.Length);
-
-                    _externalAlphabet = _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                }
-            }
             public void GenerateRandomExternal(List<char> allowed, Int32 maxLength)
             {
                 if (maxLength < 2)
@@ -1222,29 +927,8 @@ namespace JabrAPI
                 }
             }
             public void GenerateRandomExternal(string allowed, Int32 maxLength)
-            {
-                if (maxLength < 2)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is less than the lowest possible alphabet length (2)",
-                        "maxLength < 2"
-                    );
-                }
+                => GenerateRandomExternal(allowed.ToList(), maxLength);
 
-                Random random = new Random();
-                Int32 buffer, bufferId;
-                _externalAlphabet = "";
-
-                for (Int32 remaining = maxLength; remaining > 0; remaining--)
-                {
-                    buffer = random.Next(0, allowed.Length);
-                    bufferId = random.Next(0, _externalAlphabet.Length);
-
-                    _externalAlphabet = _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                    allowed.Remove(buffer, 1);
-                }
-            }
             public void GenerateRandomExternal(Int32 maxLength, List<char> necessary, List<char> banned)
             {
                 if (maxLength < 2)
@@ -1266,7 +950,7 @@ namespace JabrAPI
                     );
                 }
 
-                const string allowed = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№";
+                const string allowed = defaultChars;
                 Random random = new Random();
                 Int32 buffer, bufferId;
                 _externalAlphabet = "";
@@ -1294,53 +978,8 @@ namespace JabrAPI
                 }
             }
             public void GenerateRandomExternal(Int32 maxLength, string necessary, string banned)
-            {
-                if (maxLength < 2)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is less than the lowest possible alphabet length (2)",
-                        "maxLength < 2"
-                    );
-                }
-                maxLength -= necessary.Length;
-                if (maxLength < 0)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length cannot be less than the number of necessary characters.",
-                        "Max length: " + maxLength + necessary.Length +
-                        ", Necessary characters length: " + necessary.Length.ToString()
-                    );
-                }
+                => GenerateRandomExternal(maxLength, necessary.ToList(), banned.ToList());
 
-                const string allowed = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№";
-                Random random = new Random();
-                Int32 buffer, bufferId;
-                _externalAlphabet = "";
-
-                while (necessary.Length > 0)
-                {
-                    buffer = random.Next(0, necessary.Length);
-                    _externalAlphabet += necessary[buffer];
-                    necessary.Remove(buffer, 1);
-                }
-                for (Int32 remaining = maxLength; remaining > 0; remaining--)
-                {
-                    buffer = random.Next(0, allowed.Length);
-                    for (Int32 curId = 0; curId < banned.Length; curId++)
-                    {
-                        if (allowed[buffer] == banned[curId])
-                        {
-                            curId = 0;
-                            buffer = random.Next(0, allowed.Length);
-                        }
-                    }
-
-                    bufferId = random.Next(0, _externalAlphabet.Length);
-                    _externalAlphabet = _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                }
-            }
             public void GenerateRandomExternal(Int32 maxLength, List<char> banned)
             {
                 if (maxLength < 2)
@@ -1352,7 +991,7 @@ namespace JabrAPI
                     );
                 }
 
-                const string allowed = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№";
+                const string allowed = defaultChars;
                 Random random = new Random();
                 Int32 buffer, bufferId;
                 _externalAlphabet = "";
@@ -1374,38 +1013,10 @@ namespace JabrAPI
                 }
             }
             public void GenerateRandomExternal(Int32 maxLength, string banned)
-            {
-                if (maxLength < 2)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is less than the lowest possible alphabet length (2)",
-                        "maxLength < 2"
-                    );
-                }
+                => GenerateRandomExternal(maxLength, banned.ToList());
+            public void GenerateRandomExternal(Int32 maxLength) 
+                => GenerateRandomExternal(maxLength, "");
 
-                const string allowed = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№";
-                Random random = new Random();
-                Int32 buffer, bufferId;
-                _externalAlphabet = "";
-
-                for (Int32 remaining = maxLength; remaining > 0; remaining--)
-                {
-                    buffer = random.Next(0, allowed.Length);
-                    for (Int32 curId = 0; curId < banned.Length; curId++)
-                    {
-                        if (allowed[buffer] == banned[curId])
-                        {
-                            curId = 0;
-                            buffer = random.Next(0, allowed.Length);
-                        }
-                    }
-
-                    bufferId = random.Next(0, _externalAlphabet.Length);
-                    _externalAlphabet = _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                }
-            }
-            public void GenerateRandomExternal(Int32 maxLength) => GenerateRandomExternal(maxLength, "");
             public void GenerateRandomExternal()
             {
                 if (_externalAllowed == null && _externalBanned == null)
@@ -1469,7 +1080,7 @@ namespace JabrAPI
                 {
                     for (Int32 remaining = _externalMaxLength; remaining > 0; remaining--)
                     {
-                        const string allowed = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№";
+                        const string allowed = defaultChars;
                         buffer = random.Next(0, allowed.Length);
                         for (Int32 curId = 0; curId < _externalBanned.Count; curId++)
                         {
@@ -1485,6 +1096,7 @@ namespace JabrAPI
                     }
                 }
             }
+
 
 
             public void GenerateRandomShifts(Int32 count)
@@ -1541,80 +1153,77 @@ namespace JabrAPI
 
 
 
-        static public string Encrypt(string message, EncryptionKey reKey)
+        static public string Encrypt(string message, EncryptionKey reKey, bool throwException = false)
         {
             if (message == null || message == "" || message.Length < 1)
             {
-                throw new ArgumentException
-                (
-                    "Message is invalid - cannot be null or empty",
-                    "message"
-                );
+                if (throwException)
+                {
+                    throw new ArgumentException
+                    (
+                        "Message is invalid - cannot be null or empty",
+                        "message"
+                    );
+                }
+                return null;
             }
             else if (reKey == null)
             {
-                throw new ArgumentException
-                (
-                    "Encryption key is undefined (null or empty)",
-                    "reKey"
-                );
+                if (throwException)
+                {
+                    throw new ArgumentException
+                    (
+                        "Encryption key is undefined (null or empty)",
+                        "reKey"
+                    );
+                }
+                return null;
             }
-            else if (reKey.ExternalAlphabet == null || reKey.ExternalAlphabet == "" || reKey.ExLength < 2)
+            else if (reKey.IsExternalPartiallyValid(throwException))
             {
-                throw new ArgumentException
-                (
-                    "The external alphabet of the encryption key is undefined or too small",
-                    "reKey.ExternalAlphabet"
-                );
+                if (reKey.IsPrimaryValid(message, throwException))
+                {
+                    try { return FastEncrypt(message, reKey); }
+                    catch (Exception innerException)
+                    {
+                        if (throwException) throw innerException;
+                        return null;
+                    }
+                }
             }
-
-            try { reKey.IsPrimaryValid(message, true); }
-            catch { return null; }
-
-            try { return FastEncrypt(message, reKey); }
-            catch { return null; }
+            return null;
         }
         static public string Encrypt(string message, EncryptionKey reKey, out Exception exception)
         {
             if (message == null || message == "" || message.Length < 1)
             {
-                throw new ArgumentException
+                exception = new ArgumentException
                 (
                     "Message is invalid - cannot be null or empty",
                     "message"
                 );
+                return null;
             }
             else if (reKey == null)
             {
-                throw new ArgumentException
+                exception = new ArgumentException
                 (
                     "Encryption key is undefined (null or empty)",
                     "reKey"
                 );
-            }
-            else if (reKey.ExternalAlphabet == null || reKey.ExternalAlphabet == "" || reKey.ExLength < 2)
-            {
-                throw new ArgumentException
-                (
-                    "The external alphabet of the encryption key is undefined or too small",
-                    "reKey.ExternalAlphabet"
-                );
+                return null;
             }
 
             exception = null;
-            try { reKey.IsPrimaryValid(message, true); }
-            catch (Exception innerException)
+            try
             {
-                exception = innerException;
-                return null;  
+                reKey.IsExternalPartiallyValid(true);
+                reKey.IsPrimaryValid(message, true);
+                
+                FastEncrypt(message, reKey);
             }
-
-            try { return FastEncrypt(message, reKey); }
-            catch (Exception innerException)
-            {
-                exception = innerException;
-                return null;
-            }
+            catch (Exception innerException) { exception = innerException; }
+            return null;
         }
         static public string FastEncrypt(string message, EncryptionKey reKey)
         {
@@ -1899,40 +1508,77 @@ namespace JabrAPI
 
 
 
-        static public string Decrypt(string encMessage, EncryptionKey reKey)
+        static public string Decrypt(string encMessage, EncryptionKey reKey, bool throwException = false)
         {
             if (encMessage == null || encMessage == "" || encMessage.Length < 1)
             {
-                throw new ArgumentException
-                (
-                    "Message is invalid - cannot be null or empty",
-                    "message"
-                );
+                if (throwException)
+                {
+                    throw new ArgumentException
+                    (
+                        "Encrypted message is invalid - cannot be null or empty",
+                        "encMessage"
+                    );
+                }
+                return null;
             }
             else if (reKey == null)
             {
-                throw new ArgumentException
+                if (throwException)
+                {
+                    throw new ArgumentException
+                    (
+                        "Encryption key is undefined (null or empty)",
+                        "reKey"
+                    );
+                }
+                return null;
+            }
+            else if (reKey.IsPrimaryPartiallyValid(throwException))
+            {
+                if (reKey.IsExternalValid(encMessage, throwException))
+                {
+                    try { return FastDecrypt(encMessage, reKey); }
+                    catch (Exception innerException)
+                    {
+                        if (throwException) throw innerException;
+                        return null;
+                    }
+                }
+            }
+            return null;
+        }
+        static public string Decrypt(string encMessage, EncryptionKey reKey, out Exception exception)
+        {
+            if (encMessage == null || encMessage == "" || encMessage.Length < 1)
+            {
+                exception = new ArgumentException
+                (
+                    "Encrypted message is invalid - cannot be null or empty",
+                    "encMessage"
+                );
+                return null;
+            }
+            else if (reKey == null)
+            {
+                exception = new ArgumentException
                 (
                     "Encryption key is undefined (null or empty)",
                     "reKey"
                 );
+                return null;
             }
-            else if (reKey.ExternalAlphabet == null || reKey.ExternalAlphabet == "" || reKey.ExLength < 2)
+
+            exception = null;
+            try
             {
-                throw new ArgumentException
-                (
-                    "The external alphabet of the encryption key is undefined or too small",
-                    "reKey.ExternalAlphabet"
-                );
+                reKey.IsPrimaryPartiallyValid(true);
+                reKey.IsExternalValid(encMessage, true);
+
+                FastDecrypt(encMessage, reKey);
             }
-
-
-            //  Replace check for IsExternalValid   <-   need to make it
-            //try { reKey.IsPrimaryValid(encMessage, true); }
-            //catch { return null; }
-
-            try { return FastDecrypt(encMessage, reKey); }
-            catch { return null; }
+            catch (Exception innerException) { exception = innerException; }
+            return null;
         }
         static public string FastDecrypt(string encMessage, EncryptionKey reKey)
         {
@@ -2251,7 +1897,16 @@ namespace JabrAPI
 
 
 
+
         static public bool IsPrimaryValid(string message, string primary, bool throwException = false) => EncryptionKey.IsPrimaryValid(message, primary, throwException);
+        static public bool IsPrimaryPartiallyValid(string primary, bool throwException = false) => EncryptionKey.IsPrimaryPartiallyValid(primary, throwException);
+
+
+        static public bool IsExternalValid(string message, string external, bool throwException = false) => EncryptionKey.IsExternalValid(message, external, throwException);
+        static public bool IsExternalPartiallyValid(string external, bool throwException = false) => EncryptionKey.IsExternalPartiallyValid(external, throwException);
+
+
+
 
 
         static private void EncryptingInfo(Int32[] buffer, Int32 exLength, Int32 maxEncodingLength, Int32[] shifts, Int32 shLength, List<Int32> ids, string encrypted, string message, Int32 messageLength)
@@ -2397,7 +2052,7 @@ namespace JabrAPI
             Write(ids[0]);
             ForegroundColor = ConsoleColor.Gray;
 
-            for (Int32 ext = 0; ext < margin * 2; ext++) Write(" ");
+            for (Int32 ext = 0; ext < margin + marginEn; ext++) Write(" ");
             Write("    out: ");
             ForegroundColor = ConsoleColor.DarkCyan;
             Write(decrypted[0]);
