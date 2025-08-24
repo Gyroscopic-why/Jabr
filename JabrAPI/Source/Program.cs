@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+
 using static System.Console;
 
 using JabrAPI.Source;
-
 
 
 namespace JabrAPI
@@ -12,9 +13,10 @@ namespace JabrAPI
         static void Main()
         {
             //string aboba = "aboba";
-            //RE5.EncryptionKey reKey = new RE5.EncryptionKey();
+            RE5.EncryptionKey reKey = new RE5.EncryptionKey();
+            reKey.Next();
 
-            RE5.EncryptionKey reKey = new RE5.EncryptionKey("abcqwertyuiop1234567", "abolk123", 3);
+            //RE5.EncryptionKey reKey = new RE5.EncryptionKey("abcqwertyuiop1234567", "abolk123", 3);
             string msg = "aboba";
             Write("\n\tMessage:   (" + msg.Length     + ") " + msg);
             Write("\n\tPrimary:   (" + reKey.PrLength + ") " + reKey.PrimaryAlphabet);

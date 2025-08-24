@@ -21,28 +21,28 @@ namespace JabrAPI
 
             private List<char> _primaryNecessary,  _primaryAllowed,  _primaryBanned;
             private List<char> _externalNecessary, _externalAllowed, _externalBanned;
-            private Int32 _primaryMaxLength = -1,  _externalMaxLength = -1;
+            private Int32  _primaryMaxLength = -1, _externalMaxLength = -1;
             private const string defaultChars = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№";
 
 
             public EncryptionKey(string primaryAlphabet, string externalAlphabet, Int32[] shifts)
             {
-                _primaryAlphabet = primaryAlphabet;
+                _primaryAlphabet  = primaryAlphabet;
                 _externalAlphabet = externalAlphabet;
                 _shifts = shifts;
             }
             public EncryptionKey(string primaryAlphabet, string externalAlphabet, Int32 shift)
             {
-                _primaryAlphabet = primaryAlphabet;
+                _primaryAlphabet  = primaryAlphabet;
                 _externalAlphabet = externalAlphabet;
                 _shifts = new Int32[] { shift };
             }
             public EncryptionKey(string primaryAlphabet, string externalAlphabet)
             {
-                _primaryAlphabet = primaryAlphabet;
+                _primaryAlphabet  = primaryAlphabet;
                 _externalAlphabet = externalAlphabet;
             }
-            public EncryptionKey() => Default();
+            public EncryptionKey() => SetDefault();
 
 
 
@@ -50,7 +50,7 @@ namespace JabrAPI
             public Int32  PrLength => _primaryAlphabet.Length;
 
             public string ExternalAlphabet => _externalAlphabet;
-            public Int32  ExLength => _externalAlphabet.Length;
+            public Int32  ExLength  => _externalAlphabet.Length;
 
             public Int32[] Shifts => _shifts;
 
@@ -107,44 +107,28 @@ namespace JabrAPI
                 List<Byte> result = new List<Byte>();
 
                 Byte[] buffer = ToBinary.BigEndian(_shifts.Length), bufferLength;
-                result.Add(buffer[0]);
-                result.Add(buffer[1]);
-                result.Add(buffer[2]);
-                result.Add(buffer[3]);
+                for (Int32 id = 0; id < 4; id++) result.Add(buffer[id]);
 
                 for (Int32 curId = 0; curId < _shifts.Length; curId++)
                 {
                     buffer = ToBinary.BigEndian(_shifts[curId]);
 
-                    result.Add(buffer[0]);
-                    result.Add(buffer[1]);
-                    result.Add(buffer[2]);
-                    result.Add(buffer[3]);
+                    for (Int32 id = 0; id < 4; id++) result.Add(buffer[id]);
                 }
 
 
 
                 buffer = ToBinary.Utf8(_primaryAlphabet);
                 bufferLength = ToBinary.BigEndian(buffer.Length);
-                result.Add(bufferLength[0]);
-                result.Add(bufferLength[1]);
-                result.Add(bufferLength[2]);
-                result.Add(bufferLength[3]);
-
-                for (Int32 curId = 0; curId < buffer.Length; curId++)
-                    result.Add(buffer[curId]);
+                for (Int32 id = 0; id < 4; id++) result.Add(bufferLength[id]);
+                for (Int32 id = 0; id < 4; id++) result.Add(buffer[id]);
 
 
 
                 buffer = ToBinary.Utf8(_externalAlphabet);
                 bufferLength = ToBinary.BigEndian(buffer.Length);
-                result.Add(bufferLength[0]);
-                result.Add(bufferLength[1]);
-                result.Add(bufferLength[2]);
-                result.Add(bufferLength[3]);
-
-                for (Int32 curId = 0; curId < buffer.Length; curId++)
-                    result.Add(buffer[curId]);
+                for (Int32 id = 0; id < 4; id++) result.Add(bufferLength[id]);
+                for (Int32 id = 0; id < 4; id++) result.Add(buffer[id]);
 
 
                 return result;
@@ -387,16 +371,16 @@ namespace JabrAPI
 
             public void SetDefault(List<char> necessary, List<char> allowed, List<char> banned, Int32 maxLength)
             {
-                _primaryNecessary = necessary;
+                _primaryNecessary  = necessary;
                 _externalNecessary = necessary;
 
-                _primaryAllowed = allowed;
+                _primaryAllowed  = allowed;
                 _externalAllowed = allowed;
 
-                _primaryBanned = banned;
+                _primaryBanned  = banned;
                 _externalBanned = banned;
 
-                _primaryMaxLength = maxLength;
+                _primaryMaxLength  = maxLength;
                 _externalMaxLength = maxLength;
             }
             public void SetDefault(string necessary, string allowed, string banned, Int32 maxLength)
@@ -404,13 +388,13 @@ namespace JabrAPI
 
             public void SetDefault(List<char> necessary, List<char> allowed, Int32 maxLength)
             {
-                _primaryNecessary = necessary;
+                _primaryNecessary  = necessary;
                 _externalNecessary = necessary;
 
-                _primaryAllowed = allowed;
+                _primaryAllowed  = allowed;
                 _externalAllowed = allowed;
 
-                _primaryMaxLength = maxLength;
+                _primaryMaxLength  = maxLength;
                 _externalMaxLength = maxLength;
             }
             public void SetDefault(string necessary, string allowed, Int32 maxLength)
@@ -442,10 +426,11 @@ namespace JabrAPI
                 => SetDefault(maxLength, banned.ToList());
             
 
-            public void SetDefault()
+            public  void SetDefault()
             {
                 _primaryNecessary  = (" " + defaultChars).ToList();
                 _externalAllowed   = defaultChars.ToList();
+
                 _primaryMaxLength  = _primaryNecessary.Count;
                 _externalMaxLength = 8;
             }
@@ -463,84 +448,117 @@ namespace JabrAPI
 
 
 
-            public void GenerateRandomPrimary(List<char> necessary, List<char> allowed, Int32 maxLength)
+
+            private void ValidateForPrimaryGeneration(List<char> necessary, List<char> allowed, Int32 maxLength)
             {
+                if (necessary != null && necessary.Count > 0)
+                {
+                    _primaryNecessary = necessary;
+
+                    for (Int32 id1 = 0; id1 < necessary.Count; id1++)
+                    {
+                        for (Int32 id2 = id1 + 1; id2 < necessary.Count; id2++)
+                        {
+                            if (necessary[id1] == necessary[id2])
+                            {
+                                throw new ArgumentException
+                                (
+                                    "necessary list cannot include duplicates",
+                                    "necessary, duplicate char: " + necessary[id1]
+                                );
+                            }
+                        }
+                    }
+                }
+                else _primaryNecessary = new List<char>();
+
+                if (allowed != null)
+                {
+                    _primaryAllowed = allowed;
+
+                    for (Int32 id1 = 0; id1 < allowed.Count; id1++)
+                    {
+                        for (Int32 id2 = id1 + 1; id2 < allowed.Count; id2++)
+                        {
+                            if (allowed[id1] == allowed[id2])
+                            {
+                                throw new ArgumentException
+                                (
+                                    "allowed list cannot include duplicates",
+                                    "allowed, duplicate char: " + allowed[id1]
+                                );
+                            }
+                        }
+                        for (Int32 id2 = 0; id2 < _primaryNecessary.Count; id2++)
+                        {
+                            if (allowed[id1] == _primaryNecessary[id2])
+                            {
+                                throw new ArgumentException
+                                (
+                                    "primary allowed list cannot include duplicates of necessary list",
+                                    "allowed, _primaryNecessary, duplicate char: " + allowed[id1]
+                                );
+                            }
+                        }
+                    }
+                }
+                else _primaryAllowed = new List<char>();
+
+
                 if (maxLength < 2)
                 {
                     throw new ArgumentException
                     (
-                        "Max length is less than the lowest possible alphabet length (2)",
+                        "Max length is less than the smallest possible alphabet length (2)",
                         "maxLength < 2"
                     );
                 }
-                maxLength -= necessary.Count;
+                maxLength -= _primaryNecessary.Count;
                 if (maxLength < 0)
                 {
                     throw new ArgumentException
                     (
                         "Max length cannot be less than the number of necessary characters.",
-                        "Max length: " + maxLength + necessary.Count +
-                        ", Necessary characters count: " + necessary.Count
+                        "maxLength: " + maxLength + _primaryNecessary.Count +
+                        ", necessary characters count: " + _primaryNecessary.Count
                     );
                 }
-                else if (maxLength > allowed.Count)
+                else if (maxLength > _primaryAllowed.Count)
                 {
                     throw new ArgumentException
                     (
                         "Max length cannot be more than allowed characters count",
-                        "maxLength: " + maxLength +
-                        ", allowed count: " + allowed.Count
+                        "maxLength: " + maxLength + ", allowed count: " + _primaryAllowed.Count
                     );
                 }
-                else if (necessary != null)
+
+                if (_primaryNecessary.Count + _primaryAllowed.Count < 2)
                 {
-                    for (Int32 id1 = 0; id1 < necessary.Count; id1++)
-                    {
-                        for (Int32 id2 = id1 + 1; id2 < necessary.Count; id2++)
-                        {
-                            if (necessary[id1] == necessary[id2])
-                            {
-                                throw new ArgumentException
-                                (
-                                    "necessary list cannot include duplicates",
-                                    "necessary, char: " + necessary[id1]
-                                );
-                            }
-                        }
-                    }
+                    throw new ArgumentException
+                    (
+                        "Not enough characters in necessary and allowed list for a valid key",
+                        "_primaryNecessary.Count + _primaryAllowed.Count < 2"
+                    );
                 }
-                else if (allowed != null)
+            }
+
+
+
+            public void GenerateRandomPrimary(List<char> necessary, List<char> allowed, Int32 maxLength, bool validateParameters = true)
+            {
+                if (validateParameters)
                 {
-                    for (Int32 id1 = 0; id1 < allowed.Count; id1++)
-                    {
-                        for (Int32 id2 = id1 + 1; id2 < allowed.Count; id2++)
-                        {
-                            if (allowed[id1] == allowed[id2])
-                            {
-                                throw new ArgumentException
-                                (
-                                    "allowed list cannot include duplicates",
-                                    "allowed, char: " + allowed[id1]
-                                );
-                            }
-                        }
-                        for (Int32 id2 = 0; id2 < _primaryNecessary.Count; id2++)
-                        {
-                            if (_primaryAllowed[id1] == _primaryNecessary[id2])
-                            {
-                                throw new ArgumentException
-                                (
-                                    "primary allowed list cannot include duplicates of necessary list",
-                                    "_primaryAllowed, char: " + _primaryAllowed[id1]
-                                );
-                            }
-                        }
-                    }
+                    ValidateForPrimaryGeneration(necessary, allowed, maxLength);
+
+                    necessary = _primaryNecessary;  //  to avoid nullpointer exceptions
+                    allowed   = _primaryAllowed;    //  the _primary variants are always defaulted
+                                                    //  (to a new empty List in worst case)
                 }
 
                 Random random = new Random();
                 Int32 buffer, bufferId;
                 _primaryAlphabet = "";
+
 
                 while (necessary.Count > 0)
                 {
@@ -548,315 +566,77 @@ namespace JabrAPI
                     _primaryAlphabet += necessary[buffer];
                     necessary.RemoveAt(buffer);
                 }
-                for (Int32 remaining = maxLength; remaining > 0; remaining--)
+                for (Int32 remaining = Math.Min(maxLength, allowed.Count); remaining > 0; remaining--)
                 {
-                    buffer = random.Next(0, allowed.Count);
+                    buffer   = random.Next(0, allowed.Count);
                     bufferId = random.Next(0, _primaryAlphabet.Length);
 
                     _primaryAlphabet = _primaryAlphabet.Insert(bufferId, allowed[buffer].ToString());
                     allowed.RemoveAt(buffer);
                 }
             }
-            public void GenerateRandomPrimary(string necessary, string allowed, Int32 maxLength) 
+            public void GenerateRandomPrimary(string necessary, string allowed, Int32 maxLength)
                 => GenerateRandomPrimary(necessary.ToList(), allowed.ToList(), maxLength);
 
-            public void GenerateRandomPrimary(List<char> allowed, Int32 maxLength)
+
+            public void GenerateRandomPrimary(List<char> allowed, Int32 maxLength, bool validateParameters = true)
+                => GenerateRandomPrimary(null, allowed, maxLength, validateParameters);
+            public void GenerateRandomPrimary(string allowed, Int32 maxLength, bool validateParameters = true)
+                => GenerateRandomPrimary(null, allowed.ToList(), maxLength, validateParameters);
+
+
+            public void GenerateRandomPrimary(Int32 maxLength, List<char> necessary, List<char> banned, bool validateParameters = true)
             {
-                if (maxLength < 2)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is less than the lowest possible alphabet length (2)",
-                        "maxLength < 2"
-                    );
-                }
-                else if (allowed != null)
-                {
-                    for (Int32 id1 = 0; id1 < allowed.Count; id1++)
-                    {
-                        for (Int32 id2 = id1 + 1; id2 < allowed.Count; id2++)
-                        {
-                            if (allowed[id1] == allowed[id2])
-                            {
-                                throw new ArgumentException
-                                (
-                                    "allowed list cannot include duplicates",
-                                    "allowed, char: " + allowed[id1]
-                                );
-                            }
-                        }
-                    }
-                }
-                else if (maxLength > allowed.Count)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length cannot be more than allowed characters length",
-                        "maxLength: " + maxLength +
-                        ", allowed length: " + allowed.Count.ToString()
-                    );
-                }
+                List<char> allowed = (" " + defaultChars).ToList();
 
-                Random random = new Random();
-                Int32 buffer, bufferId;
-                _primaryAlphabet = "";
-
-                for (Int32 remaining = maxLength; remaining > 0; remaining--)
+                if (banned != null && banned.Count > 0)
                 {
-                    buffer = random.Next(0, allowed.Count);
-                    bufferId = random.Next(0, _primaryAlphabet.Length);
-
-                    _primaryAlphabet = _primaryAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                    allowed.RemoveAt(buffer);
-                }
-            }
-            public void GenerateRandomPrimary(string allowed, Int32 maxLength)
-                => GenerateRandomPrimary(allowed.ToList(), maxLength);
-
-            public void GenerateRandomPrimary(Int32 maxLength, List<char> necessary, List<char> banned)
-            {
-                if (maxLength < 2)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is less than the lowest possible alphabet length (2)",
-                        "maxLength < 2"
-                    );
-                }
-                maxLength -= necessary.Count;
-                if (maxLength < 0)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length cannot be less than the number of necessary characters.",
-                        "maxLength: " + maxLength + necessary.Count +
-                        ", Necessary characters count: " + necessary.Count
-                    );
-                }
-                else if (maxLength > 163)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is more than the default array of allowed chars count (163)",
-                        "maxLength > 163"
-                    );
-                }
-                else if (necessary != null)
-                {
-                    for (Int32 id1 = 0; id1 < necessary.Count; id1++)
-                    {
-                        for (Int32 id2 = id1 + 1; id2 < necessary.Count; id2++)
-                        {
-                            if (necessary[id1] == necessary[id2])
-                            {
-                                throw new ArgumentException
-                                (
-                                    "necessary list cannot include duplicates",
-                                    "necessary, char: " + necessary[id1]
-                                );
-                            }
-                        }
-                    }
-                }
-
-                string allowed = " " + defaultChars;
-                Random random = new Random();
-                Int32 buffer, bufferId;
-                _primaryAlphabet = "";
-
-                while (necessary.Count > 0)
-                {
-                    buffer = random.Next(0, necessary.Count);
-                    _primaryAlphabet += necessary[buffer];
-                    necessary.RemoveAt(buffer);
-                }
-                for (Int32 remaining = maxLength; remaining > 0; remaining--)
-                {
-                    buffer = random.Next(0, allowed.Length);
                     for (Int32 curId = 0; curId < banned.Count; curId++)
                     {
-                        if (allowed[buffer] == banned[curId])
+                        for (Int32 id2 = 0; id2 < allowed.Count; id2++)
                         {
-                            curId = 0;
-                            buffer = random.Next(0, allowed.Length);
+                            if (banned[curId] == allowed[id2])
+                            {
+                                allowed.RemoveAt(id2);
+                                id2--;
+                            }
                         }
                     }
-
-                    bufferId = random.Next(0, _externalAlphabet.Length);
-                    _primaryAlphabet = _primaryAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                    allowed.Remove(buffer, 1);
                 }
+
+                GenerateRandomPrimary(necessary, allowed, maxLength, validateParameters);
             }
             public void GenerateRandomPrimary(Int32 maxLength, string necessary, string banned)
                 => GenerateRandomPrimary(maxLength, necessary.ToList(), banned.ToList());
             
+
             public void GenerateRandomPrimary(Int32 maxLength, List<char> banned)
-            {
-                if (maxLength < 2)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is less than the lowest possible alphabet length (2)",
-                        "maxLength < 2"
-                    );
-                }
-                else if (maxLength > 163)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is more than the default array of allowed chars length (163)",
-                        "maxLength > 163"
-                    );
-                }
-
-                string allowed = " " + defaultChars;
-                Random random = new Random();
-                Int32 buffer, bufferId;
-                _primaryAlphabet = "";
-
-                for (Int32 remaining = maxLength; remaining > 0; remaining--)
-                {
-                    buffer = random.Next(0, allowed.Length);
-                    for (Int32 curId = 0; curId < banned.Count; curId++)
-                    {
-                        if (allowed[buffer] == banned[curId])
-                        {
-                            curId = 0;
-                            buffer = random.Next(0, allowed.Length);
-                        }
-                    }
-
-                    bufferId = random.Next(0, _primaryAlphabet.Length);
-                    _primaryAlphabet = _primaryAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                    allowed.Remove(buffer, 1);
-                }
-            }
+                => GenerateRandomPrimary(maxLength, null, banned);
             public void GenerateRandomPrimary(Int32 maxLength, string banned)
-                => GenerateRandomPrimary(maxLength, banned.ToList());
+                => GenerateRandomPrimary(maxLength, null, banned.ToList());
             public void GenerateRandomPrimary(Int32 maxLength) 
                 => GenerateRandomPrimary(maxLength, "");
 
             public void GenerateRandomPrimary()
-            {
-                if (_primaryAllowed == null && _primaryBanned == null && _primaryNecessary == null)
+            { 
+                List<char> allowed = _primaryAllowed ?? new List<char>();
+
+                if (_primaryBanned != null && _primaryBanned.Count > 0)
                 {
-                    throw new ArgumentException
-                    (
-                        "Unable to use undefined default parameters",
-                        "_primaryAllowed and _primaryBanned And _primaryNecessary"
-                    );
-                }
-                else if (_primaryMaxLength < 2 ||
-                    _primaryNecessary != null && _primaryMaxLength < _primaryNecessary.Count)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is undefined or less than neccesary chars amount",
-                        "_primaryMaxLength, _primaryNecessary.Count"
-                    );
-                }
-                else if (_primaryAllowed != null && _primaryMaxLength > _primaryAllowed.Count ||
-                         _primaryAllowed == null && _primaryMaxLength > 163)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is more than the max allowed count or max default count 163 (if _primaryAllowed == null)",
-                        "_primaryMaxLength > _primaryAllowed.Count or 163"
-                    );
-                }
-                else if (_primaryNecessary != null)
-                {
-                    for (Int32 id1 = 0; id1 < _primaryNecessary.Count; id1++)
+                    for (Int32 curId = 0; curId < _primaryBanned.Count; curId++)
                     {
-                        for (Int32 id2 = id1 + 1; id2 < _primaryNecessary.Count; id2++)
+                        for (Int32 id2 = 0; id2 < allowed.Count; id2++)
                         {
-                            if (_primaryNecessary[id1] == _primaryNecessary[id2])
+                            if (_primaryBanned[curId] == allowed[id2])
                             {
-                                throw new ArgumentException
-                                (
-                                    "primary necessary list cannot include duplicates",
-                                    "_primaryNecessary, char: " + _primaryNecessary[id1]
-                                );
-                            }
-                        }
-                    }
-                }
-                else if (_primaryAllowed != null)
-                {
-                    for (Int32 id1 = 0; id1 < _primaryAllowed.Count; id1++)
-                    {
-                        for (Int32 id2 = id1 + 1; id2 < _primaryAllowed.Count; id2++)
-                        {
-                            if (_primaryAllowed[id1] == _primaryAllowed[id2])
-                            {
-                                throw new ArgumentException
-                                (
-                                    "primary allowed list cannot include duplicates",
-                                    "_primaryAllowed, char: " + _primaryAllowed[id1]
-                                );
-                            }
-                        }
-                        for (Int32 id2 = 0; id2 < _primaryNecessary.Count; id2++)
-                        {
-                            if (_primaryAllowed[id1] == _primaryNecessary[id2])
-                            {
-                                throw new ArgumentException
-                                (
-                                    "primary allowed list cannot include duplicates of necessary list",
-                                    "_primaryAllowed, char: " + _primaryAllowed[id1]
-                                );
+                                allowed.RemoveAt(id2);
+                                id2--;
                             }
                         }
                     }
                 }
 
-                Random random = new Random();
-                Int32 buffer, bufferId;
-                _primaryAlphabet = "";
-
-                if (_primaryNecessary != null)
-                {
-                    List<char> necessary = _primaryNecessary;
-                    while (necessary.Count > 0)
-                    {
-                        buffer = random.Next(0, necessary.Count);
-                        _primaryAlphabet += necessary[buffer];
-                        necessary.RemoveAt(buffer);
-                    }
-                }
-                if (_primaryAllowed != null)
-                {
-                    List<char> allowed = _primaryAllowed;
-
-                    for (Int32 remaining = _primaryMaxLength - _primaryNecessary.Count; remaining > 0; remaining--)
-                    {
-                        buffer = random.Next(0, allowed.Count);
-                        bufferId = random.Next(0, _primaryAlphabet.Length);
-
-                        _primaryAlphabet = _primaryAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                        allowed.RemoveAt(buffer);
-                    }
-                }
-                else if (_primaryBanned != null)
-                {
-                    for (Int32 remaining = _primaryMaxLength - _primaryNecessary.Count; remaining > 0; remaining--)
-                    {
-                        const string allowed = " " + defaultChars;
-                        buffer = random.Next(0, allowed.Length);
-                        for (Int32 curId = 0; curId < _primaryBanned.Count; curId++)
-                        {
-                            if (allowed[buffer] == _primaryBanned[curId])
-                            {
-                                curId = 0;
-                                buffer = random.Next(0, allowed.Length);
-                            }
-                        }
-
-                        bufferId = random.Next(0, _primaryAlphabet.Length);
-                        _primaryAlphabet = _primaryAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                        allowed.Remove(buffer, 1);
-                    }
-                }
+                GenerateRandomPrimary(_primaryNecessary, allowed, _primaryMaxLength);
             }
 
 
