@@ -15,9 +15,9 @@ namespace JabrAPI
     {
         public class EncryptionKey
         {
-            private string  _primaryAlphabet;
-            private string  _externalAlphabet;
-            private Int32[] _shifts;
+            private string _primaryAlphabet;
+            private string _externalAlphabet;
+            private List<Int32> _shifts;
 
             private List<char> _primaryNecessary,  _primaryAllowed,  _primaryBanned;
             private List<char> _externalNecessary, _externalAllowed, _externalBanned;
@@ -25,7 +25,7 @@ namespace JabrAPI
             private const string defaultChars = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ№";
 
 
-            public EncryptionKey(string primaryAlphabet, string externalAlphabet, Int32[] shifts)
+            public EncryptionKey(string primaryAlphabet, string externalAlphabet, List<Int32> shifts)
             {
                 _primaryAlphabet  = primaryAlphabet;
                 _externalAlphabet = externalAlphabet;
@@ -35,7 +35,7 @@ namespace JabrAPI
             {
                 _primaryAlphabet  = primaryAlphabet;
                 _externalAlphabet = externalAlphabet;
-                _shifts = new Int32[] { shift };
+                _shifts = new List<Int32>() { shift };
             }
             public EncryptionKey(string primaryAlphabet, string externalAlphabet)
             {
@@ -47,12 +47,21 @@ namespace JabrAPI
 
 
             public string PrimaryAlphabet => _primaryAlphabet;
-            public Int32  PrLength => _primaryAlphabet.Length;
+            public string PrAlphabet => _primaryAlphabet;
+            public string Primary => _primaryAlphabet;
+            public Int32  PrimaryLength => _primaryAlphabet == null ? -1 : _primaryAlphabet.Length;
+            public Int32  PrLength => _primaryAlphabet == null ? -1 : _primaryAlphabet.Length;
 
             public string ExternalAlphabet => _externalAlphabet;
-            public Int32  ExLength  => _externalAlphabet.Length;
+            public string ExAlphabet => _externalAlphabet;
+            public string External => _externalAlphabet;
+            public Int32  ExternalLength => _externalAlphabet == null ? -1 : _externalAlphabet.Length;
+            public Int32  ExLength => _externalAlphabet == null ? -1 : _externalAlphabet.Length;
 
-            public Int32[] Shifts => _shifts;
+            public List<Int32> Shifts => _shifts;
+            public Int32 ShAmount => _shifts.Count;
+            public Int32 ShLength => _shifts.Count;
+            public Int32 ShCount  => _shifts.Count;
 
 
 
@@ -76,8 +85,8 @@ namespace JabrAPI
                 }
 
                 string result = _primaryAlphabet + splitBy + _externalAlphabet + splitBy;
-                for (Int32 curId = 0; curId < _shifts.Length - 1; curId++) result += _shifts[curId] + splitShifts;
-                if (_shifts.Length > 0) result += _shifts[_shifts.Length - 1];
+                for (Int32 curId = 0; curId < _shifts.Count - 1; curId++) result += _shifts[curId] + splitShifts;
+                if (_shifts.Count > 0) result += _shifts[_shifts.Count - 1];
 
                 return result;
             }
@@ -96,9 +105,9 @@ namespace JabrAPI
                 string result = _primaryAlphabet.Length + _primaryAlphabet
                              + _externalAlphabet.Length + _externalAlphabet;
 
-                for (Int32 curId = 0; curId < _shifts.Length - 1; curId++)
+                for (Int32 curId = 0; curId < _shifts.Count - 1; curId++)
                     result += _shifts[curId] + " ";
-                if (_shifts.Length > 0) result += _shifts[_shifts.Length - 1];
+                if (_shifts.Count > 0) result += _shifts[_shifts.Count - 1];
 
                 return result;
             }
@@ -106,10 +115,10 @@ namespace JabrAPI
             {
                 List<Byte> result = new List<Byte>();
 
-                Byte[] buffer = ToBinary.BigEndian(_shifts.Length), bufferLength;
+                Byte[] buffer = ToBinary.BigEndian(_shifts.Count), bufferLength;
                 for (Int32 id = 0; id < 4; id++) result.Add(buffer[id]);
 
-                for (Int32 curId = 0; curId < _shifts.Length; curId++)
+                for (Int32 curId = 0; curId < _shifts.Count; curId++)
                 {
                     buffer = ToBinary.BigEndian(_shifts[curId]);
 
@@ -137,13 +146,13 @@ namespace JabrAPI
             {
                 List<Byte> result = new List<Byte>();
 
-                Byte[] buffer = ToBinary.LittleEndian(_shifts.Length), bufferLength;
+                Byte[] buffer = ToBinary.LittleEndian(_shifts.Count), bufferLength;
                 result.Add(buffer[0]);
                 result.Add(buffer[1]);
                 result.Add(buffer[2]);
                 result.Add(buffer[3]);
 
-                for (Int32 curId = 0; curId < _shifts.Length; curId++)
+                for (Int32 curId = 0; curId < _shifts.Count; curId++)
                 {
                     buffer = ToBinary.LittleEndian(_shifts[curId]);
 
@@ -449,7 +458,7 @@ namespace JabrAPI
 
 
 
-            private void ValidateForPrimaryGeneration(List<char> necessary, List<char> allowed, Int32 maxLength)
+            private void ValidateForPrimaryGeneration (List<char> necessary, List<char> allowed, Int32 maxLength)
             {
                 if (necessary != null && necessary.Count > 0)
                 {
@@ -495,7 +504,7 @@ namespace JabrAPI
                             {
                                 throw new ArgumentException
                                 (
-                                    "primary allowed list cannot include duplicates of necessary list",
+                                    "allowed list cannot include duplicates of necessary list",
                                     "allowed, _primaryNecessary, duplicate char: " + allowed[id1]
                                 );
                             }
@@ -541,6 +550,98 @@ namespace JabrAPI
                     );
                 }
             }
+            private void ValidateForExternalGeneration(List<char> necessary, List<char> allowed, Int32 maxLength)
+            {
+                if (necessary != null && necessary.Count > 0)
+                {
+                    _externalNecessary = necessary;
+
+                    for (Int32 id1 = 0; id1 < necessary.Count; id1++)
+                    {
+                        for (Int32 id2 = id1 + 1; id2 < necessary.Count; id2++)
+                        {
+                            if (necessary[id1] == necessary[id2])
+                            {
+                                throw new ArgumentException
+                                (
+                                    "necessary list cannot include duplicates",
+                                    "necessary, duplicate char: " + necessary[id1]
+                                );
+                            }
+                        }
+                    }
+                }
+                else _externalNecessary = new List<char>();
+
+                if (allowed != null)
+                {
+                    _externalAllowed = allowed;
+
+                    for (Int32 id1 = 0; id1 < allowed.Count; id1++)
+                    {
+                        for (Int32 id2 = id1 + 1; id2 < allowed.Count; id2++)
+                        {
+                            if (allowed[id1] == allowed[id2])
+                            {
+                                throw new ArgumentException
+                                (
+                                    "allowed list cannot include duplicates",
+                                    "allowed, duplicate char: " + allowed[id1]
+                                );
+                            }
+                        }
+                        for (Int32 id2 = 0; id2 < _externalNecessary.Count; id2++)
+                        {
+                            if (allowed[id1] == _externalNecessary[id2])
+                            {
+                                throw new ArgumentException
+                                (
+                                    "allowed list cannot include duplicates of necessary list",
+                                    "allowed, _externalNecessary, duplicate char: " + allowed[id1]
+                                );
+                            }
+                        }
+                    }
+                }
+                else _externalAllowed = new List<char>();
+
+
+                if (maxLength < 2)
+                {
+                    throw new ArgumentException
+                    (
+                        "Max length is less than the smallest possible alphabet length (2)",
+                        "maxLength < 2"
+                    );
+                }
+                maxLength -= _externalNecessary.Count;
+                if (maxLength < 0)
+                {
+                    throw new ArgumentException
+                    (
+                        "Max length cannot be less than the number of necessary characters.",
+                        "maxLength: " + maxLength + _externalNecessary.Count +
+                        ", necessary characters count: " + _externalNecessary.Count
+                    );
+                }
+                else if (maxLength > _externalAllowed.Count)
+                {
+                    throw new ArgumentException
+                    (
+                        "Max length cannot be more than allowed characters count",
+                        "maxLength: " + maxLength + ", allowed count: " + _externalAllowed.Count
+                    );
+                }
+
+                if (_externalNecessary.Count + _externalAllowed.Count < 2)
+                {
+                    throw new ArgumentException
+                    (
+                        "Not enough characters in necessary and allowed list for a valid key",
+                        "_externalNecessary.Count + _externalAllowed.Count < 2"
+                    );
+                }
+            }
 
 
 
@@ -575,8 +676,8 @@ namespace JabrAPI
                     allowed.RemoveAt(buffer);
                 }
             }
-            public void GenerateRandomPrimary(string necessary, string allowed, Int32 maxLength)
-                => GenerateRandomPrimary(necessary.ToList(), allowed.ToList(), maxLength);
+            public void GenerateRandomPrimary(string necessary, string allowed, Int32 maxLength, bool validateParameters = true)
+                => GenerateRandomPrimary(necessary.ToList(), allowed.ToList(), maxLength, validateParameters);
 
 
             public void GenerateRandomPrimary(List<char> allowed, Int32 maxLength, bool validateParameters = true)
@@ -606,20 +707,20 @@ namespace JabrAPI
 
                 GenerateRandomPrimary(necessary, allowed, maxLength, validateParameters);
             }
-            public void GenerateRandomPrimary(Int32 maxLength, string necessary, string banned)
-                => GenerateRandomPrimary(maxLength, necessary.ToList(), banned.ToList());
+            public void GenerateRandomPrimary(Int32 maxLength, string necessary, string banned, bool validateParameters = true)
+                => GenerateRandomPrimary(maxLength, necessary.ToList(), banned.ToList(), validateParameters);
             
 
-            public void GenerateRandomPrimary(Int32 maxLength, List<char> banned)
-                => GenerateRandomPrimary(maxLength, null, banned);
-            public void GenerateRandomPrimary(Int32 maxLength, string banned)
-                => GenerateRandomPrimary(maxLength, null, banned.ToList());
-            public void GenerateRandomPrimary(Int32 maxLength) 
-                => GenerateRandomPrimary(maxLength, "");
+            public void GenerateRandomPrimary(Int32 maxLength, List<char> banned, bool validateParameters = true)
+                => GenerateRandomPrimary(maxLength, null, banned, validateParameters);
+            public void GenerateRandomPrimary(Int32 maxLength, string banned, bool validateParameters = true)
+                => GenerateRandomPrimary(maxLength, null, banned.ToList(), validateParameters);
+            public void GenerateRandomPrimary(Int32 maxLength, bool validateParameters = true) 
+                => GenerateRandomPrimary(maxLength, "", validateParameters);
 
             public void GenerateRandomPrimary()
             { 
-                List<char> allowed = _primaryAllowed ?? new List<char>();
+                List<char> allowed = _primaryAllowed;
 
                 if (_primaryBanned != null && _primaryBanned.Count > 0)
                 {
@@ -640,25 +741,17 @@ namespace JabrAPI
             }
 
 
-            public void GenerateRandomExternal(List<char> necessary, List<char> allowed, Int32 maxLength)
+
+
+            public void GenerateRandomExternal(List<char> necessary, List<char> allowed, Int32 maxLength, bool validateParameters = true)
             {
-                if (maxLength < 2)
+                if (validateParameters)
                 {
-                    throw new ArgumentException
-                    (
-                        "Max length is less than the lowest possible alphabet length (2)",
-                        "maxLength < 2"
-                    );
-                }
-                maxLength -= necessary.Count;
-                if (maxLength < 0)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length cannot be less than the number of necessary characters.",
-                        "Max length: " + maxLength + necessary.Count +
-                        ", Necessary characters count: " + necessary.Count.ToString()
-                    );
+                    ValidateForExternalGeneration(necessary, allowed, maxLength);
+
+                    necessary = _externalNecessary;  //  to avoid nullpointer exceptions
+                    allowed   = _externalAllowed;    //  the _external variants are always defaulted
+                                                     //  (to a new empty List in worst case)
                 }
 
                 Random random = new Random();
@@ -671,33 +764,7 @@ namespace JabrAPI
                     _externalAlphabet += necessary[buffer];
                     necessary.RemoveAt(buffer);
                 }
-                for (Int32 remaining = maxLength; remaining > 0; remaining--)
-                {
-                    buffer = random.Next(0, allowed.Count);
-                    bufferId = random.Next(0, _externalAlphabet.Length);
-
-                    _externalAlphabet = _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                }
-            }
-            public void GenerateRandomExternal(string necessary, string allowed, Int32 maxLength)
-                => GenerateRandomExternal(necessary.ToList(), allowed.ToList(), maxLength);
-
-            public void GenerateRandomExternal(List<char> allowed, Int32 maxLength)
-            {
-                if (maxLength < 2)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is less than the lowest possible alphabet length (2)",
-                        "maxLength < 2"
-                    );
-                }
-
-                Random random = new Random();
-                Int32 buffer, bufferId;
-                _externalAlphabet = "";
-
-                for (Int32 remaining = maxLength; remaining > 0; remaining--)
+                for (Int32 remaining = Math.Min(maxLength, allowed.Count); remaining > 0; remaining--)
                 {
                     buffer = random.Next(0, allowed.Count);
                     bufferId = random.Next(0, _externalAlphabet.Length);
@@ -706,180 +773,74 @@ namespace JabrAPI
                     allowed.RemoveAt(buffer);
                 }
             }
-            public void GenerateRandomExternal(string allowed, Int32 maxLength)
-                => GenerateRandomExternal(allowed.ToList(), maxLength);
+            public void GenerateRandomExternal(string necessary, string allowed, Int32 maxLength, bool validateParameters = true)
+                => GenerateRandomExternal(necessary.ToList(), allowed.ToList(), maxLength, validateParameters);
 
-            public void GenerateRandomExternal(Int32 maxLength, List<char> necessary, List<char> banned)
+
+            public void GenerateRandomExternal(List<char> allowed, Int32 maxLength, bool validateParameters = true)
+                => GenerateRandomExternal(null, allowed, maxLength, validateParameters);
+            public void GenerateRandomExternal(string allowed, Int32 maxLength, bool validateParameters = true)
+                => GenerateRandomExternal(null, allowed.ToList(), maxLength, validateParameters);
+
+
+            public void GenerateRandomExternal(Int32 maxLength, List<char> necessary, List<char> banned, bool validateParameters = true)
             {
-                if (maxLength < 2)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is less than the lowest possible alphabet length (2)",
-                        "maxLength < 2"
-                    );
-                }
-                maxLength -= necessary.Count;
-                if (maxLength < 0)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length cannot be less than the number of necessary characters.",
-                        "Max length: " + maxLength + necessary.Count +
-                        ", Necessary characters count: " + necessary.Count.ToString()
-                    );
-                }
+                List<char> allowed = (" " + defaultChars).ToList();
 
-                const string allowed = defaultChars;
-                Random random = new Random();
-                Int32 buffer, bufferId;
-                _externalAlphabet = "";
-
-                while (necessary.Count > 0)
+                if (banned != null && banned.Count > 0)
                 {
-                    buffer = random.Next(0, necessary.Count);
-                    _externalAlphabet += necessary[buffer];
-                    necessary.RemoveAt(buffer);
-                }
-                for (Int32 remaining = maxLength; remaining > 0; remaining--)
-                {
-                    buffer = random.Next(0, allowed.Length);
                     for (Int32 curId = 0; curId < banned.Count; curId++)
                     {
-                        if (allowed[buffer] == banned[curId])
+                        for (Int32 id2 = 0; id2 < allowed.Count; id2++)
                         {
-                            curId = 0;
-                            buffer = random.Next(0, allowed.Length);
+                            if (banned[curId] == allowed[id2])
+                            {
+                                allowed.RemoveAt(id2);
+                                id2--;
+                            }
                         }
                     }
-
-                    bufferId = random.Next(0, _externalAlphabet.Length);
-                    _externalAlphabet = _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
                 }
+
+                GenerateRandomExternal(necessary, allowed, maxLength, validateParameters);
             }
-            public void GenerateRandomExternal(Int32 maxLength, string necessary, string banned)
-                => GenerateRandomExternal(maxLength, necessary.ToList(), banned.ToList());
+            public void GenerateRandomExternal(Int32 maxLength, string necessary, string banned, bool validateParameters = true)
+                => GenerateRandomExternal(maxLength, necessary.ToList(), banned.ToList(), validateParameters);
 
-            public void GenerateRandomExternal(Int32 maxLength, List<char> banned)
-            {
-                if (maxLength < 2)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is less than the lowest possible alphabet length (2)",
-                        "maxLength < 2"
-                    );
-                }
 
-                const string allowed = defaultChars;
-                Random random = new Random();
-                Int32 buffer, bufferId;
-                _externalAlphabet = "";
+            public void GenerateRandomExternal(Int32 maxLength, List<char> banned, bool validateParameters = true)
+                => GenerateRandomExternal(maxLength, null, banned, validateParameters);
+            public void GenerateRandomExternal(Int32 maxLength, string banned, bool validateParameters = true)
+                => GenerateRandomExternal(maxLength, null, banned.ToList(), validateParameters);
+            public void GenerateRandomExternal(Int32 maxLength, bool validateParameters = true) 
+                => GenerateRandomExternal(maxLength, "", validateParameters);
 
-                for (Int32 remaining = maxLength; remaining > 0; remaining--)
-                {
-                    buffer = random.Next(0, allowed.Length);
-                    for (Int32 curId = 0; curId < banned.Count; curId++)
-                    {
-                        if (allowed[buffer] == banned[curId])
-                        {
-                            curId = 0;
-                            buffer = random.Next(0, allowed.Length);
-                        }
-                    }
-
-                    bufferId = random.Next(0, _externalAlphabet.Length);
-                    _externalAlphabet = _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                }
-            }
-            public void GenerateRandomExternal(Int32 maxLength, string banned)
-                => GenerateRandomExternal(maxLength, banned.ToList());
-            public void GenerateRandomExternal(Int32 maxLength) 
-                => GenerateRandomExternal(maxLength, "");
 
             public void GenerateRandomExternal()
             {
-                if (_externalAllowed == null && _externalBanned == null)
-                {
-                    throw new ArgumentException
-                    (
-                        "Unable to use undefined default parameters",
-                        "_externalAllowed and _externalBanned"
-                    );
-                }
-                if (_externalMaxLength < 2 ||
-                    _externalNecessary != null && _externalMaxLength < _externalNecessary.Count)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is undefined or less than neccesary chars amount",
-                        "_externalMaxLength, _externalNecessary.Count"
-                    );
-                }
+                List<char> allowed = _externalAllowed;
 
-                Random random = new Random();
-                Int32 buffer, bufferId;
-                _externalAlphabet = "";
-
-                if (_externalNecessary != null)
+                if (_externalBanned != null && _externalBanned.Count > 0)
                 {
-                    List<char> necessary = _externalNecessary;
-                    while (necessary.Count > 0)
+                    for (Int32 curId = 0; curId < _externalBanned.Count; curId++)
                     {
-                        buffer = random.Next(0, necessary.Count);
-                        _externalAlphabet += necessary[buffer];
-                        necessary.RemoveAt(buffer);
-                    }
-
-                    if (_externalAllowed != null)
-                    {
-                        List<char> allowed = _externalAllowed;
-
-                        for (Int32 remaining = _externalMaxLength - _externalNecessary.Count; remaining > 0; remaining--)
+                        for (Int32 id2 = 0; id2 < allowed.Count; id2++)
                         {
-                            buffer = random.Next(0, allowed.Count);
-                            bufferId = random.Next(0, _externalAlphabet.Length);
-
-                            _externalAlphabet = _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                        }
-                    }
-                }
-                else if (_externalAllowed != null)
-                {
-                    List<char> allowed = _externalAllowed;
-
-                    for (Int32 remaining = _externalMaxLength; remaining > 0; remaining--)
-                    {
-                        buffer = random.Next(0, allowed.Count);
-                        bufferId = random.Next(0, _externalAlphabet.Length);
-
-                        _externalAlphabet = _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                    }
-                }
-                else
-                {
-                    for (Int32 remaining = _externalMaxLength; remaining > 0; remaining--)
-                    {
-                        const string allowed = defaultChars;
-                        buffer = random.Next(0, allowed.Length);
-                        for (Int32 curId = 0; curId < _externalBanned.Count; curId++)
-                        {
-                            if (allowed[buffer] == _externalBanned[curId])
+                            if (_externalBanned[curId] == allowed[id2])
                             {
-                                curId = 0;
-                                buffer = random.Next(0, allowed.Length);
+                                allowed.RemoveAt(id2);
+                                id2--;
                             }
                         }
-
-                        bufferId = random.Next(0, _externalAlphabet.Length);
-                        _externalAlphabet = _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
                     }
                 }
+
+                GenerateRandomExternal(_externalNecessary, allowed, _externalMaxLength);
             }
 
 
 
-            public void GenerateRandomShifts(Int32 count)
+            public void GenerateRandomShifts(Int32 count, Int32 minVal, Int32 maxVal)
             {
                 if (count < 0)
                 {
@@ -889,22 +850,32 @@ namespace JabrAPI
                         "count cannot be negative"
                     );
                 }
-                else if (_externalAlphabet == null || _externalAlphabet.Length < 2)
+                else if (minVal > maxVal)
                 {
                     throw new ArgumentException
                     (
-                        "Unable to generate shifts, external alphabet is undefined",
-                        "_externalAlphabet"
+                        "min value cannot be greater than max value",
+                        "minVal, maxVal"
+                    );
+                }
+                else if (minVal < 0)
+                {
+                    throw new ArgumentOutOfRangeException
+                    (
+                        "minVal",
+                        "minVal cannot be negative"
                     );
                 }
 
-                _shifts = new Int32[count];
+                _shifts = new List<Int32>();
                 Random random = new Random();
 
                 for (Int32 curId = 0; curId < count; curId++)
-                    _shifts[curId] = random.Next(0, _externalAlphabet.Length - 1);
+                    _shifts.Add(random.Next(minVal, maxVal));
             }
-            public void GenerateRandomShifts()
+            public void GenerateRandomShifts(Int32 minVal, Int32 maxVal)
+                => GenerateRandomShifts(new Random().Next(512, 1025), minVal, maxVal);
+            public void GenerateRandomShifts(Int32 count)
             {
                 if (_externalAlphabet == null || _externalAlphabet.Length < 2)
                 {
@@ -915,20 +886,120 @@ namespace JabrAPI
                     );
                 }
 
-                Random random = new Random();
-                Int32 count = random.Next(512, 1025);
-                _shifts = new Int32[count];
-
-                for (Int32 curId = 0; curId < count; curId++)
-                    _shifts[curId] = random.Next(0, _externalAlphabet.Length - 1);
+                GenerateRandomShifts(count, 0, _externalAlphabet.Length - 1);
             }
+            public void GenerateRandomShifts()
+                => GenerateRandomShifts(new Random().Next(512, 1025));
         }
 
-        public class BinaryReadyKey
+        public class BinaryKey
         {
-            List<Int16> _primaryAlpabet;
-            List<Int16> _externalAlphabet;
-            List<Int32> _shifts;
+            private List<Int16> _primaryAlphabet;
+            private List<Int16> _externalAlphabet;
+            private List<Int32> _shifts;
+
+
+            public BinaryKey(string primaryAlphabet, string externalAlphabet, List<Int32> shifts)
+            {
+                _primaryAlphabet = Conversions.AutoLEBytesToInt16
+                (
+                    ToBinary.Utf16
+                    (
+                        primaryAlphabet
+                    ).ToList()
+                );
+
+                _externalAlphabet = Conversions.AutoLEBytesToInt16
+                (
+                    ToBinary.Utf16
+                    (
+                        externalAlphabet
+                    ).ToList()
+                );
+
+                _shifts = shifts;
+            }
+            public BinaryKey(EncryptionKey reKey)
+            {
+                _primaryAlphabet = Conversions.AutoLEBytesToInt16
+                (
+                    ToBinary.Utf16
+                    (
+                        reKey.PrAlphabet
+                    ).ToList()
+                );
+
+                _externalAlphabet = Conversions.AutoLEBytesToInt16
+                (
+                    ToBinary.Utf16
+                    (
+                        reKey.ExAlphabet
+                    ).ToList()
+                );
+
+                _shifts = reKey.Shifts.ToList();
+            }
+            public BinaryKey() { }
+
+
+            public List<Int16> PrimaryAlphabet => _primaryAlphabet;
+            public List<Int16> PrAlphabet => _primaryAlphabet;
+            public List<Int16> Primary => _primaryAlphabet;
+            public Int32 PrimaryLength => _primaryAlphabet == null ? -1 : _primaryAlphabet.Count / 2;
+            public Int32 PrLength => _primaryAlphabet == null ? -1 : _primaryAlphabet.Count / 2;
+
+            public List<Int16> ExternalAlphabet => _externalAlphabet;
+            public List<Int16> ExAlphabet => _externalAlphabet;
+            public List<Int16> External => _externalAlphabet;
+            public Int32 ExternalLength => _externalAlphabet == null ? -1 : _externalAlphabet.Count / 2;
+            public Int32 ExLength => _externalAlphabet == null ? -1 : _externalAlphabet.Count / 2;
+
+            public List<Int32> Shifts => _shifts;
+            public Int32 ShAmount => _shifts == null ? -1 : _shifts.Count;
+            public Int32 ShLength => _shifts == null ? -1 : _shifts.Count;
+            public Int32 ShCount  => _shifts == null ? -1 : _shifts.Count;
+
+
+
+            public void Set(string primaryAlphabet, string externalAlphabet, List<Int32> shifts)
+            {
+                _primaryAlphabet = Conversions.AutoLEBytesToInt16
+                (
+                    ToBinary.Utf16
+                    (
+                        primaryAlphabet
+                    ).ToList()
+                );
+
+                _externalAlphabet = Conversions.AutoLEBytesToInt16
+                (
+                    ToBinary.Utf16
+                    (
+                        externalAlphabet
+                    ).ToList()
+                );
+
+                _shifts = shifts;
+            }
+            public void Set(EncryptionKey reKey)
+            {
+                _primaryAlphabet = Conversions.AutoLEBytesToInt16
+                (
+                    ToBinary.Utf16
+                    (
+                        reKey.PrAlphabet
+                    ).ToList()
+                );
+                _externalAlphabet = Conversions.AutoLEBytesToInt16
+                (
+                    ToBinary.Utf16
+                    (
+                        reKey.ExAlphabet
+                    ).ToList()
+                );
+                _shifts = reKey.Shifts.ToList();
+            }
+
         }
 
 
@@ -945,7 +1016,6 @@ namespace JabrAPI
                         "message"
                     );
                 }
-                return null;
             }
             else if (reKey == null)
             {
@@ -957,17 +1027,17 @@ namespace JabrAPI
                         "reKey"
                     );
                 }
-                return null;
             }
             else if (reKey.IsExternalPartiallyValid(throwException))
             {
                 if (reKey.IsPrimaryValid(message, throwException))
                 {
-                    try { return FastEncrypt(message, reKey); }
-                    catch (Exception innerException)
-                    {
-                        if (throwException) throw innerException;
-                        return null;
+                    try { 
+                        return FastEncrypt(message, reKey); 
+                    }
+
+                    catch (Exception innerException) { 
+                        if (throwException) throw innerException; 
                     }
                 }
             }
@@ -982,7 +1052,6 @@ namespace JabrAPI
                     "Message is invalid - cannot be null or empty",
                     "message"
                 );
-                return null;
             }
             else if (reKey == null)
             {
@@ -991,31 +1060,34 @@ namespace JabrAPI
                     "Encryption key is undefined (null or empty)",
                     "reKey"
                 );
-                return null;
             }
-
-            exception = null;
-            try
+            else
             {
-                reKey.IsExternalPartiallyValid(true);
-                reKey.IsPrimaryValid(message, true);
-                
-                FastEncrypt(message, reKey);
+                try
+                {
+                    reKey.IsExternalPartiallyValid(true);
+                    reKey.IsPrimaryValid(message, true);
+
+                    string result = FastEncrypt(message, reKey);
+                    exception = null;
+
+                    return result;
+                }
+                catch (Exception innerException) { exception = innerException; }
             }
-            catch (Exception innerException) { exception = innerException; }
             return null;
         }
         static public string FastEncrypt(string message, EncryptionKey reKey)
         {
             Int32 exLength = reKey.ExLength, messageLength = message.Length;
-            Int32 shLength = reKey.Shifts != null ? reKey.Shifts.Length : 0;
+            Int32 shCount = reKey.Shifts != null ? reKey.Shifts.Count : 0;
             Int32[] buffer = new Int32[messageLength];
 
             List<Int32> ids = new List<Int32>();
             for (Int32 curChar = 0; curChar < messageLength; curChar++)
-                ids.Add(reKey.PrimaryAlphabet.IndexOf(message[curChar]));
+                ids.Add(reKey.PrAlphabet.IndexOf(message[curChar]));
 
-            if (shLength > 1)
+            if (shCount > 1)
             {
                 buffer[0] = ids[0] + reKey.Shifts[0];
 
@@ -1027,40 +1099,40 @@ namespace JabrAPI
                         (Int32) Math.Ceiling
                         (
                             (float)
-                            (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
-                                reKey.PrimaryAlphabet.Length * 2 + reKey.Shifts.Max() - 4
+                            (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                                reKey.PrLength * 2 + reKey.Shifts.Max() - 4
                             ) / exLength
                         )
                     );
 
                     Int32 bufferId = buffer[0] / exLength;
-                    char encodingDefault = reKey.ExternalAlphabet[0];
+                    char encodingDefault = reKey.ExAlphabet[0];
                     string encoding = "";
                     while (bufferId > 0)
                     {
-                        encoding += reKey.ExternalAlphabet[bufferId % 10];
+                        encoding += reKey.ExAlphabet[bufferId % 10];
                         bufferId /= 10;
                     }
                     for (Int32 extend = encoding.Length; extend < maxEncodingLength; extend++)
                         encoding += encodingDefault;
 
 
-                    string encrypted = reKey.ExternalAlphabet[buffer[0] % exLength] + new string(encoding.Reverse().ToArray());
+                    string encrypted = reKey.ExAlphabet[buffer[0] % exLength] + new string(encoding.Reverse().ToArray());
 
                     for (Int32 curId = 1; curId < messageLength; curId++)
                     {
-                        buffer[curId] = ids[curId] + reKey.Shifts[curId % shLength] + ids[curId - 1];
+                        buffer[curId] = ids[curId] + reKey.Shifts[curId % shCount] + ids[curId - 1];
                         encoding = "";
 
                         while (bufferId > 0)
                         {
-                            encoding += reKey.ExternalAlphabet[bufferId % 10];
+                            encoding += reKey.ExAlphabet[bufferId % 10];
                             bufferId /= 10;
                         }
                         for (Int32 extend = encoding.Length; extend < maxEncodingLength; extend++)
                             encoding += encodingDefault;
 
-                        encrypted += reKey.ExternalAlphabet[buffer[curId] % exLength] + new string(encoding.Reverse().ToArray());
+                        encrypted += reKey.ExAlphabet[buffer[curId] % exLength] + new string(encoding.Reverse().ToArray());
                     }
                     return encrypted;
                 }
@@ -1071,8 +1143,8 @@ namespace JabrAPI
                         Math.Ceiling
                         (
                             (float)
-                            (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
-                                reKey.PrimaryAlphabet.Length * 2 + reKey.Shifts.Max() - 4
+                            (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                                reKey.PrLength * 2 + reKey.Shifts.Max() - 4
                             ) / exLength
                         ).ToString(),
                         10,
@@ -1083,33 +1155,33 @@ namespace JabrAPI
                         (buffer[0] / exLength).ToString(),
                         10,
                         exLength,
-                        reKey.ExternalAlphabet,
+                        reKey.ExAlphabet,
                         maxEncodingLength
                     );
 
 
-                    string encrypted = reKey.ExternalAlphabet[buffer[0] % exLength] + encoding;
+                    string encrypted = reKey.ExAlphabet[buffer[0] % exLength] + encoding;
 
                     for (Int32 curId = 1; curId < messageLength; curId++)
                     {
-                        buffer[curId] = ids[curId] + reKey.Shifts[curId % shLength] + ids[curId - 1];
+                        buffer[curId] = ids[curId] + reKey.Shifts[curId % shCount] + ids[curId - 1];
                         encoding = Numsys.ToCustomAsString
                         (
                             (buffer[curId] / exLength).ToString(),
                             10,
                             exLength,
-                            reKey.ExternalAlphabet,
+                            reKey.ExAlphabet,
                             maxEncodingLength
                         );
 
-                        encrypted += reKey.ExternalAlphabet[buffer[curId] % exLength] + encoding;
+                        encrypted += reKey.ExAlphabet[buffer[curId] % exLength] + encoding;
                     }
                     return encrypted;
                 }
             }
             else
             {
-                Int32 shift = shLength > 0 ? reKey.Shifts[0] : 0;
+                Int32 shift = shCount > 0 ? reKey.Shifts[0] : 0;
                 buffer[0] = ids[0] + shift;
 
                 // Optimisation for base 10 encoding
@@ -1120,25 +1192,25 @@ namespace JabrAPI
                         (Int32)Math.Ceiling
                         (
                             (float)
-                            (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
-                                reKey.PrimaryAlphabet.Length * 2 + shift - 4
+                            (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                                reKey.PrLength * 2 + shift - 4
                             ) / exLength
                         )
                     );
 
                     Int32 bufferId = buffer[0] / exLength;
-                    char encodingDefault = reKey.ExternalAlphabet[0];
+                    char encodingDefault = reKey.ExAlphabet[0];
                     string encoding = "";
                     while (bufferId > 0)
                     {
-                        encoding += reKey.ExternalAlphabet[bufferId % 10];
+                        encoding += reKey.ExAlphabet[bufferId % 10];
                         bufferId /= 10;
                     }
                     for (Int32 extend = encoding.Length; extend < maxEncodingLength; extend++)
                         encoding += encodingDefault;
 
 
-                    string encrypted = reKey.ExternalAlphabet[buffer[0] % exLength] + new string(encoding.Reverse().ToArray());
+                    string encrypted = reKey.ExAlphabet[buffer[0] % exLength] + new string(encoding.Reverse().ToArray());
 
                     for (Int32 curId = 1; curId < messageLength; curId++)
                     {
@@ -1147,13 +1219,13 @@ namespace JabrAPI
 
                         while (bufferId > 0)
                         {
-                            encoding += reKey.ExternalAlphabet[bufferId % 10];
+                            encoding += reKey.ExAlphabet[bufferId % 10];
                             bufferId /= 10;
                         }
                         for (Int32 extend = encoding.Length; extend < maxEncodingLength; extend++)
                             encoding += encodingDefault;
 
-                        encrypted += reKey.ExternalAlphabet[buffer[curId] % exLength] + new string(encoding.Reverse().ToArray());
+                        encrypted += reKey.ExAlphabet[buffer[curId] % exLength] + new string(encoding.Reverse().ToArray());
                     }
                     return encrypted;
                 }
@@ -1164,8 +1236,8 @@ namespace JabrAPI
                         Math.Ceiling
                         (
                             (float)
-                            (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
-                                reKey.PrimaryAlphabet.Length * 2 + shift - 4
+                            (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                                reKey.PrLength * 2 + shift - 4
                             ) / exLength
                         ).ToString(),
                         10,
@@ -1176,12 +1248,12 @@ namespace JabrAPI
                         (buffer[0] / exLength).ToString(),
                         10,
                         exLength,
-                        reKey.ExternalAlphabet,
+                        reKey.ExAlphabet,
                         maxEncodingLength
                     );
 
 
-                    string encrypted = reKey.ExternalAlphabet[buffer[0] % exLength] + encoding;
+                    string encrypted = reKey.ExAlphabet[buffer[0] % exLength] + encoding;
 
                     for (Int32 curId = 1; curId < messageLength; curId++)
                     {
@@ -1191,16 +1263,18 @@ namespace JabrAPI
                             (buffer[curId] / exLength).ToString(),
                             10,
                             exLength,
-                            reKey.ExternalAlphabet,
+                            reKey.ExAlphabet,
                             maxEncodingLength
                         );
 
-                        encrypted += reKey.ExternalAlphabet[buffer[curId] % exLength] + encoding;
+                        encrypted += reKey.ExAlphabet[buffer[curId] % exLength] + encoding;
                     }
                     return encrypted;
                 }
             }
         }
+
+
         static public string EncryptWithConsoleInfo(string message, EncryptionKey reKey)
         {
             try { return UnsafeEncryptWithConsoleInfo(message, reKey); }
@@ -1210,8 +1284,10 @@ namespace JabrAPI
         {
             try
             {
+                string result = UnsafeEncryptWithConsoleInfo(message, reKey);
                 exception = null;
-                return UnsafeEncryptWithConsoleInfo(message, reKey);
+
+                return result;
             }
             catch (Exception innerException)
             {
@@ -1219,24 +1295,24 @@ namespace JabrAPI
                 return null;
             }
         }
-        static public string UnsafeEncryptWithConsoleInfo(string message, EncryptionKey reKey)
+        static private string UnsafeEncryptWithConsoleInfo(string message, EncryptionKey reKey)
         {
             Int32 exLength = reKey.ExLength, messageLength = message.Length;
-            Int32 shLength = reKey.Shifts != null ? reKey.Shifts.Length : 0;
-            Int32[] buffer = new Int32[messageLength], shifts = shLength > 0 ? reKey.Shifts : new Int32[] { 0 };
-            shLength = shLength > 0 ? shLength : 1; //  prevent division by 0
+            Int32 shCount = reKey.Shifts != null ? reKey.ShCount : 0;
+            Int32[] buffer = new Int32[messageLength], shifts = shCount > 0 ? reKey.Shifts.ToArray() : new Int32[] { 0 };
+            shCount = shCount > 0 ? shCount : 1; //  prevent division by 0
 
             List<Int32> ids = new List<Int32>();
             for (Int32 curChar = 0; curChar < messageLength; curChar++)
-                ids.Add(reKey.PrimaryAlphabet.IndexOf(message[curChar]));
+                ids.Add(reKey.PrAlphabet.IndexOf(message[curChar]));
 
             Int32 maxEncodingLength = Numsys.AutoAsList
             (
                 Math.Ceiling
                 (
                     (float)
-                    (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
-                        reKey.PrimaryAlphabet.Length * 2 + shifts.Max() - 4
+                    (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                        reKey.PrLength * 2 + shifts.Max() - 4
                     ) / exLength
                 ).ToString(),
                 10,
@@ -1250,41 +1326,54 @@ namespace JabrAPI
                 (buffer[0] / exLength).ToString(),
                 10,
                 exLength,
-                reKey.ExternalAlphabet,
+                reKey.ExAlphabet,
                 maxEncodingLength
             );
 
 
-            string encrypted = reKey.ExternalAlphabet[buffer[0] % exLength].ToString() + encoding;
+            string encrypted = reKey.ExAlphabet[buffer[0] % exLength].ToString() + encoding;
 
             for (Int32 curId = 1; curId < messageLength; curId++)
             {
-                buffer[curId] = ids[curId] + shifts[curId % shLength] + ids[curId - 1];
+                buffer[curId] = ids[curId] + shifts[curId % shCount] + ids[curId - 1];
                 encoding = Numsys.ToCustomAsString
                 (
                     (buffer[curId] / exLength).ToString(),
                     10,
                     exLength,
-                    reKey.ExternalAlphabet,
+                    reKey.ExAlphabet,
                     maxEncodingLength
                 );
 
-                encrypted += reKey.ExternalAlphabet[buffer[curId] % exLength] + encoding;
+                encrypted += reKey.ExAlphabet[buffer[curId] % exLength] + encoding;
             }
 
-            EncryptingInfo(buffer, exLength, maxEncodingLength, shifts, shLength, ids, encrypted, message, messageLength);
+            EncryptingInfo(buffer, exLength, maxEncodingLength, shifts, shCount, ids, encrypted, message, messageLength);
             return encrypted;
         }
-        static public List<Byte> EncryptToBytes(EncryptionKey reKey)
+        static public List<Byte> EncryptToBytes(string message, EncryptionKey reKey)
+            => EncryptToBytes(message, new BinaryKey(reKey));
+        static public List<Byte> EncryptToBytes(string message, BinaryKey binKey)
         {
-            BinaryReadyKey binReKey = new BinaryReadyKey();
+            List<Int16> encodedMessage = Conversions.AutoLEBytesToInt16
+            (
+                ToBinary.Utf16
+                (
+                    message
+                ).ToList()
+            );
+
+            Int32 exLength = binKey.ExLength, messageLength = message.Length;
+            Int32 shCount = binKey.ShCount;
+            Int32[] buffer = new Int32[messageLength];
+
+            List<Int32> ids = new List<Int32>();
+            for (Int32 curChar = 0; curChar < messageLength; curChar++)
+                ids.Add(binKey.PrAlphabet.IndexOf(encodedMessage[curChar]));
 
             return null;
         }
-        static public List<Byte> EncryptToBytes(BinaryReadyKey binReKey)
-        {
-            return null;
-        }
+
 
 
 
@@ -1300,7 +1389,6 @@ namespace JabrAPI
                         "encMessage"
                     );
                 }
-                return null;
             }
             else if (reKey == null)
             {
@@ -1312,17 +1400,17 @@ namespace JabrAPI
                         "reKey"
                     );
                 }
-                return null;
             }
             else if (reKey.IsPrimaryPartiallyValid(throwException))
             {
                 if (reKey.IsExternalValid(encMessage, throwException))
                 {
-                    try { return FastDecrypt(encMessage, reKey); }
-                    catch (Exception innerException)
-                    {
+                    try { 
+                        return FastDecrypt(encMessage, reKey); 
+                    }
+
+                    catch (Exception innerException) {
                         if (throwException) throw innerException;
-                        return null;
                     }
                 }
             }
@@ -1337,7 +1425,6 @@ namespace JabrAPI
                     "Encrypted message is invalid - cannot be null or empty",
                     "encMessage"
                 );
-                return null;
             }
             else if (reKey == null)
             {
@@ -1346,31 +1433,34 @@ namespace JabrAPI
                     "Encryption key is undefined (null or empty)",
                     "reKey"
                 );
-                return null;
             }
-
-            exception = null;
-            try
+            else
             {
-                reKey.IsPrimaryPartiallyValid(true);
-                reKey.IsExternalValid(encMessage, true);
+                try
+                {
+                    reKey.IsPrimaryPartiallyValid(true);
+                    reKey.IsExternalValid(encMessage, true);
 
-                FastDecrypt(encMessage, reKey);
+                    string result = FastDecrypt(encMessage, reKey);
+                    exception = null;
+
+                    return result;
+                }
+                catch (Exception innerException) { exception = innerException; }
             }
-            catch (Exception innerException) { exception = innerException; }
             return null;
         }
         static public string FastDecrypt(string encMessage, EncryptionKey reKey)
         {
             Int32 exLength = reKey.ExLength, encMessageLength = encMessage.Length;
-            Int32 shLength = reKey.Shifts != null ? reKey.Shifts.Length : 0;
+            Int32 shCount = reKey.Shifts != null ? reKey.ShCount : 0;
             Int32[] buffer = new Int32[encMessageLength];
 
             List<Int32> ids = new List<Int32>();
             for (Int32 curChar = 0; curChar < encMessageLength; curChar++)
-                ids.Add(reKey.ExternalAlphabet.IndexOf(encMessage[curChar]));
+                ids.Add(reKey.ExAlphabet.IndexOf(encMessage[curChar]));
 
-            if (shLength > 1)
+            if (shCount > 1)
             {
                 buffer[0] = ids[0] - reKey.Shifts[0];
 
@@ -1382,8 +1472,8 @@ namespace JabrAPI
                         (Int32)Math.Ceiling
                         (
                             (float)
-                            (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
-                                reKey.PrimaryAlphabet.Length * 2 + reKey.Shifts.Max() - 4
+                            (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                                reKey.PrLength * 2 + reKey.Shifts.Max() - 4
                             ) / exLength
                         )
                     );
@@ -1396,31 +1486,31 @@ namespace JabrAPI
                         encMessage.Substring(1, maxEncodingLength).ToString(),
                         exLength,
                         10,
-                        reKey.ExternalAlphabet
+                        reKey.ExAlphabet
                     );
 
 
                     //  Decode 1st message character
                     Int32.TryParse(encoding, out Int32 parsedEncoding);
                     decodedIds[0] = buffer[0] + parsedEncoding * exLength;
-                    string decrypted = reKey.PrimaryAlphabet[decodedIds[0]].ToString();
+                    string decrypted = reKey.PrAlphabet[decodedIds[0]].ToString();
 
 
                     for (Int32 curId = 1; curId < encMessageLength; curId++)
                     {
-                        buffer[curId] = ids[curId * (maxEncodingLength + 1)] - decodedIds[curId - 1] - reKey.Shifts[curId % shLength];
+                        buffer[curId] = ids[curId * (maxEncodingLength + 1)] - decodedIds[curId - 1] - reKey.Shifts[curId % shCount];
 
                         encoding = Numsys.FromCustomAsString
                         (
                             encMessage.Substring(curId * (maxEncodingLength + 1) + 1, maxEncodingLength).ToString(),
                             exLength,
                             10,
-                            reKey.ExternalAlphabet
+                            reKey.ExAlphabet
                         );
 
                         Int32.TryParse(encoding, out parsedEncoding);
                         decodedIds[curId] = buffer[curId] + parsedEncoding * exLength;
-                        decrypted += reKey.PrimaryAlphabet[decodedIds[curId]].ToString();
+                        decrypted += reKey.PrAlphabet[decodedIds[curId]].ToString();
                     }
 
                     return decrypted;
@@ -1432,8 +1522,8 @@ namespace JabrAPI
                         Math.Ceiling
                         (
                             (float)
-                            (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
-                                reKey.PrimaryAlphabet.Length * 2 + reKey.Shifts.Max() - 4
+                            (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                                reKey.PrLength * 2 + reKey.Shifts.Max() - 4
                             ) / exLength
                         ).ToString(),
                         10,
@@ -1448,31 +1538,31 @@ namespace JabrAPI
                         encMessage.Substring(1, maxEncodingLength).ToString(),
                         exLength,
                         10,
-                        reKey.ExternalAlphabet
+                        reKey.ExAlphabet
                     );
 
 
                     //  Decode 1st message character
                     Int32.TryParse(encoding, out Int32 parsedEncoding);
                     decodedIds[0] = buffer[0] + parsedEncoding * exLength;
-                    string decrypted = reKey.PrimaryAlphabet[decodedIds[0]].ToString();
+                    string decrypted = reKey.PrAlphabet[decodedIds[0]].ToString();
 
 
                     for (Int32 curId = 1; curId < realMessageLength; curId++)
                     {
-                        buffer[curId] = ids[curId * (maxEncodingLength + 1)] - decodedIds[curId - 1] - reKey.Shifts[curId % shLength];
+                        buffer[curId] = ids[curId * (maxEncodingLength + 1)] - decodedIds[curId - 1] - reKey.Shifts[curId % shCount];
 
                         encoding = Numsys.FromCustomAsString
                         (
                             encMessage.Substring(curId * (maxEncodingLength + 1) + 1, maxEncodingLength).ToString(),
                             exLength,
                             10,
-                            reKey.ExternalAlphabet
+                            reKey.ExAlphabet
                         );
 
                         Int32.TryParse(encoding, out parsedEncoding);
                         decodedIds[curId] = buffer[curId] + parsedEncoding * exLength;
-                        decrypted += reKey.PrimaryAlphabet[decodedIds[curId]].ToString();
+                        decrypted += reKey.PrAlphabet[decodedIds[curId]].ToString();
                     }
 
                     return decrypted;
@@ -1480,7 +1570,7 @@ namespace JabrAPI
             }
             else
             {
-                Int32 shift = shLength > 0 ? reKey.Shifts[0] : 0;
+                Int32 shift = shCount > 0 ? reKey.Shifts[0] : 0;
                 buffer[0] = ids[0] - shift;
 
                 // Optimisation for base 10 encoding
@@ -1491,8 +1581,8 @@ namespace JabrAPI
                         (Int32)Math.Ceiling
                         (
                             (float)
-                            (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
-                                reKey.PrimaryAlphabet.Length * 2 + reKey.Shifts.Max() - 4
+                            (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                                reKey.PrLength * 2 + reKey.Shifts.Max() - 4
                             ) / exLength
                         )
                     );
@@ -1505,14 +1595,14 @@ namespace JabrAPI
                         encMessage.Substring(1, maxEncodingLength).ToString(),
                         exLength,
                         10,
-                        reKey.ExternalAlphabet
+                        reKey.ExAlphabet
                     );
 
 
                     //  Decode 1st message character
                     Int32.TryParse(encoding, out Int32 parsedEncoding);
                     decodedIds[0] = buffer[0] + parsedEncoding * exLength;
-                    string decrypted = reKey.PrimaryAlphabet[decodedIds[0]].ToString();
+                    string decrypted = reKey.PrAlphabet[decodedIds[0]].ToString();
 
 
                     for (Int32 curId = 1; curId < encMessageLength; curId++)
@@ -1524,12 +1614,12 @@ namespace JabrAPI
                             encMessage.Substring(curId * (maxEncodingLength + 1) + 1, maxEncodingLength).ToString(),
                             exLength,
                             10,
-                            reKey.ExternalAlphabet
+                            reKey.ExAlphabet
                         );
 
                         Int32.TryParse(encoding, out parsedEncoding);
                         decodedIds[curId] = buffer[curId] + parsedEncoding * exLength;
-                        decrypted += reKey.PrimaryAlphabet[decodedIds[curId]].ToString();
+                        decrypted += reKey.PrAlphabet[decodedIds[curId]].ToString();
                     }
 
                     return decrypted;
@@ -1541,8 +1631,8 @@ namespace JabrAPI
                         Math.Ceiling
                         (
                             (float)
-                            (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
-                                reKey.PrimaryAlphabet.Length * 2 + shift - 4
+                            (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                                reKey.PrLength * 2 + shift - 4
                             ) / exLength
                         ).ToString(),
                         10,
@@ -1557,14 +1647,14 @@ namespace JabrAPI
                         encMessage.Substring(1, maxEncodingLength).ToString(),
                         exLength,
                         10,
-                        reKey.ExternalAlphabet
+                        reKey.ExAlphabet
                     );
 
 
                     //  Decode 1st message character
                     Int32.TryParse(encoding, out Int32 parsedEncoding);
                     decodedIds[0] = buffer[0] + parsedEncoding * exLength;
-                    string decrypted = reKey.PrimaryAlphabet[decodedIds[0]].ToString();
+                    string decrypted = reKey.PrAlphabet[decodedIds[0]].ToString();
 
 
                     for (Int32 curId = 1; curId < realMessageLength; curId++)
@@ -1576,18 +1666,20 @@ namespace JabrAPI
                             encMessage.Substring(curId * (maxEncodingLength + 1) + 1, maxEncodingLength).ToString(),
                             exLength,
                             10,
-                            reKey.ExternalAlphabet
+                            reKey.ExAlphabet
                         );
 
                         Int32.TryParse(encoding, out parsedEncoding);
                         decodedIds[curId] = buffer[curId] + parsedEncoding * exLength;
-                        decrypted += reKey.PrimaryAlphabet[decodedIds[curId]].ToString();
+                        decrypted += reKey.PrAlphabet[decodedIds[curId]].ToString();
                     }
 
                     return decrypted;
                 }
             }
         }
+
+
         static public string DecryptWithConsoleInfo(string encMessage, EncryptionKey reKey)
         {
             try { return UnsafeDecryptWithConsoleInfo(encMessage, reKey); }
@@ -1597,8 +1689,10 @@ namespace JabrAPI
         {
             try
             {
+                string result = UnsafeDecryptWithConsoleInfo(encMessage, reKey);
                 exception = null;
-                return UnsafeDecryptWithConsoleInfo(encMessage, reKey);
+
+                return result;
             }
             catch (Exception innerException)
             {
@@ -1606,15 +1700,15 @@ namespace JabrAPI
                 return null; 
             }
         }
-        static public string UnsafeDecryptWithConsoleInfo(string encMessage, EncryptionKey reKey)
+        static private string UnsafeDecryptWithConsoleInfo(string encMessage, EncryptionKey reKey)
         {
             Int32 exLength = reKey.ExLength, encMessageLength = encMessage.Length;
-            Int32 shLength = reKey.Shifts != null ? reKey.Shifts.Length : 0;
+            Int32 shCount = reKey.Shifts != null ? reKey.ShCount : 0;
             Int32[] buffer = new Int32[encMessageLength];
 
             List<Int32> ids = new List<Int32>();
             for (Int32 curChar = 0; curChar < encMessageLength; curChar++)
-                ids.Add(reKey.ExternalAlphabet.IndexOf(encMessage[curChar]));
+                ids.Add(reKey.ExAlphabet.IndexOf(encMessage[curChar]));
 
             buffer[0] = ids[0] - reKey.Shifts[0];
 
@@ -1623,8 +1717,8 @@ namespace JabrAPI
                 Math.Ceiling
                 (
                     (float)
-                    (   //  Numer 4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
-                        reKey.PrimaryAlphabet.Length * 2 + reKey.Shifts.Max() - 4
+                    (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                        reKey.PrLength * 2 + reKey.Shifts.Max() - 4
                     ) / exLength
                 ).ToString(),
                 10,
@@ -1639,34 +1733,34 @@ namespace JabrAPI
                 encMessage.Substring(1, maxEncodingLength).ToString(),
                 exLength,
                 10,
-                reKey.ExternalAlphabet
+                reKey.ExAlphabet
             );
 
 
             //  Decode 1st message character
             Int32.TryParse(encoding, out Int32 parsedEncoding);
             decodedIds[0] = buffer[0] + parsedEncoding * exLength;
-            string decrypted = reKey.PrimaryAlphabet[decodedIds[0]].ToString();
+            string decrypted = reKey.PrAlphabet[decodedIds[0]].ToString();
 
 
             for (Int32 curId = 1; curId < realMessageLength; curId++)
             {
-                buffer[curId] = ids[curId * (maxEncodingLength + 1)] - decodedIds[curId - 1] - reKey.Shifts[curId % shLength];
+                buffer[curId] = ids[curId * (maxEncodingLength + 1)] - decodedIds[curId - 1] - reKey.Shifts[curId % shCount];
 
                 encoding = Numsys.FromCustomAsString
                 (
                     encMessage.Substring(curId * (maxEncodingLength + 1) + 1, maxEncodingLength).ToString(),
                     exLength,
                     10,
-                    reKey.ExternalAlphabet
+                    reKey.ExAlphabet
                 );
 
                 Int32.TryParse(encoding, out parsedEncoding);
                 decodedIds[curId] = buffer[curId] + parsedEncoding * exLength;
-                decrypted += reKey.PrimaryAlphabet[decodedIds[curId]].ToString();
+                decrypted += reKey.PrAlphabet[decodedIds[curId]].ToString();
             }
 
-            DecryptingInfo(buffer, exLength, maxEncodingLength, reKey.Shifts, shLength, ids, decodedIds, encMessage, decrypted, realMessageLength);
+            DecryptingInfo(buffer, exLength, maxEncodingLength, reKey.Shifts.ToArray(), shCount, ids, decodedIds, encMessage, decrypted, realMessageLength);
             return decrypted;
 
         }
@@ -1687,9 +1781,17 @@ namespace JabrAPI
 
 
 
+        static private Int32 DigitsAmount(Int32 number)
+        {
+            if (number >= 0) return DigitsInPositive(number);
+            else return number > -10 ? 1 : number > -100 ? 2 : number > -1000 ? 3 : number > -10000 ? 4 : 5;
+        }
+        static private Int32 DigitsInPositive(Int32 posNumber)
+            => posNumber < 10 ? 1 : posNumber < 100 ? 2 : posNumber < 1000 ? 3 : posNumber < 10000 ? 4 : 5;
+        
 
 
-        static private void EncryptingInfo(Int32[] buffer, Int32 exLength, Int32 maxEncodingLength, Int32[] shifts, Int32 shLength, List<Int32> ids, string encrypted, string message, Int32 messageLength)
+        static private void EncryptingInfo(Int32[] buffer, Int32 exLength, Int32 maxEncodingLength, Int32[] shifts, Int32 shCount, List<Int32> ids, string encrypted, string message, Int32 messageLength)
         {
             //  margin = for ids, bf = buffer, sh = shifts, el = externalAlphabet.Length, sz = message length
             Int32 margin   = DigitsAmount(ids.Max());
@@ -1745,9 +1847,9 @@ namespace JabrAPI
                 ForegroundColor = ConsoleColor.Gray;
                 Write(") = ");
 
-                for (Int32 ext = DigitsAmount(shifts[curId % shLength]); ext < marginSh; ext++) Write(" ");
-                ForegroundColor = shifts[curId % shLength] == 0 ? ConsoleColor.Red : ConsoleColor.Cyan;
-                Write(shifts[curId % shLength]);
+                for (Int32 ext = DigitsAmount(shifts[curId % shCount]); ext < marginSh; ext++) Write(" ");
+                ForegroundColor = shifts[curId % shCount] == 0 ? ConsoleColor.Red : ConsoleColor.Cyan;
+                Write(shifts[curId % shCount]);
                 ForegroundColor = ConsoleColor.Gray;
                 Write(" + ");
 
@@ -1793,7 +1895,7 @@ namespace JabrAPI
             }
             ForegroundColor = ConsoleColor.Gray;
         }
-        static private void DecryptingInfo(Int32[] buffer, Int32 exLength, Int32 maxEncodingLength, Int32[] shifts, Int32 shLength, List<Int32> ids, Int32[] decodedIds, string encrypted, string decrypted, Int32 messageLength)
+        static private void DecryptingInfo(Int32[] buffer, Int32 exLength, Int32 maxEncodingLength, Int32[] shifts, Int32 shCount, List<Int32> ids, Int32[] decodedIds, string encrypted, string decrypted, Int32 messageLength)
         {
             //  margin = for ids, bf = buffer, sh = shifts, el = externalAlphabet.Length, sz = message length, en = parsed encoding
             Int32 margin   = DigitsAmount(ids.Max()), marginEn = DigitsAmount(decodedIds.Max() - buffer.Min());
@@ -1832,8 +1934,10 @@ namespace JabrAPI
             Write(ids[0]);
             ForegroundColor = ConsoleColor.Gray;
 
-            for (Int32 ext = 0; ext < margin + marginEn; ext++) Write(" ");
-            Write("    out: ");
+            for (Int32 ext = 0; ext < marginBf + margin * 2 + marginEn; ext++) Write(" ");
+            Write("out: ");
+            //for (Int32 ext = 0; ext < margin * 2; ext++) Write(" ");
+            //Write("   out: ");
             ForegroundColor = ConsoleColor.DarkCyan;
             Write(decrypted[0]);
             ForegroundColor = ConsoleColor.Gray;
@@ -1862,9 +1966,9 @@ namespace JabrAPI
                 ForegroundColor = ConsoleColor.Gray;
                 Write(" - ");
 
-                for (Int32 ext = DigitsAmount(shifts[curId % shLength]); ext < marginSh; ext++) Write(" ");
-                ForegroundColor = shifts[curId % shLength] == 0 ? ConsoleColor.Red : ConsoleColor.Cyan;
-                Write(shifts[curId % shLength]);
+                for (Int32 ext = DigitsAmount(shifts[curId % shCount]); ext < marginSh; ext++) Write(" ");
+                ForegroundColor = shifts[curId % shCount] == 0 ? ConsoleColor.Red : ConsoleColor.Cyan;
+                Write(shifts[curId % shCount]);
                 ForegroundColor = ConsoleColor.Gray;
                 Write(" + ");
 
@@ -1917,16 +2021,6 @@ namespace JabrAPI
             ForegroundColor = ConsoleColor.Gray;
             Write("\n\tReadable:  " + decrypted);
         }
-
-
-        static private Int32 DigitsAmount(Int32 number)
-        {
-            if (number >= 0) return DigitsInPositive(number);
-            else return number > -10 ? 1 : number > -100 ? 2 : number > -1000 ? 3 : number > -10000 ? 4 : 5;
-        }
-        static private Int32 DigitsInPositive(Int32 posNumber)
-        {
-            return posNumber < 10 ? 1 : posNumber < 100 ? 2 : posNumber < 1000 ? 3 : posNumber < 10000 ? 4 : 5;
-        }
+    
     }
 }
