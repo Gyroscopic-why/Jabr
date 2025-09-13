@@ -28,7 +28,7 @@ namespace JabrAPI.Source
             Write("\n\tFast:      ");
             if (fast.Length < debug.Length)
             {
-                for (Int32 curId = 0; curId < fast.Length; curId++)
+                for (var curId = 0; curId < fast.Length; curId++)
                 {
                     if (fast[curId] == debug[curId]) ForegroundColor = ConsoleColor.DarkGreen;
                     else ForegroundColor = ConsoleColor.DarkRed;
@@ -51,7 +51,7 @@ namespace JabrAPI.Source
                 ForegroundColor = ConsoleColor.Gray;
                 Write("\n\tDebug:     ");
 
-                for (Int32 curId = 0; curId < debug.Length; curId++)
+                for (var curId = 0; curId < debug.Length; curId++)
                 {
                     if (debug[curId] == fast[curId]) ForegroundColor = ConsoleColor.DarkGreen;
                     else ForegroundColor = ConsoleColor.DarkRed;
