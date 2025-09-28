@@ -7,9 +7,12 @@ namespace JabrAPI.Source
 {
     internal class Demo
     {
-        static public bool AlgorithmTest(string fast, string debug)
+        static public bool AlgorithmTest(string fast, string debug, string fromBin, bool writeDebug = false)
         {
-            bool result = fast == debug;
+            bool result = fast == debug && fast == fromBin;
+            if (!writeDebug) return result;
+
+
 
             Write("\n\n\tAlgorithm test: ");
             if (result)
@@ -58,6 +61,16 @@ namespace JabrAPI.Source
                     Write(debug[curId]);
                 }
             }
+
+            ForegroundColor = ConsoleColor.Gray;
+            Write("\n\tFromBin:   ");
+            for (var curId = 0; curId < Math.Min(fromBin.Length, debug.Length); curId++)
+            {
+                if (fromBin[curId] == debug[curId]) ForegroundColor = ConsoleColor.Green;
+                else ForegroundColor = ConsoleColor.Red;
+                Write(fromBin[curId]);
+            }
+            
 
             ForegroundColor = ConsoleColor.Gray;
             Write("\n\n");
