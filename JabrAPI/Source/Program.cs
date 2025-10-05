@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Text;
-using System.Collections.Generic;
 
 using static System.Console;
 
 
-using AVcontrol;
 using JabrAPI.Source;
+using AVcontrol;
 
 
 
@@ -16,6 +14,10 @@ namespace JabrAPI
     {
         static void Main()
         {
+            TestBenchmarker.DecryptBenchmark();
+            Write("\n\n\n\t\t\tDecrypt benchmark finished. Press any key to launch full benchmark suite");
+            ReadKey();
+
             TestBenchmarker.Run();
         }
     }

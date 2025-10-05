@@ -9,6 +9,7 @@ using static System.Console;
 
 using JabrAPI.Source;
 using AVcontrol;
+using System.Linq;
 
 
 
@@ -16,6 +17,57 @@ namespace JabrAPI
 {
     public class TestBenchmarker
     {
+        static public void DecryptBenchmark()
+        {
+            Write("\n\n\n\t\t\tDecrypt benchmark running!");
+            RE5.EncryptionKey reKey = new RE5.EncryptionKey(256);
+            reKey.Next();
+            Write($"\n\t\t\tEncryption key: ex={reKey.ExAlphabet}, sh={reKey.ShAmount}, pr={reKey.PrAlphabet}\n");
+
+            List<Int64> ms = new List<Int64>();
+            const Int32 totalAttempts = 100;
+            
+
+            for (var attempt = 0; attempt < totalAttempts; attempt++)
+            {
+                string enc = RE5.FastEncrypt("Aboba", reKey);
+                Stopwatch timer = new Stopwatch();
+
+                if (attempt % 2 == 0)
+                {
+                    Write("\n\t\t\tFAST   - ");
+                    timer.Start();
+                    for (var i = 0; i < 1_000_000; i++) _ = RE5.FastDecrypt(enc, reKey);
+                }
+                else
+                {
+                    Write("\n\t\t\tINFO   - ");
+                    timer.Start();
+                    for (var i = 0; i < 1_000_000; i++) _ = RE5.DecryptWithConsoleInfo(enc, reKey, false);
+                }
+
+                timer.Stop();
+                ms.Add(timer.ElapsedMilliseconds);
+
+                Write($"\tAttempt {attempt + 1})\t DECRYPT     1m: {timer.ElapsedMilliseconds / 1000}.{timer.ElapsedMilliseconds % 1000}");
+
+                if (attempt % 10 == 9)
+                {
+                    Write("\n\t\t\tRefreshing key...");
+                    reKey.Next();
+                }
+            }
+
+            Int64 min = ms.Min(), max = ms.Max(), sum = ms.Sum();
+            double avg = ms.Average();
+
+            Write($"\n\n\t\t\tBenchmark finished, Interval: {min/1000}.{min%1000}-{max/1000}.{max%1000}, average: {(Int64)avg/1000}.{(Int64)avg%1000}");
+            Write("\n\t\t\tTotal time elapsed for " + totalAttempts + "m operations: " + sum / 1000 + "." + sum % 1000);
+        }
+
+
+
+
         static public void Run()
         {
             new Thread(new ThreadStart(CheckKeys))
