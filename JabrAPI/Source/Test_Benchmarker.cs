@@ -24,47 +24,78 @@ namespace JabrAPI
             reKey.Next();
             Write($"\n\t\t\tEncryption key: ex={reKey.ExAlphabet}, sh={reKey.ShAmount}, pr={reKey.PrAlphabet}\n");
 
-            List<Int64> ms = new List<Int64>();
-            const Int32 totalAttempts = 100;
-            
 
-            for (var attempt = 0; attempt < totalAttempts; attempt++)
+            for (var hide = 0; hide < 1; hide++)
             {
-                string enc = RE5.FastEncrypt("Aboba", reKey);
+                List<Int64> ms1 = new List<Int64>(), ms2 = new List<Int64>();
                 Stopwatch timer = new Stopwatch();
+                string enc = RE5.FastEncrypt("Aboba", reKey);
+                const Int64 totalAttempts = 100, iterationsPerAttempt = 1_000_000;
+                Write($"\n\n\n\t\t[i]  - Starting benchmark of {totalAttempts * iterationsPerAttempt / 1_000_000}m message decrypt");
 
-                if (attempt % 2 == 0)
+                for (var warmup = 0;  warmup  < iterationsPerAttempt; warmup++) _ = RE5.FastDecrypt(enc, reKey);
+                for (var attempt = 0; attempt < totalAttempts; attempt++)
                 {
-                    Write("\n\t\t\tFAST   - ");
-                    timer.Start();
-                    for (var i = 0; i < 1_000_000; i++) _ = RE5.FastDecrypt(enc, reKey);
-                }
-                else
-                {
-                    Write("\n\t\t\tINFO   - ");
-                    timer.Start();
-                    for (var i = 0; i < 1_000_000; i++) _ = RE5.DecryptWithConsoleInfo(enc, reKey, false);
+                    if (attempt % 2 == 0)
+                    {
+                        Write("\n\t\t\tFAST   - ");
+                        timer.Start();
+                        for (var i = 0; i < iterationsPerAttempt; i++) _ = RE5.FastDecrypt(enc, reKey);
+
+                        timer.Stop();
+                        ms1.Add(timer.ElapsedMilliseconds);
+                    }
+                    else
+                    {
+                        Write("\n\t\t\tINFO   - ");
+                        timer.Start();
+                        for (var i = 0; i < iterationsPerAttempt; i++) _ = RE5.DecryptWithConsoleInfo(enc, reKey, false);
+
+                        timer.Stop();
+                        ms2.Add(timer.ElapsedMilliseconds);
+                    }
+
+                    string elapsed = ((double)timer.ElapsedMilliseconds / 1000).ToString().Replace(",", ".");
+                    Write($"\tAttempt {attempt + 1})\t       operations: {iterationsPerAttempt / 1_000_000}m: {elapsed}");
+                    timer.Reset();
+
+                    if (attempt % 10 == 9)
+                    {
+                        Write("\n\t\t\tRefreshing key...");
+                        reKey.Next();
+                        enc = RE5.FastEncrypt("aboba", reKey);
+                    }
                 }
 
-                timer.Stop();
-                ms.Add(timer.ElapsedMilliseconds);
+                double min1 = (double)ms1.Min() / 1000, max1 = (double)ms1.Max() / 1000;
+                double min2 = (double)ms2.Min() / 1000, max2 = (double)ms2.Max() / 1000;
+                double sum1 = (double)ms1.Sum() / 1000, sum2 = (double)ms2.Sum() / 1000;
+                double avg1 = ms1.Average() / 1000, avg2 = ms2.Average() / 1000, avgGlobal = (avg1 + avg2) / 2;
 
-                Write($"\tAttempt {attempt + 1})\t DECRYPT     1m: {timer.ElapsedMilliseconds / 1000}.{timer.ElapsedMilliseconds % 1000}");
+                bool isFirst1 = min1 < min2, isFirst2 = max1 > max2;
 
-                if (attempt % 10 == 9)
-                {
-                    Write("\n\t\t\tRefreshing key...");
-                    reKey.Next();
-                }
+                string i1 = min1.ToString().Replace(",", "."), a1 = max1.ToString().Replace(",", ".");
+                string i2 = min2.ToString().Replace(",", "."), a2 = max2.ToString().Replace(",", ".");
+                string v1 = avg1.ToString().Replace(",", "."), v2 = avg2.ToString().Replace(",", "."), v3 = avgGlobal.ToString().Replace(",", ".");
+                string s1 = sum1.ToString().Replace(",", "."), s2 = sum2.ToString().Replace(",", "."), s3 = (sum1 + sum2).ToString().Replace(",", ".");
+
+                Write("\n\n\t\t\tBenchmark finished");
+                Write($"\n\t\tFAST       - {iterationsPerAttempt / 1_000_000}m operations   interval: {i1}-{a1}, average: {v1}");
+                Write($"\n\t\tINFO       - {iterationsPerAttempt / 1_000_000}m operations   interval: {i2}-{a2}, average: {v2}");
+                Write($"\n\t\tGLOBAL     - {iterationsPerAttempt / 1_000_000}m operations   interval: ");
+
+                if (isFirst1) Write($"{i1}-");
+                else Write($"{i2}-");
+                if (isFirst2) Write($"{a1}, average: {v3}");
+                else Write($"{a2}, average: {v3}");
+
+                Write("\n\n\n\t\t\tTotal time elapsed for");
+                Write($"\n\t\tFAST       - {totalAttempts * iterationsPerAttempt / 1_000_000}m operations: {s1}");
+                Write($"\n\t\tINFO       - {totalAttempts * iterationsPerAttempt / 1_000_000}m operations: {s2}");
+                Write($"\n\t\tGLOBAL     - {totalAttempts * iterationsPerAttempt / 1_000_000}m operations: {s3}");
+                ReadKey();
             }
-
-            Int64 min = ms.Min(), max = ms.Max(), sum = ms.Sum();
-            double avg = ms.Average();
-
-            Write($"\n\n\t\t\tBenchmark finished, Interval: {min/1000}.{min%1000}-{max/1000}.{max%1000}, average: {(Int64)avg/1000}.{(Int64)avg%1000}");
-            Write("\n\t\t\tTotal time elapsed for " + totalAttempts + "m operations: " + sum / 1000 + "." + sum % 1000);
         }
-
 
 
 
@@ -243,7 +274,7 @@ namespace JabrAPI
                     else
                     {
                         num += 1UL;
-                        if (num % 16384UL == 0UL)
+                        if (num % 8192UL == 0UL)
                         {
                             long num2 = stopwatch.ElapsedMilliseconds;
                             long num3 = num2 / 1000L;
