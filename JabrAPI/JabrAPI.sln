@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36221.1 d17.14
+VisualStudioVersion = 17.14.36603.0 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JabrAPI", "JabrAPI.csproj", "{3F7E33B0-8CB7-4048-A583-FA527814A5D0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JabrAPI", "JabrAPI.csproj", "{4696CE4B-B7BC-4677-A394-849AE7B7358B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3F7E33B0-8CB7-4048-A583-FA527814A5D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3F7E33B0-8CB7-4048-A583-FA527814A5D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3F7E33B0-8CB7-4048-A583-FA527814A5D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3F7E33B0-8CB7-4048-A583-FA527814A5D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4696CE4B-B7BC-4677-A394-849AE7B7358B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4696CE4B-B7BC-4677-A394-849AE7B7358B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4696CE4B-B7BC-4677-A394-849AE7B7358B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4696CE4B-B7BC-4677-A394-849AE7B7358B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {1CF3F51F-6CE7-4109-8181-23FB63D4EFA4}
+		SolutionGuid = {235AB712-4B9B-4A15-9508-BD308525D272}
 	EndGlobalSection
 EndGlobal

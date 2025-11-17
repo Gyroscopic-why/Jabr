@@ -89,7 +89,7 @@ namespace JabrAPI.Source
         static public void Run()
         {
             //string aboba = "aboba";
-            string exitFlag = "";
+            string? exitFlag = "";
 
             while (exitFlag != "0")
             {

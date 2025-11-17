@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <StartupObject>JabrAPI.Program</StartupObject>
+    <PublishAot>True</PublishAot>
+    <SignAssembly>True</SignAssembly>
+    <Title>JabrAPI</Title>
+    <Version>5.0.0</Version>
+    <Authors>Gyroscopic</Authors>
+    <Description>API for RE ciphers from the Jabr family</Description>
+    <PackageProjectUrl>https://github.com/Gyroscopic-why/Jabr</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Gyroscopic-why/Jabr</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>cryptography;ciphers;encryptor;encryption;decryption;re;re5;re4</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="AVcontrol">
+      <HintPath>..\lib\AVcontrol.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

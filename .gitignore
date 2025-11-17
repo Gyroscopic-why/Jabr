@@ -294,7 +294,6 @@ __pycache__/
 *.suo
 *.cache
 *.json
-*.csproj
 *.csproj.FileListAbsolute.txt
 *.AssemblyAttributes.cs
 *.targets
