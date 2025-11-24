@@ -2,10 +2,9 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <StartupObject>JabrAPI.Program</StartupObject>
     <PublishAot>True</PublishAot>
     <SignAssembly>True</SignAssembly>
     <Title>JabrAPI</Title>
@@ -16,6 +15,8 @@
     <RepositoryUrl>https://github.com/Gyroscopic-why/Jabr</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>cryptography;ciphers;encryptor;encryption;decryption;re;re5;re4</PackageTags>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <DelaySign>False</DelaySign>
   </PropertyGroup>
 
   <ItemGroup>

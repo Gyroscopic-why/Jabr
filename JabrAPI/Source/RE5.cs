@@ -111,7 +111,7 @@ namespace JabrAPI
                 }
 
                 string result = _primaryAlphabet + splitBy + _externalAlphabet + splitBy;
-                for (Int32 curId = 0; curId < _shifts.Count - 1; curId++) result += _shifts[curId] + splitShifts;
+                for (var curId = 0; curId < _shifts.Count - 1; curId++) result += _shifts[curId] + splitShifts;
                 if (_shifts.Count > 0) result += _shifts[^1];
 
                 return result;
@@ -131,7 +131,7 @@ namespace JabrAPI
                 string result = _primaryAlphabet.Length + _primaryAlphabet
                              + _externalAlphabet.Length + _externalAlphabet;
 
-                for (Int32 curId = 0; curId < _shifts.Count - 1; curId++)
+                for (var curId = 0; curId < _shifts.Count - 1; curId++)
                     result += _shifts[curId] + " ";
                 if (_shifts.Count > 0) result += _shifts[^1];
 
@@ -139,74 +139,38 @@ namespace JabrAPI
             }
             public List<Byte> ExportAsBinaryBE()
             {
-                List<Byte> result = [];
+                List<Byte> result = [.. ToBinary.BigEndian(_shifts.Count)];
 
-                Byte[] buffer = ToBinary.BigEndian(_shifts.Count), bufferLength;
-                for (Int32 id = 0; id < 4; id++) result.Add(buffer[id]);
-
-                for (Int32 curId = 0; curId < _shifts.Count; curId++)
-                {
-                    buffer = ToBinary.BigEndian(_shifts[curId]);
-
-                    for (Int32 id = 0; id < 4; id++) result.Add(buffer[id]);
-                }
-
-
-
-                buffer = ToBinary.Utf8(_primaryAlphabet);
-                bufferLength = ToBinary.BigEndian(buffer.Length);
-                for (Int32 id = 0; id < 4; id++) result.Add(bufferLength[id]);
-                for (Int32 id = 0; id < 4; id++) result.Add(buffer[id]);
-
-
+                for (var curId = 0; curId < _shifts.Count; curId++)
+                    result.AddRange(ToBinary.BigEndian(_shifts[curId]));
+                
+                Byte[] buffer = ToBinary.Utf8(_primaryAlphabet);
+                result.AddRange(ToBinary.BigEndian(buffer.Length));
+                result.AddRange(buffer);
 
                 buffer = ToBinary.Utf8(_externalAlphabet);
-                bufferLength = ToBinary.BigEndian(buffer.Length);
-                for (Int32 id = 0; id < 4; id++) result.Add(bufferLength[id]);
-                for (Int32 id = 0; id < 4; id++) result.Add(buffer[id]);
-
+                result.AddRange(ToBinary.BigEndian(buffer.Length));
+                result.AddRange(buffer);
 
                 return result;
             }
             public List<Byte> ExportAsBinaryLE()
             {
-                List<Byte> result = [];
+                List<Byte> result = [.. ToBinary.LittleEndian(_shifts.Count)];
 
-                Byte[] buffer = ToBinary.LittleEndian(_shifts.Count), bufferLength;
-                for (Int32 id = 0; id < 4; id++) result.Add(buffer[id]);
+                for (var curId = 0; curId < _shifts.Count; curId++)
+                    result.AddRange(ToBinary.LittleEndian(_shifts[curId]));
 
-
-                for (Int32 curId = 0; curId < _shifts.Count; curId++)
-                {
-                    buffer = ToBinary.LittleEndian(_shifts[curId]);
-                    
-                    for (Int32 id = 0; id < 4; id++) result.Add(buffer[id]);
-                }
-
-
-
-                buffer = ToBinary.Utf8(_primaryAlphabet);
-                bufferLength = ToBinary.LittleEndian(buffer.Length);
-
-                for (Int32 id = 0; id < 4; id++) 
-                    result.Add(bufferLength[id]);
-                for (Int32 curId = 0; curId < buffer.Length; curId++)
-                    result.Add(buffer[curId]);
-
-
+                Byte[] buffer = ToBinary.Utf8(_primaryAlphabet);
+                result.AddRange(ToBinary.LittleEndian(buffer.Length));
+                result.AddRange(buffer);
 
                 buffer = ToBinary.Utf8(_externalAlphabet);
-                bufferLength = ToBinary.LittleEndian(buffer.Length);
-
-                for (Int32 id = 0; id < 4; id++) 
-                    result.Add(bufferLength[id]);
-                for (Int32 curId = 0; curId < buffer.Length; curId++)
-                    result.Add(buffer[curId]);
-
+                result.AddRange(ToBinary.LittleEndian(buffer.Length));
+                result.AddRange(buffer);
 
                 return result;
             }
-
 
 
 
@@ -297,9 +261,9 @@ namespace JabrAPI
                     }
                     return false;
                 }
-                for (Int32 curId = 0; curId < external.Length; curId++)
+                for (var curId = 0; curId < external.Length; curId++)
                 {
-                    for (Int32 id2 = curId + 1; id2 < external.Length; id2++)
+                    for (var id2 = curId + 1; id2 < external.Length; id2++)
                     {
                         if (external[curId] == external[id2])
                         {
