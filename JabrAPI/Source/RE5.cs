@@ -118,8 +118,8 @@ namespace JabrAPI
             }
             public string ExportAsString()
             {
-                if (!Byte.TryParse(_primaryAlphabet[0].ToString(), out _) ||
-                    !Byte.TryParse(_externalAlphabet[0].ToString(), out _))
+                if (Byte.TryParse(_primaryAlphabet[0].ToString(), out _) ||
+                    Byte.TryParse(_externalAlphabet[0].ToString(), out _))
                 {
                     throw new ArgumentException
                     (
@@ -887,7 +887,6 @@ namespace JabrAPI
             public void GenerateRandomShifts()
                 => GenerateRandomShifts(_random.Next(256, 512));
         }
-
         public class BinaryKey
         {
             private List<Int16> _primaryAlphabet  = [];

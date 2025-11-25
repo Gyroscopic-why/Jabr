@@ -124,7 +124,7 @@ namespace JabrAPI.Source
                 //Write("\n\tShifts count: " + reKey.Shifts.Length);
 
                 /*Write("\n\tShifts:   ");
-                for (Int32 curShift = 0; curShift < reKey.Shifts.Length; curShift++) 
+                for (var curShift = 0; curShift < reKey.Shifts.Length; curShift++) 
                     Write(reKey.Shifts[curShift] + " ");*/
 
                 string enc = RE5.Encrypt(msg, reKey, true);

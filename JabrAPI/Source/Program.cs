@@ -21,20 +21,43 @@ namespace JabrAPI
 
             //TestBenchmarker.Run();
 
+            RE4.EncryptionKey reKey = new();
+            string initial = "aboba aboba aboba";
 
-            RE4.EncryptionKey reKey = new("abcdefghijklmno", 1);
-            //reKey.Next();
+            Write("\n\n\t\t\tStarting benchmark...");
+            for (var i = 1; i < 10_000; i++)
+            {
+                reKey.Next();
 
-            Write("\n\tGenerated RE4 Key: " + reKey.Alphabet);
+                string dec3 = RE3.FastDecrypt(RE3.FastEncrypt(initial, reKey), reKey);
+                if (dec3 != initial)
+                {
+                    Write("\n\n\t\t\tRE3: Something went wrong at iteration " + i);
+                    Write("\n\tExpected: " + initial);
+                    Write("\n\tGot: " + dec3);
+                    Write("\n\tReKey: " + reKey);
+                    ReadKey();
+                    return;
+                }
 
-            string aboba = "aboba";
-            string enc = RE4.Encrypt(aboba, reKey);
+                string dec4 = RE4.FastDecrypt(RE4.FastEncrypt(initial, reKey), reKey);
+                if (dec4 != initial)
+                {
+                    Write("\n\n\t\t\tRE4: Something went wrong at iteration " + i);
+                    Write("\n\tExpected: " + initial);
+                    Write("\n\tGot: " + dec4);
+                    Write("\n\tReKey: " + reKey);
+                    ReadKey();
+                    return;
+                }
 
-            Write("\n\tEncrypted: " + enc);
+                if (i % 1000 == 0)
+                {
+                    Write("\n\t\tCompleted iteration " + i + ", no problems so far!");
+                }
+            }
 
-            string dec = RE4.Decrypt(enc, reKey);
-            Write("\n\tDecrypted: " + dec);
-
+            Write("\n\n\t\tBenchmark finished, no problems :) ");
             ReadKey();
         }
     }

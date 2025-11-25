@@ -1,8 +1,9 @@
-﻿using AVcontrol;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Text;
+using System.Collections.Generic;
+
+
+using AVcontrol;
 using static JabrAPI.Source.Template;
 
 
@@ -13,26 +14,26 @@ namespace JabrAPI
     {
         public class EncryptionKey : IEncryptionKey
         {
-            private string _alphabet = "";
-            private List<char> _necessary = [], _allowed = [], _banned = [];
-            private Int32 _alphabetMaxLength = -1;
+            protected string _alphabet = "";
+            protected List<char> _necessary = [], _allowed = [], _banned = [];
+            protected Int32 _alphabetMaxLength = -1;
 
-            public EncryptionKey(string primaryAlphabet, List<Int32> shifts)
+            public EncryptionKey(string alphabet, List<Int32> shifts)
             {
-                _alphabet = primaryAlphabet;
+                _alphabet = alphabet;
 
                 _shifts.Clear();
                 if (shifts == null || shifts.Count == 0) _shifts.Add(0);
                 else _shifts.AddRange(shifts);
             }
-            public EncryptionKey(string primaryAlphabet, Int32 shift)
+            public EncryptionKey(string alphabet, Int32 shift)
             {
-                _alphabet = primaryAlphabet;
+                _alphabet = alphabet;
 
                 _shifts.Clear();
                 _shifts.Add(shift);
             }
-            public EncryptionKey(string primaryAlphabet) => _alphabet = primaryAlphabet;
+            public EncryptionKey(string alphabet) => _alphabet = alphabet;
             public EncryptionKey(Int32 shiftCount) => _shCount = shiftCount;
             public EncryptionKey(BinaryKey binKey)
             {
@@ -55,8 +56,8 @@ namespace JabrAPI
 
 
             public string Alphabet => _alphabet;
-            public Int32  AlphabetLength => _alphabet == null ? -1 : _alphabet.Length;
-            
+            public Int32 AlphabetLength => _alphabet == null ? -1 : _alphabet.Length;
+
 
 
             override public string ExportAsString(string splitBy, string splitShifts = " ")
@@ -103,7 +104,7 @@ namespace JabrAPI
 
                 for (var curId = 0; curId < _shifts.Count; curId++)
                     result.AddRange(ToBinary.BigEndian(_shifts[curId]));
-                
+
                 Byte[] buffer = ToBinary.Utf8(_alphabet);
                 result.AddRange(ToBinary.BigEndian(buffer.Length));
                 result.AddRange(buffer);
@@ -177,19 +178,19 @@ namespace JabrAPI
             public void SetDefault(List<char> necessary, List<char> allowed, List<char> banned, Int32 maxLength)
             {
                 _necessary = necessary;
-                _allowed = allowed;
-                _banned = banned;
+                _allowed   = allowed;
+                _banned    = banned;
 
                 _alphabetMaxLength = maxLength;
             }
             public void SetDefault(string necessary, string allowed, string banned, Int32 maxLength)
-                => SetDefault([.. necessary], [.. allowed], [..banned], maxLength);
+                => SetDefault([.. necessary], [.. allowed], [.. banned], maxLength);
 
 
             public void SetDefault(List<char> necessary, List<char> allowed, Int32 maxLength)
             {
                 _necessary = necessary;
-                _allowed = allowed;
+                _allowed   = allowed;
 
                 _alphabetMaxLength = maxLength;
             }
@@ -200,7 +201,7 @@ namespace JabrAPI
             public void SetDefault(Int32 maxLength, List<char> necessary, List<char> banned)
             {
                 _necessary = necessary;
-                _banned = banned;
+                _banned    = banned;
 
                 _alphabetMaxLength = maxLength;
             }
@@ -226,7 +227,7 @@ namespace JabrAPI
 
                 _alphabetMaxLength = _necessary.Count;
             }
-            private void Default()
+            protected void Default()
             {
                 SetDefault();
                 GenerateAll();
@@ -348,8 +349,8 @@ namespace JabrAPI
                     ValidateForAlphabetGeneration(necessary, allowed, maxLength);
 
                     necessary = _necessary;  //  to avoid nullpointer exceptions
-                    allowed   = _allowed;    //  the _alphabet variants are always defaulted
-                                             //  (to a new empty List in worst case)
+                    allowed = _allowed;    //  the _alphabet variants are always defaulted
+                                           //  (to a new empty List in worst case)
                 }
 
                 Int32 buffer, bufferId;
@@ -458,15 +459,14 @@ namespace JabrAPI
             public void GenerateRandomShifts()
                 => GenerateRandomShifts(_random.Next(256, 512));
         }
-
         public class BinaryKey
         {
             private List<Int16> _alphabet = [];
             private readonly List<Int32> _shifts = [0];
 
 
-            public BinaryKey(string primaryAlphabet, List<Int32> shifts)
-                => Set(primaryAlphabet, shifts);
+            public BinaryKey(string alphabet, List<Int32> shifts)
+                => Set(alphabet, shifts);
             public BinaryKey(EncryptionKey reKey) => Set(reKey);
             public BinaryKey() { }
 
@@ -478,18 +478,18 @@ namespace JabrAPI
             public List<Int32> Shifts => _shifts;
             public Int32 ShAmount => _shifts == null ? -1 : _shifts.Count;
             public Int32 ShLength => _shifts == null ? -1 : _shifts.Count;
-            public Int32 ShCount  => _shifts == null ? -1 : _shifts.Count;
+            public Int32 ShCount => _shifts == null ? -1 : _shifts.Count;
 
 
 
-            public void Set(string primaryAlphabet, List<Int32> shifts)
+            public void Set(string alphabet, List<Int32> shifts)
             {
                 _alphabet = FromBinary.AutoLEBytesToInt16
                 (
                     [..
                         ToBinary.Utf16
                         (
-                            primaryAlphabet
+                            alphabet
                         )
                     ]
                 );
@@ -523,7 +523,7 @@ namespace JabrAPI
 
 
 
-        static public string Encrypt(string message, RE4.EncryptionKey reKey, bool throwException = false)
+        static public string Encrypt(string message, EncryptionKey reKey, bool throwException = false)
         {
             if (message == null || message == "" || message.Length < 1)
             {
@@ -559,10 +559,10 @@ namespace JabrAPI
                     if (throwException) throw;
                 }
             }
-            
+
             return "";
         }
-        static public string Encrypt(string message, RE4.EncryptionKey reKey, out Exception? exception)
+        static public string Encrypt(string message, EncryptionKey reKey, out Exception? exception)
         {
             if (message == null || message == "" || message.Length < 1)
             {
@@ -595,7 +595,7 @@ namespace JabrAPI
             }
             return "";
         }
-        static public string FastEncrypt(string message, RE4.EncryptionKey reKey)
+        static public string FastEncrypt(string message, EncryptionKey reKey)
         {
             Int32 aLength = reKey.AlphabetLength, messageLength = message.Length, shCount = reKey.ShCount;
             Int32[] eID = new Int32[messageLength];
@@ -651,7 +651,7 @@ namespace JabrAPI
                     if (throwException) throw;
                 }
             }
-            
+
             return "";
         }
         static public string Decrypt(string encMessage, EncryptionKey reKey, out Exception? exception)
@@ -697,39 +697,21 @@ namespace JabrAPI
             List<Int32> shifts = reKey.Shifts;
             string alphabet = reKey.Alphabet;
 
-            dID[0] += alphabet.IndexOf(encMessage[0]);
-            string decrypted = alphabet[(dID[0] - shifts[0] + aLength) % aLength].ToString();
+            dID[0] = alphabet.IndexOf(encMessage[0]) - shifts[0];
+            string decrypted = alphabet[(dID[0] + aLength) % aLength].ToString();
 
             for (var i = 1; i < messageLength; i++)
             {
-                dID[i] = alphabet.IndexOf(encMessage[i]) - alphabet.IndexOf(encMessage[i - 1]);
-                decrypted += alphabet[(dID[i] - shifts[i % shCount] * (i % 2 + 1) + aLength) % aLength];
+                dID[i] = alphabet.IndexOf(encMessage[i]) - shifts[i % shCount] * (i % 2 + 1);
+                decrypted += alphabet[(dID[i] - dID[i - 1] + 3 * aLength) % aLength];
             }
             return decrypted;
         }
 
 
 
-        static public string Decrypt(string encrypted, string alphabet, Int32 shift)
-        {
-            string decrypted = "";
-            Int32 length = alphabet.Length, messageLength = encrypted.Length;
-            Int32[] DeID = new Int32[messageLength];
-
-            DeID[0] += alphabet.IndexOf(encrypted[0]); //Decrypt the first character
-            decrypted += alphabet[(DeID[0] - shift + length) % length];
-
-            DeID[1] = alphabet.IndexOf(encrypted[1]) - alphabet.IndexOf(encrypted[0]); //Decrypt the
-            decrypted += alphabet[((DeID[1] + length) % length)];                // second character
-
-            for (var i = 2; i < messageLength; i++) //Decrypt the rest of the message
-            {
-                DeID[i] = alphabet.IndexOf(encrypted[i]) - alphabet.IndexOf(encrypted[i - 1]) + shift - shift * 2 * (i % 2);
-                decrypted += alphabet[(DeID[i] + length * 2) % length];
-            }
-            return decrypted;
-        }
-
+        static public bool IsAlphabetValid(string message, string primary, bool throwException = false) => EncryptionKey.IsAlphabetValid(message, primary, throwException);
+        static public bool IsAlphabetPartiallyValid(string primary, bool throwException = false) => EncryptionKey.IsAlphabetPartiallyValid(primary, throwException);
 
     }
 }
