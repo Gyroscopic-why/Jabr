@@ -3,11 +3,6 @@
 using static System.Console;
 
 
-using JabrAPI.Source;
-using AVcontrol;
-using System.Collections.Generic;
-
-
 
 namespace JabrAPI
 {
@@ -25,7 +20,7 @@ namespace JabrAPI
             string initial = "aboba aboba aboba";
 
             Write("\n\n\t\t\tStarting benchmark...");
-            for (var i = 1; i < 10_000; i++)
+            for (var i = 1; i < 100_000; i++)
             {
                 reKey.Next();
 

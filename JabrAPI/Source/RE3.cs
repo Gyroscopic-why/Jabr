@@ -150,16 +150,16 @@ namespace JabrAPI
 
 
 
-        static public string Decrypt(string encMessage, EncryptionKey reKey, bool throwException = false)
+        static public string Decrypt(string encrypted, EncryptionKey reKey, bool throwException = false)
         {
-            if (encMessage == null || encMessage == "" || encMessage.Length < 1)
+            if (encrypted == null || encrypted == "" || encrypted.Length < 1)
             {
                 if (throwException)
                 {
                     throw new ArgumentException
                     (
                         "Encrypted message is invalid - cannot be null or empty",
-                        nameof(encMessage)
+                        nameof(encrypted)
                     );
                 }
             }
@@ -174,11 +174,11 @@ namespace JabrAPI
                     );
                 }
             }
-            else if (reKey.IsAlphabetValid(encMessage, throwException))
+            else if (reKey.IsAlphabetValid(encrypted, throwException))
             {
                 try
                 {
-                    return FastDecrypt(encMessage, reKey);
+                    return FastDecrypt(encrypted, reKey);
                 }
 
                 catch (Exception)
@@ -189,14 +189,14 @@ namespace JabrAPI
 
             return "";
         }
-        static public string Decrypt(string encMessage, EncryptionKey reKey, out Exception? exception)
+        static public string Decrypt(string encrypted, EncryptionKey reKey, out Exception? exception)
         {
-            if (encMessage == null || encMessage == "" || encMessage.Length < 1)
+            if (encrypted == null || encrypted == "" || encrypted.Length < 1)
             {
                 exception = new ArgumentException
                 (
                     "Encrypted message is invalid - cannot be null or empty",
-                    nameof(encMessage)
+                    nameof(encrypted)
                 );
             }
             else if (reKey == null)
@@ -211,9 +211,9 @@ namespace JabrAPI
             {
                 try
                 {
-                    reKey.IsAlphabetValid(encMessage, true);
+                    reKey.IsAlphabetValid(encrypted, true);
 
-                    string result = FastDecrypt(encMessage, reKey);
+                    string result = FastDecrypt(encrypted, reKey);
                     exception = null;
 
                     return result;
@@ -238,7 +238,7 @@ namespace JabrAPI
             for (var i = 1; i < messageLength; i++)
             {
                 eID[i] = alphabet.IndexOf(encrypted[i]);
-                decrypted += alphabet[(eID[i] - eID[i - 1] - shifts[i % shCount] + 3 * aLength) % aLength];
+                decrypted += alphabet[(eID[i] - eID[i - 1] - shifts[i % shCount] + 4 * aLength) % aLength];
             }
             return decrypted;
         }

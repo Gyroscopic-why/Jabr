@@ -222,7 +222,7 @@ namespace JabrAPI
                                 ForegroundColor = ConsoleColor.Gray;
                             }
                             Write("\n\tExternal:  (" + encryptionKey.ExLength.ToString() + ") " + encryptionKey.ExternalAlphabet);
-                            string encMessage = RE5.EncryptWithConsoleInfo(text, encryptionKey);
+                            string encrypted = RE5.EncryptWithConsoleInfo(text, encryptionKey);
                             try
                             {
                                 text3 = RE5.FastDecrypt(text2, encryptionKey);
@@ -237,7 +237,7 @@ namespace JabrAPI
                             string text4;
                             try
                             {
-                                text4 = RE5.DecryptWithConsoleInfo(encMessage, encryptionKey);
+                                text4 = RE5.DecryptWithConsoleInfo(encrypted, encryptionKey);
                             }
                             catch
                             {
