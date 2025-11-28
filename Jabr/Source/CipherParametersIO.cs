@@ -5,22 +5,71 @@ using static System.Console;
 
 using static Jabr.ShortcutLogic;
 using static Jabr.GlobalVariables;
+using System.Collections.Generic;
+
 
 
 namespace Jabr
 {
     internal class ParametersLogicIO
     {
-
-        static public short GetUserTask(bool useShortcuts, bool clearUsed)
+        static public bool CheckUserConfirmation(string userInput = "", bool processTheInputFirst = true)
         {
-            short chosenTask = -1;
+            if (processTheInputFirst) userInput = ReadLine().Trim().ToLower();
+
+            return userInput == "да"  || userInput == "д"
+                || userInput == "yes" || userInput == "ye" || userInput == "y";
+        }
+        static public void SimpleRepeatOldInformation(bool simplified, Byte type,
+            string message = "", string alphabet = "", bool displayShifts = false)
+        {
+            Clear();
+            ForegroundColor = ConsoleColor.Gray;
+            Write("\n\n\n\t\t\t   Добро пожаловать в Jabr " + gProgramVersion + "!");
+
+            Write("\n\n\n");
+            if (!simplified)
+            {
+                Write("\t\t\t--->  ");
+                if (type == 0) Write("За");
+                else Write("Де");
+                Write("шифровка сообщений  <---\n\n");
+            }
+
+
+            if (message != "")
+            {
+                Write("\n\t\t[i]  - Исходное сообщение: ");
+                BackgroundColor = ConsoleColor.DarkBlue;
+                if (type == 0) Write(gDecrypted);
+                else Write(gEncrypted);
+                    BackgroundColor = ConsoleColor.Black;
+                Write("\n");
+            }
+            if (alphabet != "")
+            {
+                Write("\t\t       Выбранный алфавит:  ");
+                BackgroundColor = ConsoleColor.DarkMagenta;
+                Write(alphabet);
+                BackgroundColor = ConsoleColor.Black;
+                Write("\n");
+            }
+            if (displayShifts && gShifts.Count > 0)
+            {
+                Write("\t\t       Выбранные сдвиги:   ");
+                for (var i = 0; i < gShifts.Count - 1; i++) Write(gShifts[i] + ", ");
+                Write(gShifts[gShifts.Count - 1] + "\n");
+            }
+        }
+
+
+        static public Int16 GetUserTask(bool useShortcuts, bool clearUsed)
+        {
+            Int16 chosenTask = -1;
             string userInput;
 
             Write("\n\n\n\t\t[?]  - Что вы хотите сделать?\n");
-            ForegroundColor = ConsoleColor.DarkGray;
             Write("\t\t   > 1 <    - О программе\n");
-            ForegroundColor = ConsoleColor.White;
             Write("\t\t   > 2 <    - Зашифровать сообщение\n");
             Write("\t\t   > 3 <    - Дешифровать сообщение\n");
             Write("\t\t   > 4 <    - Настройки\n");
@@ -32,17 +81,38 @@ namespace Jabr
                 Write("\n\t\t[->] - Ваш выбор: ");
                 userInput = ReadLine().Trim();
                 if (useShortcuts) CheckForShortcut(userInput);
-                if (gShortcutError == 0)
+
+                ForegroundColor = ConsoleColor.Red;
+                switch(gShortcutError)
                 {
-                    gShortcutError = 1; //Return the input state to "no shortcut was found"
-                    Write("\t\tКоманда быстрого ввода была успешно распознана\n"); // Inform the user of the succesful parse of the shortcut
+                    case 0:
+                        ForegroundColor = ConsoleColor.Green;
+                        Write("\t\t[!]  - Команда быстрого ввода была успешно распознана\n");
+                        break;
+                    case 2:
+                        Write("\t\t[!]  - Команда быстрого ввода не распознана\n");
+                        break;
+                    case 3:
+                        Write("\t\t[!]  - Не удалось получить позицию первого разделителя быстрой команды\n");
+                        break;
+                    case 4:
+                        Write("\t\t[!]  - Не удалось получить позицию второго разделителя быстрой команды\n");
+                        break;
+                    case 5:
+                        Write("\t\t[!]  - Не удалось распознать все или часть сдвигов быстрой команды\n");
+                        break;
+                    case 6:
+                        Write("\t\t[!]  - Один или несколько из распознанных сдвигов вне допустимого диапозона\n");
+                        break;
+                    case 7:
+                        Write("\t\t[!]  - Выбранная версия шифра в быстрой команде не поддерживается текущим клиентом\n");
+                        break;
                 }
-                else if (gShortcutError == 2)
-                {
-                    gShortcutError = 1; //Return the input state to "no shortcut was found"
-                    Write("\t\tКоманда быстрого ввода не распознана\n"); // Inform the user of the UNsuccesful parse of the shortcut
-                }
-                else if (!short.TryParse(userInput, out chosenTask))
+                gShortcutError = 1;  //  reset to no shortcut was found
+                ForegroundColor = ConsoleColor.Gray;
+
+
+                if (!Int16.TryParse(userInput, out chosenTask))
                 {
                     Write("\t\tНе удалось распознать выбор. Пожалуйста, повторите ввод\n");
                     chosenTask = -1;
@@ -56,206 +126,278 @@ namespace Jabr
             }
             return chosenTask;
         }
-             //  Get the current program task
 
 
-        static public void GetMessage(bool simplified, byte type, int cipherVersion)
+
+        static public void GetMessage(bool simplified, Byte type)
         {
-            string UserInput;
-            bool ConfirmMessage = false;
 
-            Write("\n\n\n");
-            if (!simplified)
+            while (type < 2)
             {
-                Write("\t\t\t--->  ");
-                if (type == 0) Write("За");
-                else Write("Де");
-                Write("шифровка сообщений с помощью РЕ" + cipherVersion + "  <---\n\n");
-            }
+                if (GlobalSettings.gClearUsed) SimpleRepeatOldInformation(simplified, type);
 
-            while (!ConfirmMessage && !simplified || type < 2)
-            {
                 if (simplified) Write("\n\t\t[->] - Т");
-                else Write("\n\t\t[->] - Введите сообщение которое т");
-                if (type == 0) Write("ребуется закодировать: ");
-                else Write("ребуется декодировать: ");
-                BackgroundColor = ConsoleColor.Blue;
+                else Write("\n\t\t[->] - Введите сообщение которое требуется ");
 
-                //0 = encoding   1 = decoding
-                if (type == 0) gDecrypted = ReadLine(); //Got the message
+                if (type == 0) Write("зашифровать: ");
+                else Write("дешифровать: ");
+                BackgroundColor = ConsoleColor.DarkBlue;
+
+                //  0 = encrypting   1 = decrypting
+                if (type == 0) gDecrypted = ReadLine();
                 else gEncrypted = ReadLine();
+                type += 2;
 
                 BackgroundColor = ConsoleColor.Black;
                 if (!simplified)
                 {
-                    Write("\t\t[?]  - Сообщение верно? (Да/Нет | Yes/No): ");
-                    UserInput = ReadLine().Trim().ToLower();
-                    ConfirmMessage = (UserInput == "да" || UserInput == "yes");
-                    if (ConfirmMessage) type += 2;
+                    Write("\t\t[?]  - Сообщение верно? ");
+                    ForegroundColor = ConsoleColor.DarkGray;
+                    Write("(Да/Нет | Yes/No): ");
+                    ForegroundColor = ConsoleColor.Gray;
+                    if (!CheckUserConfirmation()) type -= 2;
                 }
-                else type += 2;
             }
             Write("\n");
         }
-             //  Getting the original message
-             //  For the later encrypting/decrypting of it
-             //
-             //  Includes an optional "confirmation"
-             //  Of the parsed message (if the user made a mistake and wants to change it)
 
 
-        static public void GetAlphabet(bool simplified, byte type)
+        static public void GetAlphabet(bool simplified, Byte type)
         {   //     Type = 0   -> Encrypting        Type = 1   -> Decrypting
             string message = type == 0 ? gDecrypted : gEncrypted;
             bool valid = false;
 
-            while (!valid) // Parsing the alphabet for encrypting/decrypting
-            {
-                if (simplified) Write("\n\t\t[->] - Алфавит: ");                              //
-                else                                                                           //
-                {                                                                              //
-                    Write("\n\t\t[->] - Введите алфавит с помощью которого будет ");           //
-                    if (type == 0) Write("за");                                               //
-                    else Write("де");                                                          //
-                    Write("шифрованно сообщение: ");                                           //
-                }   //                                           Ask the user for the alphabet //
-                BackgroundColor = ConsoleColor.Magenta; //
-                gAlphabet = ReadLine();                 //
-                BackgroundColor = ConsoleColor.Black;   //Got the alphabet
+            if (GlobalSettings.gClearUsed) SimpleRepeatOldInformation(simplified, type, gDecrypted);
 
-                valid = CheckAlphabet(gAlphabet, message, simplified); // Check the alphabet
-            }   //Try again if errors ocured
+            while (!valid)
+            {
+                if (simplified) Write("\n\t\t[->] - Алфавит: ");
+                else
+                {
+                    Write("\n\t\t[->] - Введите алфавит с помощью которого будет ");
+                    if (type == 0) Write("за");
+                    else Write("де");
+                    Write("шифрованно сообщение: ");
+                }
+
+                BackgroundColor = ConsoleColor.DarkMagenta;
+                gAlphabet = ReadLine();
+                BackgroundColor = ConsoleColor.Black;
+
+                if (GlobalSettings.gClearUsed) SimpleRepeatOldInformation(simplified, type, gDecrypted, gAlphabet);
+
+                Write("\n");
+                valid = CheckAlphabet(gAlphabet, message, simplified);
+
+            }
             Write("\n");
         }
-             //  Getting the alphabet/alphabets  (multiple will be used in Gen5 ciphers)
-             //  for the encryption/decryption processes
              
 
         static public bool CheckAlphabet(string alphabet, string message, bool simplified)
         {
-            bool valid = true;
             string missing = "", duplicates = "";
+            bool valid = true;
 
-
-            for (int i = 0; i < alphabet.Length; i++) //Check for duplicate letters in the alphabet
-            {
-                if (alphabet.IndexOf(alphabet[i]) != i //Check if there is another copy of our char
-                    && duplicates.IndexOf(alphabet[i]) == -1) duplicates += alphabet[i]; //and we havent counted it yet
-            }
-            if (duplicates != "") // There is duplicates
-            {   // Then write error messages and duplicates info
-                if (simplified) Write("\t\t[!]  - Повторяющиеся буквы: ");
-                else Write("\t\t[!]  - Алфавит содержит повторяющиеся буквы: ");
-                for (int i = 0; i < duplicates.Length - 1; i++) Write(duplicates[i] + ", ");
-                Write(duplicates[duplicates.Length - 1] + "\n");
-
-                valid = false; // the alphabet is no longer valid
-            }
 
             if (simplified)
             {
-                for (int i = 0; i < message.Length; i++) //Search for missing letters
+                for (var i = 0; i < message.Length; i++)  //  Search for missing
                 {
-                    if (alphabet.IndexOf(message[i]) == -1 //If the char doesnt exist in our alphabet
-                        && missing.IndexOf(message[i]) == -1) missing += message[i]; //And we havent counted it yet
+                    if (i < message.Length)
+                    {
+                        if (alphabet.IndexOf(message[i]) == -1
+                            && missing.IndexOf(message[i]) == -1)
+                            missing += message[i];
+                    }
+                    if (i < alphabet.Length
+                        && alphabet.IndexOf(alphabet[i]) != i
+                        && duplicates.IndexOf(alphabet[i]) == -1)
+                    {
+                        duplicates += alphabet[i];
+                    }
                 }
             }
             else
             {
-                Write("\t\t[i]  - Номера букв сообщения в алфавите: "); //Write extra info
-                for (int i = 0; i < message.Length; i++) //Search for missing letters
+                ForegroundColor = ConsoleColor.DarkGray;
+                Write("\t\t[i]  - Номера символов сообщения в алфавите: ");
+
+                var errorCheckingLength = Math.Max(message.Length, alphabet.Length);
+                for (var i = 0; i < errorCheckingLength; i++)  //  Search for missing
                 {
-                    Write(alphabet.IndexOf(message[i]) + " ");
-                    if (alphabet.IndexOf(message[i]) == -1 //If the char doesnt exist in our alphabet
-                        && missing.IndexOf(message[i]) == -1) missing += message[i]; //And we havent counted it yet
+                    if (i < message.Length)
+                    {
+                        var charId = alphabet.IndexOf(message[i]);
+                        Write(charId + " ");
+
+                        if (charId == -1
+                            && missing.IndexOf(message[i]) == -1)
+                            missing += message[i];
+                    }
+                    if ( i < alphabet.Length
+                        &&   alphabet.IndexOf(alphabet[i]) != i
+                        && duplicates.IndexOf(alphabet[i]) == -1)
+                    {
+                        duplicates += alphabet[i];
+                    }
                 }
+                ForegroundColor = ConsoleColor.Gray;
                 Write("\n");
             }
-            if (missing == " ") // If the alphabet is missing the "space" char
+
+
+            if (duplicates != "")
             {
-                if (duplicates == "") // If there arent any duplicates
+                ForegroundColor = ConsoleColor.Red;
+                if (simplified) Write("\t\t[!]  - Повторяющиеся символов: ");
+                else Write("\t\t[!]  - Алфавит содержит повторяющиеся символов: ");
+
+                ForegroundColor = ConsoleColor.Gray;
+                for (var i = 0; i < duplicates.Length - 1; i++)
                 {
-                    alphabet += " "; // Then we add the "space" char to the alphabet
-
-                    if (simplified) Write("\t\t       Добавлен пробел");                   //
-                    else Write("\t\t       Алфавит будет изменён, для содержания пробела"); //
-                    Write("\n\t\t       Новый алфавит: ");                                  //
-                                                                                            // Inform the user about the change //
-                    BackgroundColor = ConsoleColor.Magenta;                                 //
-                    Write(alphabet);                                                       //
-                    BackgroundColor = ConsoleColor.Black;                                   //
-                    Write("\n");                                                            //
+                    BackgroundColor = ConsoleColor.DarkMagenta;
+                    Write(duplicates[i]);
+                    BackgroundColor = ConsoleColor.Black;
+                    Write(", ");
                 }
-                missing = ""; // All is good, the "space" cahr is no longer missing
-            }
-            else if (missing != "") // Check if we are missing any letters/cahr
-            {   // if we are missing something
-                if (simplified) Write("\t\t[!]  - Нет необходимых букв: ");                 //
-                else Write("\t\t[!]  - В алфавите нет необходимых букв из сообщения: ");     //
-                for (int i = 0; i < missing.Length - 1; i++) Write(missing[i] + ", ");     //
-                Write(missing[missing.Length - 1] + "\n"); // Then write the error message //
+                BackgroundColor = ConsoleColor.DarkMagenta;
+                Write(duplicates[duplicates.Length - 1]);
+                BackgroundColor = ConsoleColor.Black;
+                Write("\n");
 
-                valid = false; // The alphabet is no longer valid
+                valid = false;
             }
-            if (!simplified && missing == "" && duplicates == "")
+
+            if (missing == " ")  //  only missing 'space'
             {
-                Write("\t\t[?]  - Алфавит введён верно? (Да/Нет | Yes/No): "); //
-                message = ReadLine().Trim().ToLower();                        // Ask the user if he agrees to the parsed alphabet
-                valid = (message == "да" || message == "yes");              //
-            }   // If the user accepted the alphabet or not                    //
+                if (duplicates == "")
+                {
+                    alphabet += " ";
+
+                    ForegroundColor = ConsoleColor.Magenta;
+                    if (simplified) Write("\t\t       Добавлен пробел");
+                    else Write("\t\t       Алфавит будет изменён, для содержания пробела");
+
+                    ForegroundColor = ConsoleColor.Gray;
+                    Write("\n\t\t       Новый алфавит: ");
+                    BackgroundColor = ConsoleColor.DarkMagenta;
+                    Write(alphabet);
+                    BackgroundColor = ConsoleColor.Black;
+                    Write("\n");
+                }
+            }
+            else if (missing != "")
+            {
+                ForegroundColor = ConsoleColor.Red;
+                if (simplified) Write("\t\t[!]  - Нет необходимых символов: ");
+                else Write("\t\t[!]  - В алфавите нет необходимых символов из сообщения: ");
+
+                ForegroundColor = ConsoleColor.Gray;
+                for (var i = 0; i < missing.Length - 1; i++)
+                {
+                    BackgroundColor = ConsoleColor.DarkMagenta;
+                    Write(missing[i]);
+                    BackgroundColor = ConsoleColor.Black;
+                    Write(", ");
+                }
+                BackgroundColor = ConsoleColor.DarkMagenta;
+                Write(missing[missing.Length - 1]);
+                BackgroundColor = ConsoleColor.Black;
+                Write("\n");
+
+                valid = false;
+            }
+
+            if (valid && !simplified)
+            {
+                Write("\t\t[?]  - Алфавит введён верно? ");
+                ForegroundColor = ConsoleColor.DarkGray;
+                Write("(Да/Нет | Yes/No): ");
+                ForegroundColor = ConsoleColor.Gray;
+                return CheckUserConfirmation();
+            }
+
             return valid;
         }
-             //  Validate the chosen alphabet for the current message
-             //
              //  A valid alphabet:
              //    - Must      include all chosen characters from the original message
              //    - Must      include every chosen character only one time
              //    - Can       include additional character not present in the original message
-             //
-             //  Returns the validatin state of a chosen alphabet
-             //    - False: not valid
-             //    - True:   is valid
 
 
-        static public void GetShift(bool simplified)
+        static public void GetShifts(bool simplified, byte type)
         {
-            bool Confirm = false, SuccessfulParse = false;
-            string UserInput;
+            bool confirm = false;
+            string userInput;
 
-            while (!SuccessfulParse || !Confirm && !simplified)
+            gShifts.Clear();
+            if (GlobalSettings.gClearUsed) SimpleRepeatOldInformation(simplified, type, gDecrypted, gAlphabet);
+
+            while (!confirm)
             {
-                SuccessfulParse = false;
-                if (simplified) Write("\n\t\t[->] - Сдвиг от 0 до " + gAlphabet.Length + ": ");
-                else Write("\n\t\t[->] - Введите сдвиг для алфавита (число от 0 до " + gAlphabet.Length + "): ");
-                UserInput = ReadLine().Replace(" ", "");
-                if (int.TryParse(UserInput, out gShift)) //Checking for errors
+                ForegroundColor = ConsoleColor.DarkGray;
+                Write("\n\t\t[i]  - Нажатие ENTER без ввода числа закончит ввод сдвигов");
+                ForegroundColor = ConsoleColor.Gray;
+
+                if (simplified) Write($"\n\t\t[->] - Сдвиг от 0 до {gAlphabet.Length - 1}: ");
+                else Write($"\n\t\t[->] - Введите {gShifts.Count + 1}-й сдвиг для алфавита ");
+                ForegroundColor = ConsoleColor.DarkGray;
+                Write($"(число от 0 до {gAlphabet.Length - 1}): ");
+                ForegroundColor = ConsoleColor.Gray;
+                userInput = ReadLine().Replace(" ", "");
+
+                if (Int32.TryParse(userInput, out Int32 buffer))
                 {
-                    gShift = int.Parse(UserInput);
-                    if (gShift >= 0 && gShift <= gAlphabet.Length) SuccessfulParse = true;
+                    if (buffer >= 0 && buffer < gAlphabet.Length)
+                    {
+                        if (!simplified)
+                        {
+                            Write("\t\t[?]  - Сдвиг введён верно?");
+                            ForegroundColor = ConsoleColor.DarkGray;
+                            Write(" (Да/Нет | Yes/No): ");
+                            ForegroundColor = ConsoleColor.Gray;
+                            if (CheckUserConfirmation(userInput)) gShifts.Add(buffer);
+                        }
+                        else gShifts.Add(buffer);
+
+                        if (GlobalSettings.gClearUsed)
+                            SimpleRepeatOldInformation(simplified, type, gDecrypted, gAlphabet, true);
+                    }
                     else
                     {
+                        if (GlobalSettings.gClearUsed)
+                            SimpleRepeatOldInformation(simplified, type, gDecrypted, gAlphabet, true);
+
+                        ForegroundColor = ConsoleColor.Red;
                         if (simplified) Write("\t\t[!]  - Вне диапозона\n");
                         else Write("\t\t[!]  - Введённой число не попадает в допустимый диапозон. Повторите ввод\n");
+                        ForegroundColor = ConsoleColor.Gray;
                     }
                 }
                 else
                 {
-                    if (simplified) Write("[!]  - Некоректный ввод\n");
-                    else Write("\t\t[!]  - Некоректный ввод, попробуйте ещё раз\n");
+                    if (GlobalSettings.gClearUsed)
+                        SimpleRepeatOldInformation(simplified, type, gDecrypted, gAlphabet, true);
+
+                    if (userInput == "")
+                    {
+                        if (gShifts.Count == 0) gShifts.Add(0);
+                        confirm = true;
+                    }
+                    else
+                    {
+                        ForegroundColor = ConsoleColor.Red;
+                        if (simplified) Write("[!]  - Некоректный ввод\n");
+                        else Write("\t\t[!]  - Некоректный ввод, попробуйте ещё раз\n");
+                        ForegroundColor = ConsoleColor.Gray;
+                    }
                 }
-                if (SuccessfulParse && !simplified)
-                {
-                    Write("\t\t[?]  - Сдвиг введён верно? (Да/Нет | Yes/No): ");
-                    UserInput = ReadLine().Trim().ToLower();
-                    Confirm = (UserInput == "да" || UserInput == "yes");
-                }
-            } //Try again if errors ocured
+
+                if (gShifts.Count >= gDecrypted.Length) confirm = true;
+            }
+
             Write("\n");
         }
-             //  Getting a valid shift for the message from the alphabet
-             //    - Must     be a number
-             //    - Must     be   > 0
-             //    - Must     be   < Alphabet length
-
     }
 }

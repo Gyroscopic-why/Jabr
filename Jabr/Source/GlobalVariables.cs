@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 
 namespace Jabr
@@ -27,20 +28,23 @@ namespace Jabr
 
 
             //  String the current program version
-        static public readonly string gProgramVersion = "v1.4.2";
+        static public readonly string gProgramVersion = "v1.4.3";
         
 
-            //  Stroring the character shift from the alphabet
+            //  Stroring the character shifts from the alphabet
             //  for the encryption/decryption processes
-        static public int gShift;
+        static public List<Int32> gShifts = new List<Int32>() { 0 };
 
 
             //  Shortcut errors:     0 - shortcut was succesfull
             //                       1 - no signs of shortcuts was found in the user input
             //                       2 - error while reading shortcut
+            //                       3 - failed to get the first  joint position
+            //                       4 - failed to get the second joint position
+            //                       5 - failed to parse the shifts
             //
             //  I will add more errors in the future
             //  (split the "2" option into multiple more detailed exceptions)
-        static public byte gShortcutError = 1;
+        static public Int32 gShortcutError = 1;
     }
 }
