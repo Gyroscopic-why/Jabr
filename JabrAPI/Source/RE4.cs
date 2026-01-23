@@ -222,7 +222,7 @@ namespace JabrAPI
 
             override public void SetDefault()
             {
-                _necessary = [.. " " + _defaultChars];
+                _necessary = [.. " " + DEFAULT_CHARS];
                 _allowed   = [];
 
                 _alphabetMaxLength = _necessary.Count;
@@ -384,7 +384,7 @@ namespace JabrAPI
 
             public void GenerateRandomAlphabet(Int32 maxLength, List<char> necessary, List<char> banned, bool validateParameters = true)
             {
-                List<char> allowed = [.. (" " + _defaultChars)];
+                List<char> allowed = [.. (" " + DEFAULT_CHARS)];
 
                 if (banned != null && banned.Count > 0)
                 {

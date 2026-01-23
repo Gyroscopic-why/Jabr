@@ -25,7 +25,8 @@ namespace JabrAPI
             private List<char> _externalNecessary = [], _externalAllowed = [], _externalBanned = [];
             private Int32  _primaryMaxLength = -1, _externalMaxLength = -1;
 
-            public EncryptionKey(string primaryAlphabet, string externalAlphabet, List<Int32> shifts)
+
+            public EncryptionKey(string primaryAlphabet, string externalAlphabet, List<Int16> shifts)
             {
                 _primaryAlphabet  = primaryAlphabet;
                 _externalAlphabet = externalAlphabet;
@@ -34,7 +35,7 @@ namespace JabrAPI
                 if (shifts == null || shifts.Count == 0) _shifts.Add(0);
                 else _shifts.AddRange(shifts);
             }
-            public EncryptionKey(string primaryAlphabet, string externalAlphabet, Int32 shift)
+            public EncryptionKey(string primaryAlphabet, string externalAlphabet, Int16 shift)
             {
                 _primaryAlphabet  = primaryAlphabet;
                 _externalAlphabet = externalAlphabet;
@@ -48,14 +49,28 @@ namespace JabrAPI
                 _externalAlphabet = externalAlphabet;
             }
             public EncryptionKey(Int32 shiftCount) => _shCount = shiftCount;
-            public EncryptionKey(BinaryKey binKey)
+            public EncryptionKey(EncryptionKey otherKey, bool fullCopy = true)
             {
-                _primaryAlphabet  = Encoding.Unicode.GetString(ToBinary.LittleEndian(binKey.PrimaryAlphabet.ToArray()));
-                _externalAlphabet = Encoding.Unicode.GetString(ToBinary.LittleEndian(binKey.ExternalAlphabet.ToArray()));
+                _primaryAlphabet  = otherKey.PrAlphabet;
+                _externalAlphabet = otherKey.ExAlphabet;
 
-                _shifts.Clear(); 
-                if (binKey.Shifts == null || binKey.Shifts.Count == 0) _shifts.Add(0);
-                else _shifts.AddRange(binKey.Shifts);
+                _shifts.Clear();
+                _shifts.AddRange(otherKey.Shifts);
+
+                if (fullCopy)
+                {
+                    _primaryNecessary  = otherKey._primaryNecessary;
+                    _primaryAllowed    = otherKey._primaryAllowed;
+                    _primaryBanned     = otherKey._primaryBanned;
+                    _primaryMaxLength  = otherKey._primaryMaxLength;
+
+                    _externalNecessary = otherKey._externalNecessary;
+                    _externalAllowed   = otherKey._externalAllowed;
+                    _externalBanned    = otherKey._externalBanned;
+                    _externalMaxLength = otherKey._externalMaxLength;
+
+                    _shCount = otherKey._shCount;
+                }
             }
             public EncryptionKey(bool autoGenerate = true)
             {
@@ -64,8 +79,7 @@ namespace JabrAPI
             }
 
 
-            static public BinaryKey Convert(EncryptionKey reKey)  => new (reKey);
-            static public EncryptionKey Convert(BinaryKey binKey) => new (binKey);
+
 
 
 
@@ -83,75 +97,267 @@ namespace JabrAPI
 
 
 
-            override public string ExportAsString(string splitBy, string splitShifts = " ")
+
+            override public bool   ImportFromString(string data, bool throwExceptions = false)
             {
-                if (_primaryAlphabet.Contains(splitBy) || _externalAlphabet.Contains(splitBy))
+                try
                 {
-                    throw new ArgumentException
-                    (
-                        "split argument is not unique, impossible to distinguish data using it",
-                        nameof(splitBy)
-                    );
+                    Int32 splitterId = data.IndexOf(':'), offset;
+                    Int16 parsedLength, parsedShiftsCount = 0;
+
+                    if (splitterId == -1)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data doesnt contain splitter for determining alphabet length" +
+                                $"\ndata.IndexOf(':') == -1",
+                                nameof(data) + "," + nameof(splitterId)
+                            );
+                        return false;
+                    }
+                    else if (!Int16.TryParse(data.AsSpan(0, splitterId), out parsedLength))
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Unable to parse primary alphabet length" +
+                                $"\nExpected length to be at indexes 0-{splitterId}" +
+                                $"\nInvalid sequence: {data[..splitterId]}",
+                                nameof(data) + "," + nameof(splitterId)
+                            );
+                        return false;
+                    }
+                    else if (data.Length < splitterId + 1 + parsedLength + 4)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data is insufficient for expected primary & smallest possible external alphabet" +
+                                $"Data length: {data.Length}   <   expected: {splitterId + 1 + parsedLength + 4}",
+                                nameof(data) + "," + nameof(splitterId) + "," + nameof(parsedLength)
+                            );
+                        return false;
+                    }
+
+                    _primaryAlphabet = data.Substring(splitterId + 1, parsedLength);
+
+
+                    offset = splitterId + 1 + parsedLength;
+                    splitterId = data.IndexOf(':', offset);
+
+                    if (splitterId == -1)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data doesnt contain another splitter for determining external alphabet length" +
+                                $"\ndata.IndexOf(':') == -1",
+                                nameof(data) + "," + nameof(splitterId)
+                            );
+                        return false;
+                    }
+                    else if (!Int16.TryParse(data.AsSpan(offset, splitterId - offset), out parsedLength))
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Unable to parse external alphabet length" +
+                                $"\nExpected length to be at indexes {offset}-{splitterId}" +
+                                $"\nInvalid sequence: {data.Substring(offset)}",
+                                nameof(data) + "," + nameof(splitterId)
+                            );
+                        return false;
+                    }
+                    else if (data.Length < offset + splitterId + 1 + parsedLength)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data is insufficient for expected external alphabet" +
+                                $"Data length: {data.Length}   <   expected: {offset + splitterId + 1 + parsedLength}",
+                                nameof(data) + "," + nameof(splitterId) + "," + nameof(parsedLength)
+                            );
+                        return false;
+                    }
+
+                    _externalAlphabet = data.Substring(offset + splitterId + 1, parsedLength);
+
+
+                    offset += parsedLength + 2;
+                    string[] unparsedShifts = data[offset..].Split(',');
+
+                    _shifts.Clear();
+                    for (var i = 0; i < unparsedShifts.Length; i++)
+                    {
+                        if (Int16.TryParse(unparsedShifts[i], out Int16 shift))
+                        {
+                            parsedShiftsCount++;
+                            _shifts.Add(shift);
+                        }
+                        else
+                        {
+                            if (throwExceptions)
+                                throw new ArgumentException
+                                (
+                                    $"Unable to parse shift[{i}]" +
+                                    $"\nInvalid string: {unparsedShifts[i]}", nameof(unparsedShifts)
+                                );
+                            return false;
+                        }
+                    }
+                    if (parsedShiftsCount == 0) _shifts.Add(0);
                 }
-
-                string result = _primaryAlphabet + splitBy + _externalAlphabet + splitBy;
-                for (var curId = 0; curId < _shifts.Count - 1; curId++) result += _shifts[curId] + splitShifts;
-                if (_shifts.Count > 0) result += _shifts[^1];
-
-                return result;
+                catch
+                {
+                    if (throwExceptions) throw;
+                    else return false;
+                }
+                return true;
             }
             override public string ExportAsString()
             {
-                if (Byte.TryParse(_primaryAlphabet[0].ToString(), out _) ||
-                    Byte.TryParse(_externalAlphabet[0].ToString(), out _))
-                {
-                    throw new ArgumentException
-                    (
-                        "impossible to use length as a splitter due to one of the alphabets having numbers in its start",
-                        "_primaryAlphabet or _externalAlphabet"
-                    );
-                }
-
-                string result = _primaryAlphabet.Length + _primaryAlphabet
-                             + _externalAlphabet.Length + _externalAlphabet;
+                string result = _primaryAlphabet.Length + ":" + _primaryAlphabet
+                             + _externalAlphabet.Length + ":" + _externalAlphabet;
 
                 for (var curId = 0; curId < _shifts.Count - 1; curId++)
-                    result += _shifts[curId] + " ";
+                    result += _shifts[curId] + ",";
                 if (_shifts.Count > 0) result += _shifts[^1];
 
                 return result;
             }
-            override public List<Byte> ExportAsBinaryBE()
+
+
+            override public bool ImportFromBinary(List<byte> data, bool throwExceptions = false)
             {
-                List<Byte> result = [.. ToBinary.BigEndian(_shifts.Count)];
+                try
+                {
+                    Int32 parsedShiftCountInBytes = FromBinary.BigEndian<Int16>
+                        (
+                            [.. 
+                               data.GetRange(0, 2)
+                            ]
+                        ) * 2;
+
+                    //  12 (Bytes) is the lowest possible length of an exported key
+                    //  2x2 bytes reserved for PrLength and ExLength
+                    //  and 2x2x2 reserved for both smallest primary and external alphabets of 2 value
+                    if (data.Count < parsedShiftCountInBytes + 12)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data length is insufficient for the specified shifts count:" +
+                                $" {parsedShiftCountInBytes / 4} from data[0-1]",
+                                nameof(data)
+                            );
+                        return false;
+                    }
+
+                    _shifts.Clear();
+                    if (parsedShiftCountInBytes > 0)
+                    {
+                        for (var i = 1; i < parsedShiftCountInBytes + 1; i += 2)
+                            _shifts.Add(FromBinary.BigEndian<Int16>([.. data.GetRange(i, 2)]));
+                    }
+                    else _shifts.Add(0);
+
+
+
+                    Int32 parsedLengthInBytes = FromBinary.BigEndian<Int16>
+                        (
+                            [..
+                                data.GetRange(parsedShiftCountInBytes + 2, 2)
+                            ]
+                        ) * 2;  //  each char is in UTF16 (2 bytes)
+
+                    if (data.Count < parsedShiftCountInBytes + 2 + parsedLengthInBytes + 6)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data length is insufficient for the specified primary alphabet length" +
+                                $" {parsedLengthInBytes / 2} " +
+                                $"from data[{parsedShiftCountInBytes + 2}-{parsedShiftCountInBytes + 4}]",
+                                nameof(data)
+                            );
+                        return false;
+                    }
+                    else if (parsedLengthInBytes < 4)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Primary alphabet length cant be less than 2 (required)" +
+                                $"\nParsed length: {parsedLengthInBytes / 2} " +
+                                $"from data[{parsedShiftCountInBytes + 4}-{parsedShiftCountInBytes + 8}]",
+                                nameof(data)
+                            );
+                        return false;
+                    }
+
+                    _primaryAlphabet = "";
+                    for (var i = 1; i < parsedLengthInBytes + 1; i += 2)
+                        _primaryAlphabet += FromBinary.Utf16(data.GetRange(i, 2));
+
+
+
+                    //  reusing parsedShiftCount as a offset for what we have already read
+                    parsedShiftCountInBytes += parsedLengthInBytes + 2;
+                    parsedLengthInBytes = FromBinary.BigEndian<Int16>
+                        (
+                            [..
+                                data.GetRange(parsedShiftCountInBytes + 2, 2)
+                            ]
+                        ) * 2;
+
+                    if (data.Count < parsedShiftCountInBytes + 4 + parsedLengthInBytes)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data length is insufficient for the specified external alphabet length" +
+                                $" {parsedLengthInBytes} from data[{parsedLengthInBytes + 1}]",
+                                nameof(data)
+                            );
+                        return false;
+                    }
+                    else if (parsedLengthInBytes < 4)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"External alphabet length cant be less than 2 (required)" +
+                                $"\nParsed length: {parsedLengthInBytes / 2} " +
+                                $"from data[{parsedShiftCountInBytes + 4}-{parsedShiftCountInBytes + 8}]",
+                                nameof(data)
+                            );
+                        return false;
+                    }
+
+                    _externalAlphabet = "";
+                    for (var i = 1; i < parsedLengthInBytes + 1; i += 2)
+                        _primaryAlphabet += FromBinary.Utf16(data.GetRange(i, 2));
+                }
+                catch (Exception)
+                {
+                    if (throwExceptions) throw;
+                    return false;
+                }
+                return true;
+            }
+            override public List<Byte> ExportAsBinary()
+            {
+                List<Byte> result = [.. ToBinary.BigEndian((Int16)_shifts.Count)];
 
                 for (var curId = 0; curId < _shifts.Count; curId++)
                     result.AddRange(ToBinary.BigEndian(_shifts[curId]));
                 
-                Byte[] buffer = ToBinary.Utf8(_primaryAlphabet);
-                result.AddRange(ToBinary.BigEndian(buffer.Length));
-                result.AddRange(buffer);
+                result.AddRange(ToBinary.BigEndian((UInt16)PrLength));
+                result.AddRange(ToBinary.Utf16(_primaryAlphabet));
 
-                buffer = ToBinary.Utf8(_externalAlphabet);
-                result.AddRange(ToBinary.BigEndian(buffer.Length));
-                result.AddRange(buffer);
-
-                return result;
-            }
-            override public List<Byte> ExportAsBinaryLE()
-            {
-                List<Byte> result = [.. ToBinary.LittleEndian(_shifts.Count)];
-
-                for (var curId = 0; curId < _shifts.Count; curId++)
-                    result.AddRange(ToBinary.LittleEndian(_shifts[curId]));
-
-                Byte[] buffer = ToBinary.Utf8(_primaryAlphabet);
-                result.AddRange(ToBinary.LittleEndian(buffer.Length));
-                result.AddRange(buffer);
-
-                buffer = ToBinary.Utf8(_externalAlphabet);
-                result.AddRange(ToBinary.LittleEndian(buffer.Length));
-                result.AddRange(buffer);
+                result.AddRange(ToBinary.BigEndian((UInt16)ExLength));
+                result.AddRange(ToBinary.Utf16(_externalAlphabet));
 
                 return result;
             }
@@ -402,16 +608,11 @@ namespace JabrAPI
 
             override public  void SetDefault()
             {
-                _primaryNecessary  = [.. " " + _defaultChars];
-                _externalAllowed   = [.. _defaultChars];
+                _primaryNecessary  = [.. " " + DEFAULT_CHARS];
+                _externalAllowed   = [.. DEFAULT_CHARS];
 
                 _primaryMaxLength  = _primaryNecessary.Count;
                 _externalMaxLength = 8;
-            }
-            private void Default()
-            {
-                SetDefault();
-                GenerateAll();
             }
             override protected private void GenerateAll()
             {
@@ -658,7 +859,7 @@ namespace JabrAPI
 
             public void GenerateRandomPrimary(Int32 maxLength, List<char> necessary, List<char> banned, bool validateParameters = true)
             {
-                List<char> allowed = [.. (" " + _defaultChars)];
+                List<char> allowed = [.. (" " + DEFAULT_CHARS)];
 
                 if (banned != null && banned.Count > 0)
                 {
@@ -757,7 +958,7 @@ namespace JabrAPI
 
             public void GenerateRandomExternal(Int32 maxLength, List<char> necessary, List<char> banned, bool validateParameters = true)
             {
-                List<char> allowed = [.. " " + _defaultChars];
+                List<char> allowed = [.. " " + DEFAULT_CHARS];
 
                 if (banned != null && banned.Count > 0)
                 {
@@ -826,221 +1027,388 @@ namespace JabrAPI
                     );
                 }
 
-                GenerateRandomShifts(count, 0, _externalAlphabet.Length - 1);
+                GenerateRandomShifts(count, 0, (Int16)(_externalAlphabet.Length - 1));
             }
             public void GenerateRandomShifts()
                 => GenerateRandomShifts(_random.Next(256, 512));
         }
-        public class BinaryKey
+        public class BinaryKey : IBinaryKey
         {
-            private List<Int16> _primaryAlphabet  = [];
-            private List<Int16> _externalAlphabet = [];
-            private readonly List<Int32> _shifts  = [0];
+            private List<Byte>  _primaryAlphabet = [];
+            private List<Byte> _externalAlphabet = [];
+
+            private Byte _compactedPrMaxLength = 255, _compactedExMaxLength = 1;
 
 
-            public BinaryKey(string primaryAlphabet, string externalAlphabet, List<Int32> shifts) 
-                => Set(primaryAlphabet, externalAlphabet, shifts);
-            public BinaryKey(EncryptionKey reKey) => Set(reKey);
-            public BinaryKey() { }
+
+            public BinaryKey(BinaryKey binKey) => Set(binKey.Primary, binKey.External, binKey.Shifts);
+            public BinaryKey(List<Byte> primary, List<Byte> external, List<Byte> shifts)
+                => Set(primary, external, shifts);
+            public BinaryKey(List<Byte> exported) => ImportFromBinary(exported);
+            public BinaryKey(bool autoGenerate = true)
+            {
+                if (autoGenerate) Default();
+                else SetDefault();
+            }
 
 
-            public List<Int16> PrimaryAlphabet => _primaryAlphabet;
-            public List<Int16> PrAlphabet      => _primaryAlphabet;
-            public List<Int16> Primary         => _primaryAlphabet;
+
+            public List<Byte> PrimaryAlphabet => _primaryAlphabet;
+            public List<Byte> PrAlphabet      => _primaryAlphabet;
+            public List<Byte> Primary         => _primaryAlphabet;
             public Int32 PrimaryLength => _primaryAlphabet == null ? -1 : _primaryAlphabet.Count;
             public Int32 PrLength      => _primaryAlphabet == null ? -1 : _primaryAlphabet.Count;
 
-            public List<Int16> ExternalAlphabet => _externalAlphabet;
-            public List<Int16> ExAlphabet       => _externalAlphabet;
-            public List<Int16> External         => _externalAlphabet;
+            public List<Byte> ExternalAlphabet => _externalAlphabet;
+            public List<Byte> ExAlphabet       => _externalAlphabet;
+            public List<Byte> External         => _externalAlphabet;
             public Int32 ExternalLength => _externalAlphabet == null ? -1 : _externalAlphabet.Count;
             public Int32 ExLength       => _externalAlphabet == null ? -1 : _externalAlphabet.Count;
 
-            public List<Int32> Shifts => _shifts;
-            public Int32 ShAmount => _shifts == null ? -1 : _shifts.Count;
-            public Int32 ShLength => _shifts == null ? -1 : _shifts.Count;
-            public Int32 ShCount  => _shifts == null ? -1 : _shifts.Count;
 
 
 
-            public void Set(string primaryAlphabet, string externalAlphabet, List<Int32> shifts)
+            public void Set(List<Byte> primary, List<Byte> external, List<Byte> shifts)
             {
-                _primaryAlphabet = FromBinary.AutoLEBytesToInt16
-                (
-                    [..
-                        ToBinary.Utf16
-                        (
-                            primaryAlphabet
-                        )
-                    ]
-                );
-
-                _externalAlphabet = FromBinary.AutoLEBytesToInt16
-                (
-                    [..
-                        ToBinary.Utf16
-                        (
-                            externalAlphabet
-                        )
-                    ]
-                );
+                _primaryAlphabet  = [.. primary];
+                _externalAlphabet = [.. external];
 
                 _shifts.Clear();
                 if (shifts == null || shifts.Count == 0) _shifts.Add(0);
-                else _shifts.AddRange(shifts);
+                else _shifts.AddRange(shifts.GetRange(0, Math.Max(shifts.Count, 255)));
             }
-            public void Set(EncryptionKey reKey)
+
+
+            public override bool ImportFromBinary(List<byte> data, bool throwExceptions = false)
             {
-                _primaryAlphabet = FromBinary.AutoLEBytesToInt16
-                (
-                    [..
-                        ToBinary.Utf16
-                        (
-                            reKey.PrAlphabet
-                        )
-                    ]
-                );
-                _externalAlphabet = FromBinary.AutoLEBytesToInt16
-                (
-                    [..
-                        ToBinary.Utf16
-                        (
-                            reKey.ExAlphabet
-                        )
-                    ]
-                );
+                try
+                {
+                    Int32 parsedShiftCount = data[0];
 
-                _shifts.Clear();
-                if (reKey.Shifts == null || reKey.Shifts.Count == 0) _shifts.Add(0);
-                else _shifts.AddRange(reKey.Shifts);
+                    //  6 is the lowest possible length of an exported key
+                    //  1x2 bytes reserved for PrLength and ExLength
+                    //  and 1x2x2 reserved for both smallest primary and external alphabets of 2 value
+                    if (data.Count < parsedShiftCount + 6)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data length is insufficient for the specified shifts count" +
+                                $" {parsedShiftCount} from data[0]",
+                                nameof(data)
+                            );
+                        return false;
+                    }
+
+                    _shifts.Clear();
+                    if (parsedShiftCount > 0) _shifts.AddRange(data.GetRange(1, parsedShiftCount));
+                    else _shifts.Add(0);
+
+
+
+                    // +1 is transforming our length range back from 1-255 to 2-256
+                    Int32 parsedLengthGuide = data[parsedShiftCount + 1] + 1;
+
+                    if (data.Count < parsedShiftCount + parsedLengthGuide + 3)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data length is insufficient for the specified primary alphabet length" +
+                                $" {parsedLengthGuide} from data[{parsedShiftCount + 1}]",
+                                nameof(data)
+                            );
+                        return false;
+                    }
+                    else if (parsedLengthGuide < 2)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Primary alphabet length cant be less than 2 (required)" +
+                                $"\nParsed length: {parsedLengthGuide} " +
+                                $"from data[{parsedShiftCount + 1}]",
+                                nameof(data)
+                            );
+                        return false;
+                    }
+
+                    _primaryAlphabet.Clear();
+                    _primaryAlphabet.AddRange(data.GetRange(parsedShiftCount + 2, parsedLengthGuide));
+
+
+
+                    //  reusing parsedShiftCount as a offset for what we have already read
+                    parsedShiftCount += parsedLengthGuide;
+
+                    // +1 is transforming our length range back from 1-255 to 2-256
+                    parsedLengthGuide = data[parsedShiftCount + 1] + 1;
+
+                    if (data.Count < parsedShiftCount + parsedLengthGuide + 3)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data length is insufficient for the specified external alphabet length" +
+                                $" {parsedLengthGuide} from data[{parsedLengthGuide + 1}]",
+                                nameof(data)
+                            );
+                        return false;
+                    }
+                    else if (parsedLengthGuide < 2)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"External alphabet length cant be less than 2 (required)" +
+                                $"\nParsed length: {parsedLengthGuide} " +
+                                $"from data[{parsedShiftCount + 1}]",
+                                nameof(data)
+                            );
+                        return false;
+                    }
+
+                    _externalAlphabet.Clear();
+                    _externalAlphabet.AddRange(data.GetRange(parsedShiftCount + 2, parsedLengthGuide));
+                }
+                catch (Exception)
+                {
+                    if (throwExceptions) throw;
+                    return false;
+                }
+                return true;
+            }
+            override public List<Byte> ExportAsBinary()
+            {
+                List<Byte> result = [.. ToBinary.BigEndian(_shifts.Count)];
+                result.AddRange(_shifts);
+
+                //  -1 is needed because we cant physically have alphabets
+                //  longer than 256 and also smaller than 2
+                //  but sadly a byte can only fit a range 0-255, while we need 2-256
+                //  so we transform it from 2-256 into 1-255 and later reconstruct it back
+                IsPrimaryPartiallyValid();
+                result.AddRange((Byte)(PrLength - 1));
+                result.AddRange(_primaryAlphabet);
+
+                result.AddRange((Byte)(ExLength - 1));
+                result.AddRange(_externalAlphabet);
+
+                return result;
             }
 
 
 
-            static public BinaryKey Convert(EncryptionKey reKey)  => new (reKey);
-            static public EncryptionKey Convert(BinaryKey binKey) => new (binKey);
+            public void SetDefault(Byte compactedPrMaxLength, Byte compactedExMaxLength)
+            {
+                _compactedPrMaxLength = compactedPrMaxLength;
+                _compactedExMaxLength = compactedExMaxLength;
+            }
+            public override void SetDefault()
+            {
+                _compactedPrMaxLength = 255;
+                _compactedExMaxLength = 7;
+            }
+
+            private protected override void GenerateAll()
+            {
+                throw new NotImplementedException();
+            }
+
+
+            public bool IsPrimaryValid(Byte[] message, bool throwException = false)
+                => IsPrimaryValid(message, _primaryAlphabet, throwException);
+            static public bool IsPrimaryValid(Byte[] message, List<Byte> primary, bool throwException = false)
+            {
+                if (!IsPrimaryPartiallyValid(primary, throwException)) return false;
+
+                foreach (Byte c in message)
+                {
+                    if (!primary.Contains(c))
+                    {
+                        if (throwException)
+                        {
+                            throw new ArgumentException
+                            (
+                                "Message contains characters not in the primary alphabet",
+                                "message, char: " + c
+                            );
+                        }
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            public bool IsPrimaryPartiallyValid(bool throwException = false)
+                => IsPrimaryPartiallyValid(_primaryAlphabet, throwException);
+            static public bool IsPrimaryPartiallyValid(List<Byte> primary, bool throwException = false)
+            {
+                if (primary == null || primary.Count < 2 || primary.Count > 256)
+                {
+                    if (throwException)
+                    {
+                        throw new ArgumentException
+                        (
+                            "Primary alphabet is not set, too short or too long",
+                            nameof(primary) + ", " + nameof(_primaryAlphabet)
+                        );
+                    }
+                    return false;
+                }
+
+                return true;
+            }
+
+            public void GenerateRandomShifts(Int32 count)
+            {
+                if (_externalAlphabet == null || _externalAlphabet.Count < 2)
+                {
+                    throw new ArgumentException
+                    (
+                        "Unable to generate shifts, external alphabet is undefined",
+                        nameof(_externalAlphabet)
+                    );
+                }
+
+                GenerateRandomShifts(count, 0, (Byte)(_externalAlphabet.Count - 1));
+            }
+            public void GenerateRandomShifts()
+                => GenerateRandomShifts(_random.Next(256, 512));
         }
 
 
 
-        static public string Encrypt(string message, EncryptionKey reKey, bool throwException = false)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        static public class Encrypt
         {
-            if (message == null || message == "" || message.Length < 1)
+            static public string Text(string message, EncryptionKey reKey, bool throwException = false)
             {
-                if (throwException)
+                if (message == null || message == "" || message.Length < 1)
                 {
-                    throw new ArgumentException
+                    if (throwException)
+                    {
+                        throw new ArgumentException
+                        (
+                            "Message is invalid - cannot be null or empty",
+                            nameof(message)
+                        );
+                    }
+                }
+                else if (reKey == null)
+                {
+                    if (throwException)
+                    {
+                        throw new ArgumentException
+                        (
+                            "Encryption key is undefined (null or empty)",
+                            nameof(reKey)
+                        );
+                    }
+                }
+                else if (reKey.IsExternalPartiallyValid(throwException))
+                {
+                    if (reKey.IsPrimaryValid(message, throwException))
+                    {
+                        try
+                        {
+                            return FastText(message, reKey);
+                        }
+
+                        catch (Exception)
+                        {
+                            if (throwException) throw;
+                        }
+                    }
+                }
+                return "";
+            }
+            static public string Text(string message, EncryptionKey reKey, out Exception? exception)
+            {
+                if (message == null || message == "" || message.Length < 1)
+                {
+                    exception = new ArgumentException
                     (
                         "Message is invalid - cannot be null or empty",
                         nameof(message)
                     );
                 }
-            }
-            else if (reKey == null)
-            {
-                if (throwException)
+                else if (reKey == null)
                 {
-                    throw new ArgumentException
+                    exception = new ArgumentException
                     (
                         "Encryption key is undefined (null or empty)",
                         nameof(reKey)
                     );
                 }
-            }
-            else if (reKey.IsExternalPartiallyValid(throwException))
-            {
-                if (reKey.IsPrimaryValid(message, throwException))
+                else
                 {
                     try
-                    { 
-                        return FastEncrypt(message, reKey); 
-                    }
-
-                    catch (Exception)
                     {
-                        if (throwException) throw;
+                        reKey.IsExternalPartiallyValid(true);
+                        reKey.IsPrimaryValid(message, true);
+
+                        string result = FastText(message, reKey);
+                        exception = null;
+
+                        return result;
                     }
+                    catch (Exception innerException) { exception = innerException; }
                 }
+                return "";
             }
-            return "";
-        }
-        static public string Encrypt(string message, EncryptionKey reKey, out Exception? exception)
-        {
-            if (message == null || message == "" || message.Length < 1)
+            static public string FastText(string message, EncryptionKey reKey)
             {
-                exception = new ArgumentException
-                (
-                    "Message is invalid - cannot be null or empty",
-                    nameof(message)
-                );
-            }
-            else if (reKey == null)
-            {
-                exception = new ArgumentException
-                (
-                    "Encryption key is undefined (null or empty)",
-                    nameof(reKey)
-                );
-            }
-            else
-            {
-                try
-                {
-                    reKey.IsExternalPartiallyValid(true);
-                    reKey.IsPrimaryValid(message, true);
-
-                    string result = FastEncrypt(message, reKey);
-                    exception = null;
-
-                    return result;
-                }
-                catch (Exception innerException) { exception = innerException; }
-            }
-            return "";
-        }
-        static public string FastEncrypt(string message, EncryptionKey reKey)
-        {
-            Int32 exLength = reKey.ExLength, messageLength = message.Length, shCount = reKey.ShCount, buffer;
-            List<Int32> shifts = reKey.Shifts; string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
+                Int32 exLength = reKey.ExLength, messageLength = message.Length, shCount = reKey.ShCount, buffer;
+                List<Int16> shifts = reKey.Shifts; string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
             
 
-            Int32 helper = (Int32)Math.Ceiling
-                (
-                    (double)
-                    (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
-                        reKey.PrLength * 2 + shifts.Max() - 4
-                    ) / exLength
-                );
-            Int32 maxEncodingLength = exLength == 10 ?
-                DigitsInPositive(helper)  //  Optimisation for base 10 encoding
-              : Numsys.AsList
-                (
-                    helper.ToString(),
-                    10,
-                    exLength
-                ).Count;
+                Int32 helper = (Int32)Math.Ceiling
+                    (
+                        (double)
+                        (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                            reKey.PrLength * 2 + shifts.Max() - 4
+                        ) / exLength
+                    );
+                Int32 maxEncodingLength = exLength == 10 ?
+                    DigitsInPositive(helper)  //  Optimisation for base 10 encoding
+                  : Numsys.AsList
+                    (
+                        helper.ToString(),
+                        10,
+                        exLength
+                    ).Count;
 
-            Int32[] ids = new Int32[messageLength];
-            ids[0] = prAlphabet.IndexOf(message[0]);
-            buffer = ids[0] + shifts[0];
+                Int32[] ids = new Int32[messageLength];
+                ids[0] = prAlphabet.IndexOf(message[0]);
+                buffer = ids[0] + shifts[0];
 
-            string encoding = Numsys.ToCustomAsString
-            (
-                (buffer / exLength).ToString(),
-                10,
-                exLength,
-                exAlphabet,
-                maxEncodingLength
-            );
-            string encrypted = exAlphabet[buffer % exLength] + encoding;
-
-
-            for (var curId = 1; curId < messageLength; curId++)
-            {
-                ids[curId] = prAlphabet.IndexOf(message[curId]);
-                buffer = ids[curId] + shifts[curId % shCount] + ids[curId - 1];
-
-                encoding = Numsys.ToCustomAsString
+                string encoding = Numsys.ToCustomAsString
                 (
                     (buffer / exLength).ToString(),
                     10,
@@ -1048,12 +1416,38 @@ namespace JabrAPI
                     exAlphabet,
                     maxEncodingLength
                 );
+                string encrypted = exAlphabet[buffer % exLength] + encoding;
 
-                encrypted += exAlphabet[buffer % exLength] + encoding;
+
+                for (var curId = 1; curId < messageLength; curId++)
+                {
+                    ids[curId] = prAlphabet.IndexOf(message[curId]);
+                    buffer = ids[curId] + shifts[curId % shCount] + ids[curId - 1];
+
+                    encoding = Numsys.ToCustomAsString
+                    (
+                        (buffer / exLength).ToString(),
+                        10,
+                        exLength,
+                        exAlphabet,
+                        maxEncodingLength
+                    );
+
+                    encrypted += exAlphabet[buffer % exLength] + encoding;
+                }
+
+                return encrypted;
             }
 
-            return encrypted;
+
+            static public Byte[] TextToBytes(string message, EncryptionKey reKey, bool throwException = false)
+                => ToBinary.Utf16(Text(message, reKey, throwException));
+            static public Byte[] TextToBytes(string message, EncryptionKey reKey, out Exception? exception)
+                => ToBinary.Utf16(Text(message, reKey, out exception));
+            static public Byte[] FastTextToBytes(string message, EncryptionKey reKey)
+                => ToBinary.Utf16(FastText(message, reKey));
         }
+
         
         static public string EncryptWithConsoleInfo(string message, EncryptionKey reKey, bool displayInfo = true)
         {
@@ -1079,7 +1473,7 @@ namespace JabrAPI
         {
             Int32 exLength = reKey.ExLength, messageLength = message.Length, shCount = reKey.ShCount;
             Int32[] buffer = new Int32[messageLength], ids = new Int32[messageLength];
-            List<Int32> shifts = reKey.Shifts; string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
+            List<Int16> shifts = reKey.Shifts; string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
             
 
             Int32 maxEncodingLength = Numsys.AutoAsList
@@ -1131,81 +1525,6 @@ namespace JabrAPI
             return encrypted;
         }
 
-        static public List<Int16> EncryptToBinaryUtf16(string message, EncryptionKey reKey)
-            => EncryptToBinaryUtf16(message, new BinaryKey(reKey));
-        static public List<Int16> EncryptToBinaryUtf16(string message, BinaryKey binKey)
-        {
-            List<Int16> encodedMessage = FromBinary.LEBytesToInt16
-            (
-                Encoding.Unicode.GetBytes
-                (
-                    message
-                ).ToList()
-            );
-
-            Int32 exLength = binKey.ExLength, messageLength = message.Length, shCount = binKey.ShCount, buffer;
-            List<Int32> shifts = binKey.Shifts; List<Int16> prAlphabet = binKey.PrAlphabet, exAlphabet = binKey.ExAlphabet;
-
-
-            Int32 helper = (Int32)Math.Ceiling
-                (
-                    (double)
-                    (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
-                        binKey.PrLength * 2 + shifts.Max() - 4
-                    ) / exLength
-                );
-            Int32 maxEncodingLength = exLength == 10 ?
-                DigitsInPositive(helper)  //  Optimisation for base 10 encoding
-              : Numsys.AsList
-                (
-                    helper.ToString(),
-                    10,
-                    exLength
-                ).Count;
-
-
-            Int32[] ids = new Int32[messageLength];
-            ids[0] = prAlphabet.IndexOf(encodedMessage[0]);
-            buffer = ids[0] + shifts[0];
-
-            List<Int16> encoding = Numsys.ToCustomAsUtf16Binary
-            (
-                Split.BigEndianInt16List
-                (
-                    buffer / exLength,
-                    10
-                ),
-                10,
-                exLength,
-                binKey.ExAlphabet,
-                maxEncodingLength
-            );
-            List<Int16> encrypted = new List<Int16>() { exAlphabet[buffer % exLength] };
-            encrypted.AddRange(encoding);
-
-            for (var curId = 1; curId < messageLength; curId++)
-            {
-                ids[curId] = prAlphabet.IndexOf(encodedMessage[curId]);
-                buffer = ids[curId] + shifts[curId % shCount] + ids[curId - 1];
-
-                encoding = Numsys.ToCustomAsUtf16Binary
-                (
-                    Split.BigEndianInt16List
-                    (
-                        buffer / exLength,
-                        10
-                    ),
-                    10,
-                    exLength,
-                    exAlphabet,
-                    maxEncodingLength
-                );
-
-                encrypted.Add(exAlphabet[buffer % exLength]);
-                encrypted.AddRange(encoding);
-            }
-            return encrypted;
-        }
 
 
 
@@ -1292,7 +1611,7 @@ namespace JabrAPI
         static public string FastDecrypt(string encrypted, EncryptionKey reKey)
         {
             Int32 exLength = reKey.ExLength, shCount = reKey.ShCount, encCurId = 0, buffer;
-            List<Int32> shifts = reKey.Shifts; string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
+            List<Int16> shifts = reKey.Shifts; string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
 
             Int32 helper = (Int32)Math.Ceiling
                 (
@@ -1378,7 +1697,7 @@ namespace JabrAPI
         {
             Int32 exLength = reKey.ExLength, encryptedLength = encrypted.Length, shCount = reKey.ShCount, encCurId = 0;
             Int32[] buffer = new Int32[encryptedLength], ids = new Int32[encryptedLength]; 
-            List<Int32> shifts = reKey.Shifts; string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
+            List<Int16> shifts = reKey.Shifts; string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
 
             for (var curChar = 0; curChar < encryptedLength; curChar++)
                 ids[curChar] = exAlphabet.IndexOf(encrypted[curChar]);
@@ -1446,79 +1765,6 @@ namespace JabrAPI
         }
 
 
-        static public string DecryptFromBinaryUtf16(List<Byte> encrypted, BinaryKey binKey)
-            => DecryptFromBinaryUtf16(FromBinary.AutoLEBytesToInt16(encrypted), new EncryptionKey(binKey), binKey);
-        static public string DecryptFromBinaryUtf16(List<Byte> encrypted, EncryptionKey reKey)
-            => DecryptFromBinaryUtf16(FromBinary.AutoLEBytesToInt16(encrypted), reKey, new BinaryKey(reKey));
-        static public string DecryptFromBinaryUtf16(List<Int16> encrypted, EncryptionKey reKey)
-            => DecryptFromBinaryUtf16(encrypted, reKey, new BinaryKey(reKey));
-        static public string DecryptFromBinaryUtf16(List<Int16> encrypted, BinaryKey binKey, EncryptionKey reKey)
-            => DecryptFromBinaryUtf16(encrypted, reKey, binKey);
-        static public string DecryptFromBinaryUtf16(List<Int16> encrypted, EncryptionKey reKey, BinaryKey binKey)
-        {
-            Int32 exLength = reKey.ExLength, shCount = reKey.ShCount, buffer, encCurId = 0;
-            List<Int32> shifts = reKey.Shifts; List<Int16> exAlphabet = binKey.ExAlphabet; string prAlphabet = reKey.PrAlphabet;
-
-            Int32 helper = (Int32)Math.Ceiling
-                (
-                    (double)
-                    (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
-                        reKey.PrLength * 2 + shifts.Max() - 4
-                    ) / exLength
-                );
-            Int32 maxEncodingLength = exLength == 10 ?
-                DigitsInPositive(helper)  // Optimisation for base 10 encoding
-              : Numsys.AsList
-                (
-                    helper.ToString(),
-                    10,
-                    exLength
-                ).Count;
-
-            Int32 realMessageLength = encrypted.Count / (maxEncodingLength + 1);
-            Int32 parsedEncoding = Numsys.ToSmallDecimalFromCustom
-            (
-                Utils.Interval
-                (
-                    encrypted, 
-                    1,
-                    1 + maxEncodingLength
-                ),
-                exLength,
-                exAlphabet
-            );
-
-            Int32[] decodedIds = new Int32[realMessageLength];
-            decodedIds[0] = exAlphabet.IndexOf(encrypted[0]) - shifts[0] + parsedEncoding * exLength;
-            string decrypted = prAlphabet[decodedIds[0]].ToString();
-
-
-            for (var curId = 1; curId < realMessageLength; curId++)
-            {
-                encCurId += maxEncodingLength + 1;
-                buffer = exAlphabet.IndexOf(encrypted[encCurId]) 
-                    - decodedIds[curId - 1] 
-                    - shifts[curId % shCount];
-
-                parsedEncoding = Numsys.ToSmallDecimalFromCustom
-                (
-                    Utils.Interval
-                    (
-                        encrypted,
-                        encCurId + 1,
-                        encCurId + 1 + maxEncodingLength
-                    ),
-                    exLength,
-                    exAlphabet
-                );
-
-                decodedIds[curId] = buffer + parsedEncoding * exLength;
-                decrypted += prAlphabet[decodedIds[curId]];
-            }
-
-            return decrypted;
-        }
-
 
 
 
@@ -1541,7 +1787,7 @@ namespace JabrAPI
         
 
 
-        static private void EncryptingInfo(Int32[] buffer, Int32 exLength, Int32 maxEncodingLength, Int32[] shifts, Int32 shCount, Int32[] ids, string encrypted, string message, Int32 messageLength)
+        static private void EncryptingInfo(Int32[] buffer, Int32 exLength, Int32 maxEncodingLength, Int16[] shifts, Int32 shCount, Int32[] ids, string encrypted, string message, Int32 messageLength)
         {
             //  margin = for ids, bf = buffer, sh = shifts, el = externalAlphabet.Length, sz = message length
             Int32 margin   = DigitsAmount(ids.Max());
@@ -1645,7 +1891,7 @@ namespace JabrAPI
             }
             ForegroundColor = ConsoleColor.Gray;
         }
-        static private void DecryptingInfo(Int32[] buffer, Int32 exLength, Int32 maxEncodingLength, Int32[] shifts, Int32 shCount, Int32[] ids, Int32[] decodedIds, string encrypted, string decrypted, Int32 messageLength)
+        static private void DecryptingInfo(Int32[] buffer, Int32 exLength, Int32 maxEncodingLength, Int16[] shifts, Int32 shCount, Int32[] ids, Int32[] decodedIds, string encrypted, string decrypted, Int32 messageLength)
         {
             //  margin = for ids, bf = buffer, sh = shifts, el = externalAlphabet.Length, sz = message length, en = parsed encoding
             Int32 margin   = DigitsAmount(ids.Max()), marginEn = DigitsAmount(decodedIds.Max() - buffer.Min());

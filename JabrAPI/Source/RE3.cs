@@ -14,43 +14,20 @@ namespace JabrAPI
         public class EncryptionKey : RE4.EncryptionKey
         {
 
-            public EncryptionKey(string alphabet, List<Int32> shifts)
-            {
-                _alphabet = alphabet;
-
-                _shifts.Clear();
-                if (shifts == null || shifts.Count == 0) _shifts.Add(0);
-                else _shifts.AddRange(shifts);
-            }
-            public EncryptionKey(string alphabet, Int32 shift)
-            {
-                _alphabet = alphabet;
-
-                _shifts.Clear();
-                _shifts.Add(shift);
-            }
+            public EncryptionKey(string alphabet, List<Int32> shifts) : base(alphabet, shifts) { }
+            public EncryptionKey(string alphabet, Int32 shift) : base(alphabet, shift) { }
             public EncryptionKey(string alphabet) => _alphabet = alphabet;
-            public EncryptionKey(Int32 shiftCount) => _shCount = shiftCount;
-            public EncryptionKey(RE4.BinaryKey binKey)
-            {
-                _alphabet = Encoding.Unicode.GetString(ToBinary.LittleEndian(binKey.Alphabet.ToArray()));
-
-                _shifts.Clear();
-                if (binKey.Shifts == null || binKey.Shifts.Count == 0) _shifts.Add(0);
-                else _shifts.AddRange(binKey.Shifts);
-            }
-            public EncryptionKey(bool autoGenerate = true)
-            {
-                if (autoGenerate) Default();
-                else SetDefault();
-            }
+            public EncryptionKey(Int32 shiftCount) : base(shiftCount) { }
+            public EncryptionKey(RE4.BinaryKey binKey) : base(binKey) { }
+            public EncryptionKey(bool autoGenerate = true) : base(autoGenerate) { }
         }
+
         public class BinaryKey : RE4.BinaryKey
         {
             public BinaryKey(string alphabet, List<Int32> shifts)
                 => Set(alphabet, shifts);
             public BinaryKey(RE4.EncryptionKey reKey) => Set(reKey);
-            public BinaryKey() { }
+            public BinaryKey() : base() { }
         }
 
 

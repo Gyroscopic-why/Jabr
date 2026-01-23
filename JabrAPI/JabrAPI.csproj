@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PublishAot>True</PublishAot>
@@ -18,6 +18,20 @@
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <DelaySign>False</DelaySign>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Source\Demo.cs" />
+    <Compile Remove="Source\RE3.cs" />
+    <Compile Remove="Source\RE4.cs" />
+    <Compile Remove="Source\Test_Benchmarker.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Source\Demo.cs" />
+    <None Include="Source\RE3.cs" />
+    <None Include="Source\RE4.cs" />
+    <None Include="Source\Test_Benchmarker.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="AVcontrol">
