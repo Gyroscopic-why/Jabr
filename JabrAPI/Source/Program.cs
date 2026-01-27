@@ -13,99 +13,113 @@ namespace JabrAPI
     {
         static void Main()
         {
-            RE5.EncryptionKey initial = new(true);
-            RE5.EncryptionKey copy = new(false);
-            Stopwatch timer = new();
+            RE5.BinaryKey reKey = new(true);
 
-            string exportBuffer = "";
+            string aboba = "aboba";
+            List<Byte> encrypted = RE5.Encrypt.Bytes(ToBinary.Utf16(aboba), reKey, true);
 
-            for (var hide = 0; hide < 1; hide++)
-            {
-                List<Int64> ms1 = [], ms2 = [];
-                const Int64 totalAttempts = 10, iterationsPerAttempt = 1_000_000;
-                Write($"\n\n\n\t\t[i]  - Starting benchmark of {totalAttempts * iterationsPerAttempt / 1_000_000}m Key Export & Import");
+            List<Byte> decrypted = RE5.Decrypt.Bytes(encrypted, reKey, true);
 
-                for (var attempt = 0; attempt < totalAttempts; attempt++)
-                {
-                    if (attempt % 2 == 0)
-                    {
-                        initial.Next();
+            Write("\n\tInitial:    " + aboba);
+            Write("\n\tEncr (bin): " + FromBinary.Utf16(encrypted));
+            Write("\n\tDecrypted:  " + FromBinary.Utf16(decrypted));
 
-                        Write("\n\t\t\tEXPORT     - ");
-                        timer.Start();
-
-                        for (var i = 0; i < iterationsPerAttempt; i++)
-                            exportBuffer = initial.ExportAsString();
-
-                        timer.Stop();
-                        ms1.Add(timer.ElapsedMilliseconds);
-                    }
-                    else
-                    {
-                        Write("\n\t\t\tIMPORT     - ");
-                        timer.Start();
-
-                        for (var i = 0; i < iterationsPerAttempt; i++) copy.ImportFromString(exportBuffer);
-
-                        timer.Stop();
-                        ms2.Add(timer.ElapsedMilliseconds);
-                    }
-
-                    string elapsed = ((double)timer.ElapsedMilliseconds / 1000).ToString().Replace(",", ".");
-                    Write($"\tAttempt {attempt + 1})\t Exp & Imp     {iterationsPerAttempt / 1_000}k: {elapsed}");
-                    timer.Reset();
+            ReadKey();
 
 
-                    if (attempt % 2 == 1)
-                    {
-                        Write("\n\t\t\tVALIDATING - ");
+            //RE5.EncryptionKey initial = new(true);
+            //RE5.EncryptionKey copy = new(false);
+            //Stopwatch timer = new();
 
-                        if (copy.ExportAsString() == exportBuffer)
-                        {
-                            ForegroundColor = ConsoleColor.Green;
-                            Write("\tSUCCESS! Import matches export");
-                            ForegroundColor = ConsoleColor.Gray;
-                        }
-                        else
-                        {
-                            ForegroundColor = ConsoleColor.Green;
-                            Write("\tFAILURE! See differences:");
-                            ForegroundColor = ConsoleColor.Gray;
-                            Write("\n\t\t\tInitial: " + exportBuffer);
-                            Write("\n\t\t\tImport:  " + copy.ExportAsString());
-                        }
-                    }
-                }
+            //string exportBuffer = "";
 
-                double min1 = (double)ms1.Min() / 1000, max1 = (double)ms1.Max() / 1000;
-                double min2 = (double)ms2.Min() / 1000, max2 = (double)ms2.Max() / 1000;
-                double sum1 = (double)ms1.Sum() / 1000, sum2 = (double)ms2.Sum() / 1000;
-                double avg1 = ms1.Average() / 1000, avg2 = ms2.Average() / 1000, avgGlobal = (avg1 + avg2) / 2;
+            //for (var hide = 0; hide < 1; hide++)
+            //{
+            //    List<Int64> ms1 = [], ms2 = [];
+            //    const Int64 totalAttempts = 10, iterationsPerAttempt = 1_000_000;
+            //    Write($"\n\n\n\t\t[i]  - Starting benchmark of {totalAttempts * iterationsPerAttempt / 1_000_000}m Key Export & Import");
 
-                bool isFirst1 = min1 < min2, isFirst2 = max1 > max2;
+            //    for (var attempt = 0; attempt < totalAttempts; attempt++)
+            //    {
+            //        if (attempt % 2 == 0)
+            //        {
+            //            initial.Next();
 
-                string i1 = min1.ToString().Replace(",", "."), a1 = max1.ToString().Replace(",", ".");
-                string i2 = min2.ToString().Replace(",", "."), a2 = max2.ToString().Replace(",", ".");
-                string v1 = avg1.ToString().Replace(",", "."), v2 = avg2.ToString().Replace(",", "."), v3 = avgGlobal.ToString().Replace(",", ".");
-                string s1 = sum1.ToString().Replace(",", "."), s2 = sum2.ToString().Replace(",", "."), s3 = (sum1 + sum2).ToString().Replace(",", ".");
+            //            Write("\n\t\t\tEXPORT     - ");
+            //            timer.Start();
 
-                Write("\n\n\t\t\tBenchmark finished");
-                Write($"\n\t\tEXPORT   - {iterationsPerAttempt / 1_000_000}m operations   interval: {i1}-{a1}, average: {v1}");
-                Write($"\n\t\tIMPORT   - {iterationsPerAttempt / 1_000_000}m operations   interval: {i2}-{a2}, average: {v2}");
-                Write($"\n\t\tGLOBAL   - {iterationsPerAttempt / 1_000_000}m operations   interval: ");
+            //            for (var i = 0; i < iterationsPerAttempt; i++)
+            //                exportBuffer = initial.ExportAsString();
 
-                if (isFirst1) Write($"{i1}-");
-                else Write($"{i2}-");
-                if (isFirst2) Write($"{a1}, average: {v3}");
-                else Write($"{a2}, average: {v3}");
+            //            timer.Stop();
+            //            ms1.Add(timer.ElapsedMilliseconds);
+            //        }
+            //        else
+            //        {
+            //            Write("\n\t\t\tIMPORT     - ");
+            //            timer.Start();
 
-                Write("\n\n\n\t\t\tTotal time elapsed for");
-                Write($"\n\t\tEXPORT    - {totalAttempts * iterationsPerAttempt / 1_000_000}m operations: {s1}");
-                Write($"\n\t\tIMPORT    - {totalAttempts * iterationsPerAttempt / 1_000_000}m operations: {s2}");
-                Write($"\n\t\tGLOBAL    - {totalAttempts * iterationsPerAttempt / 1_000_000}m operations: {s3}");
+            //            for (var i = 0; i < iterationsPerAttempt; i++) copy.ImportFromString(exportBuffer);
 
-                ReadKey();
-            }
+            //            timer.Stop();
+            //            ms2.Add(timer.ElapsedMilliseconds);
+            //        }
+
+            //        string elapsed = ((double)timer.ElapsedMilliseconds / 1000).ToString().Replace(",", ".");
+            //        Write($"\tAttempt {attempt + 1})\t Exp & Imp     {iterationsPerAttempt / 1_000}k: {elapsed}");
+            //        timer.Reset();
+
+
+            //        if (attempt % 2 == 1)
+            //        {
+            //            Write("\n\t\t\tVALIDATING - ");
+
+            //            if (copy.ExportAsString() == exportBuffer)
+            //            {
+            //                ForegroundColor = ConsoleColor.Green;
+            //                Write("\tSUCCESS! Import matches export");
+            //                ForegroundColor = ConsoleColor.Gray;
+            //            }
+            //            else
+            //            {
+            //                ForegroundColor = ConsoleColor.Green;
+            //                Write("\tFAILURE! See differences:");
+            //                ForegroundColor = ConsoleColor.Gray;
+            //                Write("\n\t\t\tInitial: " + exportBuffer);
+            //                Write("\n\t\t\tImport:  " + copy.ExportAsString());
+            //            }
+            //        }
+            //    }
+
+            //    double min1 = (double)ms1.Min() / 1000, max1 = (double)ms1.Max() / 1000;
+            //    double min2 = (double)ms2.Min() / 1000, max2 = (double)ms2.Max() / 1000;
+            //    double sum1 = (double)ms1.Sum() / 1000, sum2 = (double)ms2.Sum() / 1000;
+            //    double avg1 = ms1.Average() / 1000, avg2 = ms2.Average() / 1000, avgGlobal = (avg1 + avg2) / 2;
+
+            //    bool isFirst1 = min1 < min2, isFirst2 = max1 > max2;
+
+            //    string i1 = min1.ToString().Replace(",", "."), a1 = max1.ToString().Replace(",", ".");
+            //    string i2 = min2.ToString().Replace(",", "."), a2 = max2.ToString().Replace(",", ".");
+            //    string v1 = avg1.ToString().Replace(",", "."), v2 = avg2.ToString().Replace(",", "."), v3 = avgGlobal.ToString().Replace(",", ".");
+            //    string s1 = sum1.ToString().Replace(",", "."), s2 = sum2.ToString().Replace(",", "."), s3 = (sum1 + sum2).ToString().Replace(",", ".");
+
+            //    Write("\n\n\t\t\tBenchmark finished");
+            //    Write($"\n\t\tEXPORT   - {iterationsPerAttempt / 1_000_000}m operations   interval: {i1}-{a1}, average: {v1}");
+            //    Write($"\n\t\tIMPORT   - {iterationsPerAttempt / 1_000_000}m operations   interval: {i2}-{a2}, average: {v2}");
+            //    Write($"\n\t\tGLOBAL   - {iterationsPerAttempt / 1_000_000}m operations   interval: ");
+
+            //    if (isFirst1) Write($"{i1}-");
+            //    else Write($"{i2}-");
+            //    if (isFirst2) Write($"{a1}, average: {v3}");
+            //    else Write($"{a2}, average: {v3}");
+
+            //    Write("\n\n\n\t\t\tTotal time elapsed for");
+            //    Write($"\n\t\tEXPORT    - {totalAttempts * iterationsPerAttempt / 1_000_000}m operations: {s1}");
+            //    Write($"\n\t\tIMPORT    - {totalAttempts * iterationsPerAttempt / 1_000_000}m operations: {s2}");
+            //    Write($"\n\t\tGLOBAL    - {totalAttempts * iterationsPerAttempt / 1_000_000}m operations: {s3}");
+
+            //    ReadKey();
+            //}
 
 
 
@@ -138,7 +152,7 @@ namespace JabrAPI
 
             //Write("\n\tImport (COPY) - String Exported:\n" + copy.ExportAsString());
 
-            ReadKey();
+            //ReadKey();
 
 
             //TestBenchmarker.DecryptBenchmark();
@@ -147,7 +161,7 @@ namespace JabrAPI
 
             //TestBenchmarker.Run();
 
-            //RE4.EncryptionKey reKey1 = new RE3.EncryptionKey(2), reKey2 = new RE3.EncryptionKey(2);
+            //RE5.EncryptionKey reKey1 = new RE5.EncryptionKey(2), reKey2 = new RE3.EncryptionKey(2);
             //reKey1.Next();
             //reKey1.GenerateRandomShifts(0);
             //reKey2.Next();
@@ -156,6 +170,7 @@ namespace JabrAPI
             //Write("\n\treKey1: " + reKey1.ExportAsString() + "\n");
             //Write("\n\treKey2: " + reKey2.ExportAsString() + "\n");
 
+            //RE5.EncryptionKey reKey = new(true);
             //string initial = "aboba aboba aboba";
             //Write("\nInitial message:      " + initial);
             
@@ -182,40 +197,43 @@ namespace JabrAPI
 
 
             //Write("\n\n\t\t\tStarting benchmark...");
-            //for (var i = 1; i < 100_000; i++)
+            //for (var i = 1; i < 10_000; i++)
             //{
             //    reKey.Next();
 
-            //    string dec3 = RE3.FastDecrypt(RE3.FastEncrypt(initial, reKey), reKey);
-            //    if (dec3 != initial)
+            //    string dec5 = RE5.Decrypt.FastText(RE5.Encrypt.FastText(initial, reKey), reKey);
+            //    if (dec5 != initial)
             //    {
-            //        Write("\n\n\t\t\tRE3: Something went wrong at iteration " + i);
+            //        Write("\n\n\t\t\tRE5: Something went wrong at iteration " + i);
             //        Write("\n\tExpected: " + initial);
-            //        Write("\n\tGot: " + dec3);
+            //        Write("\n\tGot: " + dec5);
             //        Write("\n\tReKey: " + reKey);
             //        ReadKey();
             //        return;
             //    }
 
-            //    string dec4 = RE4.FastDecrypt(RE4.FastEncrypt(initial, reKey), reKey);
-            //    if (dec4 != initial)
-            //    {
-            //        Write("\n\n\t\t\tRE4: Something went wrong at iteration " + i);
-            //        Write("\n\tExpected: " + initial);
-            //        Write("\n\tGot: " + dec4);
-            //        Write("\n\tReKey: " + reKey);
-            //        ReadKey();
-            //        return;
-            //    }
+            //    //string dec4 = RE5.Decrypt.FastText(RE5.Encrypt.FastText(initial, reKey), reKey);
+            //    //if (dec4 != initial)
+            //    //{
+            //    //    Write("\n\n\t\t\tRE4: Something went wrong at iteration " + i);
+            //    //    Write("\n\tExpected: " + initial);
+            //    //    Write("\n\tGot: " + dec4);
+            //    //    Write("\n\tReKey: " + reKey);
+            //    //    ReadKey();
+            //    //    return;
+            //    //}
 
             //    if (i % 1000 == 0)
             //    {
-            //        Write("\n\t\tCompleted iteration " + i + ", no problems so far!");
+            //        Write("\n\t\tCompleted iteration " + i + ", ");
+            //        ForegroundColor = ConsoleColor.Green;
+            //        Write("no problems so far!");
+            //        ForegroundColor = ConsoleColor.Gray;
             //    }
             //}
 
             //Write("\n\n\t\tBenchmark finished, no problems :) ");
-            ReadKey();
+            //ReadKey();
         }
     }
 }

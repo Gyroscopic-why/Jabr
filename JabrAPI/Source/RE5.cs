@@ -1593,6 +1593,145 @@ namespace JabrAPI
                 => ToBinary.Utf16(Text(message, reKey, out exception));
             static public Byte[] FastTextToBytesUtf16(string message, EncryptionKey reKey)
                 => ToBinary.Utf16(FastText(message, reKey));
+
+
+
+
+
+
+
+            static public List<Byte> Bytes(Byte[] message, BinaryKey reKey, bool throwException = false)
+            {
+                if (message == null || message.Length < 1)
+                {
+                    if (throwException)
+                    {
+                        throw new ArgumentException
+                        (
+                            "Message is invalid - cannot be null or empty",
+                            nameof(message)
+                        );
+                    }
+                }
+                else if (reKey == null)
+                {
+                    if (throwException)
+                    {
+                        throw new ArgumentException
+                        (
+                            "Encryption key is undefined (null or empty)",
+                            nameof(reKey)
+                        );
+                    }
+                }
+                else if (reKey.IsExternalPartiallyValid(throwException))
+                {
+                    if (reKey.IsPrimaryValid([.. message], throwException))
+                    {
+                        try
+                        {
+                            return FastBytes(message, reKey);
+                        }
+
+                        catch (Exception)
+                        {
+                            if (throwException) throw;
+                        }
+                    }
+                }
+                return [];
+            }
+            static public List<Byte> Bytes(Byte[] message, BinaryKey reKey, out Exception? exception)
+            {
+                if (message == null || message.Length < 1)
+                {
+                    exception = new ArgumentException
+                    (
+                        "Message is invalid - cannot be null or empty",
+                        nameof(message)
+                    );
+                }
+                else if (reKey == null)
+                {
+                    exception = new ArgumentException
+                    (
+                        "Encryption key is undefined (null or empty)",
+                        nameof(reKey)
+                    );
+                }
+                else
+                {
+                    try
+                    {
+                        reKey.IsExternalPartiallyValid(true);
+                        reKey.IsPrimaryValid([.. message], true);
+
+                        List<Byte> result = FastBytes(message, reKey);
+                        exception = null;
+
+                        return result;
+                    }
+                    catch (Exception innerException) { exception = innerException; }
+                }
+                return [];
+            }
+            static public List<Byte> FastBytes(Byte[] message, BinaryKey reKey)
+            {
+                Int32 exLength = reKey.ExLength, messageLength = message.Length, shCount = reKey.ShCount, buffer;
+                List<Byte> shifts = reKey.Shifts, prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
+
+
+                Int32 helper = (Int32)Math.Ceiling
+                    (
+                        (double)
+                        (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                            reKey.PrLength * 2 + shifts.Max() - 4
+                        ) / exLength
+                    );
+                Int32 maxEncodingLength = exLength == 10 ?
+                    DigitsInPositive(helper)  //  Optimisation for base 10 encoding
+                  : Numsys.AsList
+                    (
+                        helper.ToString(),
+                        10,
+                        exLength
+                    ).Count;
+
+                Int32[] ids = new Int32[messageLength];
+                ids[0] = prAlphabet.IndexOf(message[0]);
+                buffer = ids[0] + shifts[0];
+
+                List<Byte> encoding = Numsys.ToCustomAsBinary
+                (
+                    Split.BigEndianByteList(buffer / exLength, 10),
+                    10,
+                    exLength,
+                    exAlphabet,
+                    maxEncodingLength
+                );
+                List<Byte> encrypted = [exAlphabet[buffer % exLength], .. encoding];
+
+
+                for (var curId = 1; curId < messageLength; curId++)
+                {
+                    ids[curId] = prAlphabet.IndexOf(message[curId]);
+                    buffer = ids[curId] + shifts[curId % shCount] + ids[curId - 1];
+
+                    encoding = Numsys.ToCustomAsBinary
+                    (
+                        Split.BigEndianByteList(buffer / exLength, 10),
+                        10,
+                        exLength,
+                        exAlphabet,
+                        maxEncodingLength
+                    );
+
+                    encrypted.AddRange([exAlphabet[buffer % exLength], .. encoding]);
+                }
+
+                return encrypted;
+            }
+
         }
         
         static public class Decrypt
@@ -1697,7 +1836,7 @@ namespace JabrAPI
                     ).Count;
 
                 Int32 realMessageLength = encrypted.Length / (maxEncodingLength + 1);
-                Int32 parsedEncoding = Numsys.ToSmallDecimalFromCustom
+                Int32 parsedEncoding = (Int32) Numsys.ToDecimalFromCustom
                 (
                     Utils.Interval
                     (
@@ -1721,7 +1860,7 @@ namespace JabrAPI
                         - decodedIds[curId - 1]
                         - shifts[curId % shCount];
 
-                    parsedEncoding = Numsys.ToSmallDecimalFromCustom
+                    parsedEncoding = (Int32) Numsys.ToDecimalFromCustom
                     (
                         Utils.Interval
                         (
@@ -1755,6 +1894,152 @@ namespace JabrAPI
                 => Text(FromBinary.Utf16(message), reKey, out exception);
             static public string FastTextFromBytesUtf16(Byte[] message, EncryptionKey reKey)
                 => FastText(FromBinary.Utf16(message), reKey);
+
+
+
+
+            static public List<Byte> Bytes(List<Byte> encrypted, BinaryKey reKey, bool throwException = false)
+            {
+                if (encrypted == null || encrypted.Count < 1)
+                {
+                    if (throwException)
+                    {
+                        throw new ArgumentException
+                        (
+                            "Encrypted message is invalid - cannot be null or empty",
+                            nameof(encrypted)
+                        );
+                    }
+                }
+                else if (reKey == null)
+                {
+                    if (throwException)
+                    {
+                        throw new ArgumentException
+                        (
+                            "Encryption key is undefined (null or empty)",
+                            nameof(reKey)
+                        );
+                    }
+                }
+                else if (reKey.IsPrimaryPartiallyValid(throwException))
+                {
+                    if (reKey.IsExternalValid(encrypted, throwException))
+                    {
+                        try
+                        {
+                            return FastBytes(encrypted, reKey);
+                        }
+
+                        catch (Exception)
+                        {
+                            if (throwException) throw;
+                        }
+                    }
+                }
+                return [];
+            }
+            static public List<Byte> Bytes(List<Byte> encrypted, BinaryKey reKey, out Exception? exception)
+            {
+                if (encrypted == null || encrypted.Count < 1)
+                {
+                    exception = new ArgumentException
+                    (
+                        "Encrypted message is invalid - cannot be null or empty",
+                        nameof(encrypted)
+                    );
+                }
+                else if (reKey == null)
+                {
+                    exception = new ArgumentException
+                    (
+                        "Encryption key is undefined (null or empty)",
+                        nameof(reKey)
+                    );
+                }
+                else
+                {
+                    try
+                    {
+                        reKey.IsPrimaryPartiallyValid(true);
+                        reKey.IsExternalValid(encrypted, true);
+
+                        List<Byte> result = FastBytes(encrypted, reKey);
+                        exception = null;
+
+                        return result;
+                    }
+                    catch (Exception innerException)
+                    {
+                        exception = innerException;
+                    }
+                }
+                return [];
+            }
+            static public List<Byte> FastBytes(List<Byte> encrypted, BinaryKey reKey)
+            {
+                Int32 exLength = reKey.ExLength, shCount = reKey.ShCount, encCurId = 0, buffer;
+                List<Byte> shifts = reKey.Shifts; List<Byte> prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
+
+                Int32 helper = (Int32)Math.Ceiling
+                    (
+                        (double)
+                        (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                            reKey.PrLength * 2 + shifts.Max() - 4
+                        ) / exLength
+                    );
+                Int32 maxEncodingLength = exLength == 10 ?
+                    DigitsInPositive(helper)  // Optimisation for base 10 encoding
+                  : Numsys.AsList
+                    (
+                        helper.ToString(),
+                        10,
+                        exLength
+                    ).Count;
+
+                Int32 realMessageLength = encrypted.Count / (maxEncodingLength + 1);
+                Int32 parsedEncoding = (Int32)Numsys.ToDecimalFromCustom
+                (
+                    Utils.Interval
+                    (
+                        encrypted,
+                        1,
+                        1 + maxEncodingLength
+                    ),
+                    exLength,
+                    exAlphabet
+                );
+
+                Int32[] decodedIds = new Int32[realMessageLength];
+                decodedIds[0] = exAlphabet.IndexOf(encrypted[0]) - shifts[0] + parsedEncoding * exLength;
+                List<Byte> decrypted = [prAlphabet[decodedIds[0]]];
+
+
+                for (var curId = 1; curId < realMessageLength; curId++)
+                {
+                    encCurId += maxEncodingLength + 1;
+                    buffer = exAlphabet.IndexOf(encrypted[encCurId])
+                        - decodedIds[curId - 1]
+                        - shifts[curId % shCount];
+
+                    parsedEncoding = (Int32)Numsys.ToDecimalFromCustom
+                    (
+                        Utils.Interval
+                        (
+                            encrypted,
+                            encCurId + 1,
+                            encCurId + 1 + maxEncodingLength
+                        ),
+                        exLength,
+                        exAlphabet
+                    );
+
+                    decodedIds[curId] = buffer + parsedEncoding * exLength;
+                    decrypted.Add(prAlphabet[decodedIds[curId]]);
+                }
+
+                return decrypted;
+            }
         }
 
 
@@ -1889,7 +2174,7 @@ namespace JabrAPI
 
             Int32 realMessageLength = encryptedLength / (maxEncodingLength + 1);
             Int32[] decodedIds = new Int32[realMessageLength];
-            Int32 parsedEncoding = Numsys.ToSmallDecimalFromCustom 
+            Int32 parsedEncoding = (Int32) Numsys.ToDecimalFromCustom 
             (
                 Utils.Interval
                 (
@@ -1912,7 +2197,7 @@ namespace JabrAPI
                 encCurId += maxEncodingLength + 1;
                 buffer[curId] = ids[encCurId] - decodedIds[curId - 1] - shifts[curId % shCount];
 
-                parsedEncoding = Numsys.ToSmallDecimalFromCustom
+                parsedEncoding = (Int32) Numsys.ToDecimalFromCustom
                 (
                     Utils.Interval
                     (
