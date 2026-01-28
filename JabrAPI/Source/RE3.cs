@@ -13,7 +13,6 @@ namespace JabrAPI
     {
         public class EncryptionKey : RE4.EncryptionKey
         {
-
             public EncryptionKey(string alphabet, List<Int32> shifts) : base(alphabet, shifts) { }
             public EncryptionKey(string alphabet, Int32 shift) : base(alphabet, shift) { }
             public EncryptionKey(string alphabet) => _alphabet = alphabet;
@@ -121,7 +120,6 @@ namespace JabrAPI
                 eID[i] = (buffer + eID[i - 1] + shifts[i % shCount]) % aLength;
                 encrypted += alphabet[eID[i]];
             }
-
             return encrypted;
         }
 

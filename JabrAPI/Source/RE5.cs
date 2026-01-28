@@ -158,7 +158,7 @@ namespace JabrAPI
                             (
                                 $"Unable to parse external alphabet length" +
                                 $"\nExpected length to be at indexes {offset}-{splitterId}" +
-                                $"\nInvalid sequence: {data.Substring(offset)}",
+                                $"\nInvalid sequence: {data[offset..]}",
                                 nameof(data) + "," + nameof(splitterId)
                             );
                         return false;
@@ -242,7 +242,7 @@ namespace JabrAPI
                             throw new ArgumentException
                             (
                                 $"Data length is insufficient for the specified shifts count:" +
-                                $" {parsedShiftCountInBytes / 4} from data[0-1]",
+                                $" {parsedShiftCountInBytes / 4} from data[0-4]",
                                 nameof(data)
                             );
                         return false;
@@ -272,7 +272,7 @@ namespace JabrAPI
                             (
                                 $"Data length is insufficient for the specified primary alphabet length" +
                                 $" {parsedLengthInBytes / 2} " +
-                                $"from data[{parsedShiftCountInBytes + 2}-{parsedShiftCountInBytes + 4}]",
+                                $"from data[{parsedShiftCountInBytes + 4}-{parsedShiftCountInBytes + 6}]",
                                 nameof(data)
                             );
                         return false;
@@ -284,7 +284,7 @@ namespace JabrAPI
                             (
                                 $"Primary alphabet length cant be less than 2 (required)" +
                                 $"\nParsed length: {parsedLengthInBytes / 2} " +
-                                $"from data[{parsedShiftCountInBytes + 4}-{parsedShiftCountInBytes + 8}]",
+                                $"from data[{parsedShiftCountInBytes + 4}-{parsedShiftCountInBytes + 6}]",
                                 nameof(data)
                             );
                         return false;
@@ -311,7 +311,7 @@ namespace JabrAPI
                             throw new ArgumentException
                             (
                                 $"Data length is insufficient for the specified external alphabet length" +
-                                $" {parsedLengthInBytes} from data[{parsedLengthInBytes + 1}]",
+                                $" {parsedLengthInBytes} from data[{parsedShiftCountInBytes + 2}-{parsedShiftCountInBytes + 4}]",
                                 nameof(data)
                             );
                         return false;
@@ -323,7 +323,7 @@ namespace JabrAPI
                             (
                                 $"External alphabet length cant be less than 2 (required)" +
                                 $"\nParsed length: {parsedLengthInBytes / 2} " +
-                                $"from data[{parsedShiftCountInBytes + 4}-{parsedShiftCountInBytes + 8}]",
+                                $"from data[{parsedShiftCountInBytes + 2}-{parsedShiftCountInBytes + 4}]",
                                 nameof(data)
                             );
                         return false;
@@ -1010,8 +1010,8 @@ namespace JabrAPI
 
         public class BinaryKey : IBinaryKey
         {
-            private List<Byte>  _primaryAlphabet = [];
-            private List<Byte> _externalAlphabet = [];
+            private readonly List<Byte>  _primaryAlphabet = [];
+            private readonly List<Byte> _externalAlphabet = [];
 
             private Byte _compactedPrMaxLength = 255, _compactedExMaxLength = 7;
 
@@ -1070,7 +1070,7 @@ namespace JabrAPI
                             throw new ArgumentException
                             (
                                 $"Data length is insufficient for the specified shifts count" +
-                                $" {parsedShiftCount} from data[0]",
+                                $" {parsedShiftCount} from data[0-4]",
                                 nameof(data)
                             );
                         return false;
@@ -1091,7 +1091,7 @@ namespace JabrAPI
                             throw new ArgumentException
                             (
                                 $"Data length is insufficient for the specified primary alphabet length" +
-                                $" {parsedLengthGuide} from data[{parsedShiftCount + 1}]",
+                                $" {parsedLengthGuide} from data[{parsedShiftCount + 4}]",
                                 nameof(data)
                             );
                         return false;
@@ -1103,7 +1103,7 @@ namespace JabrAPI
                             (
                                 $"Primary alphabet length cant be less than 2 (required)" +
                                 $"\nParsed length: {parsedLengthGuide} " +
-                                $"from data[{parsedShiftCount + 1}]",
+                                $"from data[{parsedShiftCount + 4}]",
                                 nameof(data)
                             );
                         return false;
@@ -1126,7 +1126,7 @@ namespace JabrAPI
                             throw new ArgumentException
                             (
                                 $"Data length is insufficient for the specified external alphabet length" +
-                                $" {parsedLengthGuide} from data[{parsedLengthGuide + 1}]",
+                                $" {parsedLengthGuide} from data[{parsedShiftCount + 1}]",
                                 nameof(data)
                             );
                         return false;
@@ -1164,10 +1164,10 @@ namespace JabrAPI
                 //  but sadly a byte can only fit a range 0-255, while we need 2-256
                 //  so we transform it from 2-256 into 1-255 and later reconstruct it back
                 IsPrimaryPartiallyValid();
-                result.AddRange((Byte)(PrLength - 1));
+                result.Add((Byte)(PrLength - 1));
                 result.AddRange(_primaryAlphabet);
 
-                result.AddRange((Byte)(ExLength - 1));
+                result.Add((Byte)(ExLength - 1));
                 result.AddRange(_externalAlphabet);
 
                 return result;
@@ -1308,8 +1308,11 @@ namespace JabrAPI
 
             private void Set(List<Byte> primary, List<Byte> external, List<Byte> shifts)
             {
-                _primaryAlphabet  = [.. primary];
-                _externalAlphabet = [.. external];
+                _primaryAlphabet.Clear();
+                _primaryAlphabet.AddRange(primary);
+
+                _externalAlphabet.Clear();
+                _externalAlphabet.AddRange(external);
 
                 _shifts.Clear();
                 if (shifts == null || shifts.Count == 0) _shifts.Add(0);
@@ -1353,7 +1356,7 @@ namespace JabrAPI
                 {
                     Byte maxValueInclusive = (Byte)Math.Min(255, remainingChoices.Count - 1);
                     var chosen   = _random.NextByte(0, maxValueInclusive);
-                    var chosenId = _random.Next    (0, resultAlphabet.Count);
+                    var chosenId = _random.Next    (resultAlphabet.Count);
 
                     resultAlphabet.Insert(chosenId, remainingChoices[chosen]);
                     remainingChoices.RemoveAt(chosen);
@@ -1372,12 +1375,17 @@ namespace JabrAPI
                         nameof(compactedLength_willBeIncreasedByOne)
                     );
 
-                _primaryAlphabet = [.. GenerateRandomAlphabet(compactedLength_willBeIncreasedByOne + 1)];
+                _primaryAlphabet.Clear();
+                _primaryAlphabet.AddRange(GenerateRandomAlphabet(compactedLength_willBeIncreasedByOne + 1));
             }
             public void GenerateRandomPrimary()
-                => _primaryAlphabet = _compactedPrMaxLength > 0
-                    ? [.. GenerateRandomAlphabet(_compactedPrMaxLength + 1)]
-                    : [.. GenerateRandomAlphabet(255)];
+            {
+                _primaryAlphabet.Clear();
+
+                _primaryAlphabet.AddRange(_compactedPrMaxLength > 0
+                    ? GenerateRandomAlphabet(_compactedPrMaxLength + 1)
+                    : GenerateRandomAlphabet(255));
+            }
 
             public void GenerateRandomExternal(Byte compactedLength_willBeIncreasedByOne = 255)
             {
@@ -1389,12 +1397,17 @@ namespace JabrAPI
                         nameof(compactedLength_willBeIncreasedByOne)
                     );
 
-                _externalAlphabet = [.. GenerateRandomAlphabet(compactedLength_willBeIncreasedByOne + 1)];
+                _externalAlphabet.Clear();
+                _externalAlphabet.AddRange(GenerateRandomAlphabet(compactedLength_willBeIncreasedByOne + 1));
             }
             public void GenerateRandomExternal()
-                => _externalAlphabet = _compactedPrMaxLength > 0
-                    ? [.. GenerateRandomAlphabet(_compactedExMaxLength + 1)]
-                    : [.. GenerateRandomAlphabet(8)];
+            {
+                _externalAlphabet.Clear();
+
+                _externalAlphabet.AddRange(_compactedPrMaxLength > 0
+                    ? GenerateRandomAlphabet(_compactedExMaxLength + 1)
+                    : GenerateRandomAlphabet(8));
+            }
 
 
 
