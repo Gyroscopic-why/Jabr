@@ -88,6 +88,7 @@ namespace JabrAPI
             public Int32  ExternalLength => _externalAlphabet == null ? -1 : _externalAlphabet.Length;
             public Int32  ExLength       => _externalAlphabet == null ? -1 : _externalAlphabet.Length;
 
+            override public string FinalAlphabet => _externalAlphabet;
 
 
 
@@ -362,22 +363,21 @@ namespace JabrAPI
             static public bool IsPrimaryValid(string message, string primary, bool throwException = false)
             {
                 if (!IsPrimaryPartiallyValid(primary, throwException)) return false;
+
                 foreach (char c in message)
                 {
                     if (!primary.Contains(c))
                     {
                         if (throwException)
-                        {
                             throw new ArgumentException
                             (
-                                "Message contains characters not present in the primary alphabet",
-                                "message, char: " + c
+                                $"Message contains characters not present in the primary alphabet" +
+                                $"\nMissing character: {c}",
+                                nameof(primary)
                             );
-                        }
                         return false;
                     }
                 }
-
                 return true;
             }
 
@@ -388,13 +388,11 @@ namespace JabrAPI
                 if (primary == null || primary == "" || primary.Length < 2)
                 {
                     if (throwException)
-                    {
                         throw new ArgumentException
                         (
                             "Primary alphabet is not set or is too short",
-                            nameof(primary) + ", " + nameof(_primaryAlphabet)
+                            nameof(primary)
                         );
-                    }
                     return false;
                 }
                 for (var curId = 0; curId < primary.Length; curId++)
@@ -404,13 +402,12 @@ namespace JabrAPI
                         if (primary[curId] == primary[id2])
                         {
                             if (throwException)
-                            {
                                 throw new ArgumentException
                                 (
-                                    "external alphabet contains duplicates characters",
-                                    "external (or _externalAlphabet) duplicate char: " + primary[curId]
+                                    $"Primary alphabet contains duplicates characters" +
+                                    $"\nDuplicate char: {primary[curId]}",
+                                    nameof(primary)
                                 );
-                            }
                             return false;
                         }
                     }
@@ -432,17 +429,15 @@ namespace JabrAPI
                     if (!external.Contains(c))
                     {
                         if (throwException)
-                        {
                             throw new ArgumentException
                             (
-                                "Message contains characters not present in the external alphabet",
-                                "message, char: " + c
+                                $"Message contains characters not present in the external alphabet" +
+                                $"\nMissing character: {c}",
+                                nameof(external)
                             );
-                        }
                         return false;
                     }
                 }
-
                 return true;
             }
 
@@ -453,13 +448,11 @@ namespace JabrAPI
                 if (external == null || external == "" || external.Length < 2)
                 {
                     if (throwException)
-                    {
                         throw new ArgumentException
                         (
                             "External alphabet is not set or is too short",
-                            nameof(external) + ", " + nameof(_externalAlphabet)
+                            nameof(external)
                         );
-                    }
                     return false;
                 }
                 for (var curId = 0; curId < external.Length; curId++)
@@ -469,13 +462,12 @@ namespace JabrAPI
                         if (external[curId] == external[id2])
                         {
                             if (throwException)
-                            {
                                 throw new ArgumentException
                                 (
-                                    "external alphabet contains duplicates characters",
-                                    "external (or _externalAlphabet) duplicate char: " + external[curId]
+                                    $"External alphabet contains duplicates characters" +
+                                    $"Duplicate char: {external[curId]}",
+                                    nameof(external)
                                 );
-                            }
                             return false;
                         }
                     }
@@ -484,7 +476,7 @@ namespace JabrAPI
                 return true;
             }
 
-            
+
 
 
 
@@ -1051,6 +1043,8 @@ namespace JabrAPI
             public Int32 ExternalLength => _externalAlphabet == null ? -1 : _externalAlphabet.Count;
             public Int32 ExLength       => _externalAlphabet == null ? -1 : _externalAlphabet.Count;
 
+            override public List<Byte> FinalAlphabet => _externalAlphabet;
+
 
 
 
@@ -1180,6 +1174,7 @@ namespace JabrAPI
             static public bool IsPrimaryValid(List<Byte> message, List<Byte> primary, bool throwException = false)
             {
                 if (!IsPrimaryPartiallyValid(primary, throwException)) return false;
+
                 foreach (Byte b in message)
                 {
                     if (!primary.Contains(b))
@@ -1188,14 +1183,14 @@ namespace JabrAPI
                         {
                             throw new ArgumentException
                             (
-                                "Message contains bytes not present in the primary alphabet",
-                                "message, Byte: " + b
+                                $"Message contains bytes not present in the primary alphabet" +
+                                $"\nMissing byte: {b}",
+                                nameof(primary)
                             );
                         }
                         return false;
                     }
                 }
-
                 return true;
             }
 
@@ -1210,7 +1205,7 @@ namespace JabrAPI
                         throw new ArgumentException
                         (
                             "Primary alphabet is not set, too short or too long",
-                            nameof(primary) + ", " + nameof(_primaryAlphabet)
+                            nameof(primary)
                         );
                     }
                     return false;
@@ -1225,8 +1220,9 @@ namespace JabrAPI
                             {
                                 throw new ArgumentException
                                 (
-                                    "external alphabet contains duplicates characters",
-                                    "external (or _externalAlphabet) duplicate byte: " + primary[curId]
+                                    $"Primary alphabet contains duplicates characters" +
+                                    $"\nDuplicate byte: {primary[curId]}",
+                                    nameof(primary)
                                 );
                             }
                             return false;
@@ -1253,14 +1249,14 @@ namespace JabrAPI
                         {
                             throw new ArgumentException
                             (
-                                "Message contains bytes not present in the external alphabet",
-                                "message, Byte: " + b
+                                $"Message contains bytes not present in the external alphabet" +
+                                $"\nMissing byte: {b}",
+                                nameof(external)
                             );
                         }
                         return false;
                     }
                 }
-
                 return true;
             }
 
@@ -1275,7 +1271,7 @@ namespace JabrAPI
                         throw new ArgumentException
                         (
                             "External alphabet is not set, too short or too long",
-                            nameof(external) + ", " + nameof(_externalAlphabet)
+                            nameof(external)
                         );
                     }
                     return false;
@@ -1290,8 +1286,9 @@ namespace JabrAPI
                             {
                                 throw new ArgumentException
                                 (
-                                    "external alphabet contains duplicates characters",
-                                    "external (or _externalAlphabet) duplicate byte: " + external[curId]
+                                    "External alphabet contains duplicates characters" +
+                                    $"Duplicate byte: {external[curId]}",
+                                    nameof(external)
                                 );
                             }
                             return false;

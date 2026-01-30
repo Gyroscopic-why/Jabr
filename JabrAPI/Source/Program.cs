@@ -1,10 +1,13 @@
-﻿using AVcontrol;
-using JabrAPI.Source;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System;
 using System.Linq;
+using System.Diagnostics;
+using System.Collections.Generic;
+
 using static System.Console;
+
+
+using AVcontrol;
+using JabrAPI.Source;
 
 
 
@@ -122,10 +125,8 @@ namespace JabrAPI
             //    ReadKey();
             //}
 
-
-
-            Template.BinaryNoisifier initial = new([1, 2, 3], true);
-            Template.BinaryNoisifier copy = new();
+            BinaryNoisifier initial = new([1, 2, 3], true);
+            BinaryNoisifier copy = new();
             Stopwatch timer = new();
 
             List<Byte> exportBuffer = [];
