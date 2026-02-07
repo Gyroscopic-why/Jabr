@@ -29,17 +29,7 @@ namespace JabrAPI.Source
         public BinaryNoisifier(List<Byte> primaryNoise, List<Byte> complexNoise)
             => Set(primaryNoise, complexNoise);
         public BinaryNoisifier(BinaryNoisifier otherNoisifier, bool fullCopy = true)
-        {
-            Set(otherNoisifier.PrimaryNoise, otherNoisifier.ComplexNoise);
-
-            if (fullCopy)
-                SetDefault
-                (
-                    otherNoisifier._banned,
-                    otherNoisifier._primaryCount,
-                    otherNoisifier._complexCount
-                );
-        }
+            => Copy(otherNoisifier, fullCopy);
         public BinaryNoisifier(List<Byte> banned, bool autoGenerate = true)
         {
             if (autoGenerate) Default(banned);
@@ -252,7 +242,7 @@ namespace JabrAPI.Source
 
 
 
-        public void SetDefault(List<Byte> banned, Byte primaryCount = 8, Byte complexCount = 16)
+        public void SetDefault(List<Byte> banned, Byte primaryCount, Byte complexCount)
         {
             _banned.Clear();
             _banned.AddRange(banned);
@@ -264,6 +254,11 @@ namespace JabrAPI.Source
             _primaryCount = primaryCount;
             _complexCount = complexCount;
         }
+        public void SetDefault(List<Byte> banned)
+        {
+            _banned.Clear();
+            _banned.AddRange(banned);
+        }
 
         public void SetDefaultOnlyPr(Byte primaryCount = 8)
             => _primaryCount = primaryCount;
@@ -274,6 +269,18 @@ namespace JabrAPI.Source
         {
             SetDefault(banned);
             GenerateAll();
+        }
+        public  void Copy(BinaryNoisifier otherNoisifier, bool fullCopy = true)
+        {
+            Set(otherNoisifier.PrimaryNoise, otherNoisifier.ComplexNoise);
+
+            if (fullCopy)
+                SetDefault
+                (
+                    otherNoisifier.Banned,
+                    otherNoisifier._primaryCount,
+                    otherNoisifier._complexCount
+                );
         }
         private void Set(List<Byte> primaryNoise, List<Byte> complexNoise)
         {

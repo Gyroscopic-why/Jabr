@@ -11,7 +11,7 @@ using static JabrAPI.Source.Template;
 namespace JabrAPI
 {
     public class RE5
-    { 
+    {
         public class EncryptionKey : IEncryptionKey
         {
             private string _primaryAlphabet  = "";
@@ -1012,16 +1012,8 @@ namespace JabrAPI
             public BinaryKey(List<Byte> primary, List<Byte> external, List<Byte> shifts)
                 => Set(primary, external, shifts);
             public BinaryKey(BinaryKey otherKey, bool fullCopy = true)
-            {
-                Set(otherKey.Primary, otherKey.External, otherKey.Shifts);
-
-                if (fullCopy) 
-                    SetDefault
-                    (
-                        otherKey._compactedPrMaxLength, 
-                        otherKey._compactedExMaxLength
-                    );
-            }
+                => Copy(otherKey, fullCopy);
+            
             public BinaryKey(List<Byte> exported) => ImportFromBinary(exported);
             public BinaryKey(bool autoGenerate = true)
             {
@@ -1049,11 +1041,66 @@ namespace JabrAPI
 
 
 
-            public override bool ImportFromBinary(List<byte> data, bool throwExceptions = false)
+            public override bool ImportFromBinary(List<byte> exportData, bool throwExceptions = false)
             {
                 try
                 {
+                    List<Byte> data = [.. exportData];
+                    if (data.Count < 2)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data length is insufficient even for an empty noisifier",
+                                nameof(data)
+                            );
+                        return false;
+                    }
+
+                    Int32 noisifierBytesCount = data[0];
+                    if (data.Count < noisifierBytesCount + 1)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data length is insufficient for the specified PrimaryNoise in the imported noisifier\n" +
+                                $"PrimaryNoiseCount: {noisifierBytesCount} from data[0]",
+                                nameof(data)
+                            );
+                        return false;
+                    }
+
+                    noisifierBytesCount += data[noisifierBytesCount + 1];
+                    if (data.Count < noisifierBytesCount + 2)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data length is insufficient for the exported noisifier in bytes count\n" +
+                                $"Specified noisifier bytes: {noisifierBytesCount} from data[0] + data[" +
+                                $"{noisifierBytesCount - data[noisifierBytesCount + 1]}",
+                                nameof(data)
+                            );
+                        return false;
+                    }
+
+
+                    _noisifier.ImportFromBinary(data.GetRange(0, noisifierBytesCount + 2), throwExceptions);
+                    data.RemoveRange(0, noisifierBytesCount + 2);
+
+
+                    if (data.Count < 10)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data length is insufficient even for an empty BinaryKey",
+                                nameof(data)
+                            );
+                        return false;
+                    }
                     Int32 parsedShiftCount = FromBinary.BigEndian<Int32>([.. data.GetRange(0, 4)]);
+
 
                     //  6 is the lowest possible length of an exported key
                     //  1x2 bytes reserved for PrLength and ExLength
@@ -1150,21 +1197,37 @@ namespace JabrAPI
             }
             public override List<Byte> ExportAsBinary()
             {
-                List<Byte> result = [.. ToBinary.BigEndian(_shifts.Count)];
-                result.AddRange(_shifts);
+                //List<Byte> result = [.. _noisifier.ExportAsBinary()];
 
-                //  -1 is needed because we cant physically have alphabets
-                //  longer than 256 and also smaller than 2
-                //  but sadly a byte can only fit a range 0-255, while we need 2-256
-                //  so we transform it from 2-256 into 1-255 and later reconstruct it back
-                IsPrimaryPartiallyValid();
-                result.Add((Byte)(PrLength - 1));
-                result.AddRange(_primaryAlphabet);
+                //result.AddRange(ToBinary.BigEndian(_shifts.Count));
+                //result.AddRange(_shifts);
 
-                result.Add((Byte)(ExLength - 1));
-                result.AddRange(_externalAlphabet);
+                ////  -1 is needed because we cant physically have alphabets
+                ////  longer than 256 and also smaller than 2
+                ////  but sadly a byte can only fit a range 0-255, while we need 2-256
+                ////  so we transform it from 2-256 into 1-255 and later reconstruct it back
+                ////IsPrimaryPartiallyValid();
+                //result.Add((Byte)(PrLength - 1));
+                //result.AddRange(_primaryAlphabet);
 
-                return result;
+                //result.Add((Byte)(ExLength - 1));
+                //result.AddRange(_externalAlphabet);
+
+                //return result;
+
+                return
+                [
+                    .. _noisifier.ExportAsBinary(),
+
+                    .. ToBinary.BigEndian(ShCount),
+                    .. _shifts,
+
+                    (Byte)(PrLength - 1),
+                    .. _primaryAlphabet,
+
+                    (Byte)(ExLength - 1),
+                    .. _externalAlphabet
+                ];
             }
 
 
@@ -1300,10 +1363,23 @@ namespace JabrAPI
             }
 
 
+            
 
 
+            public  void Copy(BinaryKey otherKey, bool fullCopy = true)
+            {
+                _noisifier.Copy(otherKey.Noisifier, fullCopy);
 
-            private void Set(List<Byte> primary, List<Byte> external, List<Byte> shifts)
+                Set(otherKey.Primary, otherKey.External, otherKey.Shifts);
+
+                if (fullCopy)
+                    SetDefault
+                    (
+                        otherKey._compactedPrMaxLength,
+                        otherKey._compactedExMaxLength
+                    );
+            }
+            private void Set (List<Byte> primary, List<Byte> external, List<Byte> shifts)
             {
                 _primaryAlphabet.Clear();
                 _primaryAlphabet.AddRange(primary);
@@ -1340,6 +1416,9 @@ namespace JabrAPI
                 GenerateRandomPrimary();
                 GenerateRandomExternal();
                 GenerateRandomShifts();
+
+                _noisifier.SetDefault(External);
+                _noisifier.Next(false);
             }
 
 
@@ -1352,8 +1431,8 @@ namespace JabrAPI
                 for (var remaining = 0; remaining < length; remaining++)
                 {
                     Byte maxValueInclusive = (Byte)Math.Min(255, remainingChoices.Count - 1);
-                    var chosen   = _random.NextByte(0, maxValueInclusive);
-                    var chosenId = _random.Next    (resultAlphabet.Count);
+                    var chosen   = _random.Next(0, maxValueInclusive);
+                    var chosenId = _random.Next(resultAlphabet.Count);
 
                     resultAlphabet.Insert(chosenId, remainingChoices[chosen]);
                     remainingChoices.RemoveAt(chosen);
@@ -1401,7 +1480,7 @@ namespace JabrAPI
             {
                 _externalAlphabet.Clear();
 
-                _externalAlphabet.AddRange(_compactedPrMaxLength > 0
+                _externalAlphabet.AddRange(_compactedExMaxLength > 0
                     ? GenerateRandomAlphabet(_compactedExMaxLength + 1)
                     : GenerateRandomAlphabet(8));
             }
@@ -1688,7 +1767,7 @@ namespace JabrAPI
 
                 List<Byte> encoding = Numsys.ToCustomAsBinary
                 (
-                    Split.BigEndianByteList(buffer / exLength, 10),
+                    Split.BigEndian<Int32, Byte>(buffer / exLength, 10),
                     10,
                     exLength,
                     exAlphabet,
@@ -1704,7 +1783,7 @@ namespace JabrAPI
 
                     encoding = Numsys.ToCustomAsBinary
                     (
-                        Split.BigEndianByteList(buffer / exLength, 10),
+                        Split.BigEndian<Int32, Byte>(buffer / exLength, 10),
                         10,
                         exLength,
                         exAlphabet,

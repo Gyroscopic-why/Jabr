@@ -17,6 +17,21 @@ namespace JabrAPI
     {
         static void Main()
         {
+            string message = "aboba";
+            Byte[] binMsg = ToBinary.Utf16(message);
+
+            //RE5.EncryptionKey reKey = new();
+            //RE5.BinaryKey binKey = new();
+
+            //RE5.Encrypt.WithNoise.TextToBytesUtf16(message, reKey);
+            //RE5.Encrypt.WithNoise.Bytes(binMsg, binKey);
+
+            //RE5.Decrypt.WithNoise.TextToBytesUtf16(message);
+            //RE5.Decrypt.WithNoise.Bytes(binMsg, binMsg);
+
+
+
+
             //RE5.BinaryKey reKey = new(true);
 
             //string aboba = "aboba";
@@ -125,8 +140,31 @@ namespace JabrAPI
             //    ReadKey();
             //}
 
-            BinaryNoisifier initial = new([1, 2, 3], true);
-            BinaryNoisifier copy = new();
+            RE5.BinaryKey initial2 = new(true);
+            RE5.BinaryKey copy2 = new(false);
+
+            List<Byte> export = initial2.ExportAsBinary();
+
+            Write("\n\t\t\tInitial: ");
+            foreach (var infoByte in export)
+                Write(infoByte + " ");
+
+            copy2.ImportFromBinary(export);
+            List<Byte> new_import = copy2.ExportAsBinary();
+            Write("\n\t\t\tImport:  ");
+            foreach (var infoByte in new_import)
+                Write(infoByte + " ");
+
+            ReadKey();
+
+
+
+
+
+
+
+            RE5.BinaryKey initial = new(true);
+            RE5.BinaryKey copy    = new(false);
             Stopwatch timer = new();
 
             List<Byte> exportBuffer = [];
@@ -134,8 +172,8 @@ namespace JabrAPI
             for (var hide = 0; hide < 1; hide++)
             {
                 List<Int64> ms1 = [], ms2 = [];
-                const Int64 totalAttempts = 10, iterationsPerAttempt = 33_333_000;
-                Write($"\n\n\n\t\t[i]  - Starting benchmark of {totalAttempts * iterationsPerAttempt / 1_000_000}m Key Export & Import");
+                const Int64 totalAttempts = 10, iterationsPerAttempt = 333_000;
+                Write($"\n\n\n\t\t[i]  - Starting benchmark of {totalAttempts * iterationsPerAttempt / 1_000}k Key Export & Import");
 
                 for (var attempt = 0; attempt < totalAttempts; attempt++)
                 {
@@ -157,7 +195,7 @@ namespace JabrAPI
                         Write("\n\t\t\tIMPORT     - ");
                         timer.Start();
 
-                        for (var i = 0; i < iterationsPerAttempt; i++) copy.ImportFromBinary(exportBuffer);
+                        for (var i = 0; i < iterationsPerAttempt; i++) copy.ImportFromBinary(exportBuffer, true);
 
                         timer.Stop();
                         ms2.Add(timer.ElapsedMilliseconds);
@@ -183,10 +221,12 @@ namespace JabrAPI
                             Write("\n\t\t\tInitial: ");
                             foreach (var infoByte in exportBuffer)
                                 Write(infoByte + " ");
-                           
+
                             Write("\n\t\t\tImport:  ");
                             foreach (var infoByte in import)
                                 Write(infoByte + " ");
+
+                            ReadKey();
                         }
                         else
                         {
@@ -210,6 +250,8 @@ namespace JabrAPI
 
                                     i += exportBuffer.Count;
                                     doesMatch = false;
+
+                                    ReadKey();
                                 }
                             }
                             if (doesMatch)
