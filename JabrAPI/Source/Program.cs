@@ -140,11 +140,11 @@ namespace JabrAPI
             //    ReadKey();
             //}
 
-            Noisifier initial2 = new(['1', '2', '3'], true);
-            Noisifier copy2 = new();
+            //Noisifier initial2 = new(['1', '2', '3'], true);
+            //Noisifier copy2 = new();
 
-            //RE5.EncryptionKey initial2 = new(true);
-            //RE5.EncryptionKey copy2 = new(false);
+            RE5.EncryptionKey initial2 = new(true);
+            RE5.EncryptionKey copy2 = new(false);
 
             List<Byte> export = initial2.ExportAsBinary();
 

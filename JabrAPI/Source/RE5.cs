@@ -205,10 +205,80 @@ namespace JabrAPI
             }
 
 
-            override public bool ImportFromBinary(List<byte> data, bool throwExceptions = false)
+            override public bool ImportFromBinary(List<Byte> exportData, bool throwExceptions = false)
             {
                 try
                 {
+                    List<Byte> data = [.. exportData];
+                    if (data.Count < 8)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data length is insufficient even for an empty noisifier",
+                                nameof(data)
+                            );
+                        return false;
+                    }
+
+
+                    Int32 noisifierBytesCount = FromBinary.BigEndian<Int32>
+                    (
+                        [..
+                            data.GetRange(0, 4)
+                        ]
+                    );
+
+                    if (data.Count < noisifierBytesCount + 4)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data length is insufficient for the specified PrimaryNoise in the imported noisifier\n" +
+                                $"PrimaryNoiseCount: {noisifierBytesCount + 4} from data[0-4]",
+                                nameof(data)
+                            );
+                        return false;
+                    }
+
+
+                    noisifierBytesCount += FromBinary.BigEndian<Int32>
+                    (
+                        [..
+                            data.GetRange(noisifierBytesCount + 4, 4)
+                        ]
+                    );
+
+                    if (data.Count < noisifierBytesCount + 4)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data length is insufficient for the exported noisifier in bytes count\n" +
+                                $"Specified noisifier bytes: {noisifierBytesCount} from data[0] + data[" +
+                                $"{noisifierBytesCount - data[noisifierBytesCount + 1]}",
+                                nameof(data)
+                            );
+                        return false;
+                    }
+
+
+                    _noisifier.ImportFromBinary(data.GetRange(0, noisifierBytesCount + 8), throwExceptions);
+                    data.RemoveRange(0, noisifierBytesCount + 8);
+
+
+                    if (data.Count < 10)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data length is insufficient even for an empty BinaryKey",
+                                nameof(data)
+                            );
+                        return false;
+                    }
+
+
                     Int32 parsedShiftCountInBytes = FromBinary.BigEndian<Int32>
                     (
                         [.. 
@@ -346,6 +416,8 @@ namespace JabrAPI
 
                 return
                 [
+                    .. _noisifier.ExportAsBinary(),
+
                     .. ToBinary.BigEndian(exportedShifts.Count / 2),
                     .. exportedShifts,
 
@@ -576,7 +648,7 @@ namespace JabrAPI
 
             public  void Copy(EncryptionKey otherKey, bool fullCopy = true)
             {
-                //_noisifier.Copy(otherKey.Noisifier, fullCopy);
+                _noisifier.Copy(otherKey.Noisifier, fullCopy);
 
                 Set(otherKey.Primary, otherKey.External, otherKey.Shifts);
 
@@ -621,6 +693,9 @@ namespace JabrAPI
                     else GenerateRandomShifts(_shCount);
                 }
                 else GenerateRandomShifts(_shifts.Count);
+
+                _noisifier.SetDefault([.. External]);
+                _noisifier.Next(false);
             }
 
 
