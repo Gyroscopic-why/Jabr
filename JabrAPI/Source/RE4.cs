@@ -359,14 +359,14 @@ namespace JabrAPI
 
                 while (necessary.Count > 0)
                 {
-                    buffer = _random.Next(0, necessary.Count);
+                    buffer  = _random.Next(necessary.Count);
                     _alphabet += necessary[buffer];
                     necessary.RemoveAt(buffer);
                 }
                 for (var remaining = Math.Min(maxLength, allowed.Count); remaining > 0; remaining--)
                 {
-                    buffer = _random.Next(0, allowed.Count);
-                    bufferId = _random.Next(0, _alphabet.Length);
+                    buffer    = _random.Next(allowed.Count);
+                    bufferId  = _random.Next(_alphabet.Length);
 
                     _alphabet = _alphabet.Insert(bufferId, allowed[buffer].ToString());
                     allowed.RemoveAt(buffer);

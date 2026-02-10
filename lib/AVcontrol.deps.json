@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "AVcontrol/2.6": {
+        "runtime": {
+          "AVcontrol.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "AVcontrol/2.6": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

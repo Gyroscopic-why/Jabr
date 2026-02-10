@@ -293,7 +293,6 @@ __pycache__/
 # Our program cashes
 *.suo
 *.cache
-*.json
 *.csproj.FileListAbsolute.txt
 *.AssemblyAttributes.cs
 *.targets

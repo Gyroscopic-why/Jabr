@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 using AVcontrol;
 
+using JabrAPI.Source;
 using static JabrAPI.Source.Template;
 
 
@@ -346,7 +347,7 @@ namespace JabrAPI
                 List<Byte> result = [.. ToBinary.BigEndian(_shifts.Count)];
                 for (var curId = 0; curId < _shifts.Count; curId++)
                     result.AddRange(ToBinary.BigEndian(_shifts[curId]));
-                
+
                 result.AddRange(ToBinary.BigEndian((UInt16)PrLength));
                 result.AddRange(ToBinary.Utf16(_primaryAlphabet));
 
@@ -575,8 +576,8 @@ namespace JabrAPI
 
             override public  void SetDefault()
             {
-                _primaryNecessary  = [.. " " + DEFAULT_CHARS];
-                _externalAllowed   = [.. DEFAULT_CHARS];
+                _primaryNecessary  = [.. DEFAULT.CHARACTERS.WITH_SPACE];
+                _externalAllowed   = [.. DEFAULT.CHARACTERS.WITHOUT_SPACE];
 
                 _primaryMaxLength  = _primaryNecessary.Count;
                 _externalMaxLength = 8;
@@ -801,14 +802,14 @@ namespace JabrAPI
 
                 while (necessary.Count > 0)
                 {
-                    buffer = _random.Next(0, necessary.Count);
+                    buffer = _random.Next(necessary.Count);
                     _primaryAlphabet += necessary[buffer];
                     necessary.RemoveAt(buffer);
                 }
                 for (var remaining = Math.Min(maxLength, allowed.Count); remaining > 0; remaining--)
                 {
-                    buffer   = _random.Next(0, allowed.Count);
-                    bufferId = _random.Next(0, _primaryAlphabet.Length);
+                    buffer   = _random.Next(allowed.Count);
+                    bufferId = _random.Next(_primaryAlphabet.Length);
 
                     _primaryAlphabet = _primaryAlphabet.Insert(bufferId, allowed[buffer].ToString());
                     allowed.RemoveAt(buffer);
@@ -826,7 +827,7 @@ namespace JabrAPI
 
             public void GenerateRandomPrimary(Int32 maxLength, List<char> necessary, List<char> banned, bool validateParameters = true)
             {
-                List<char> allowed = [.. (" " + DEFAULT_CHARS)];
+                List<char> allowed = [.. DEFAULT.CHARACTERS.WITH_SPACE];
 
                 if (banned != null && banned.Count > 0)
                 {
@@ -900,14 +901,14 @@ namespace JabrAPI
 
                 while (necessary.Count > 0)
                 {
-                    buffer = _random.Next(0, necessary.Count);
+                    buffer = _random.Next(necessary.Count);
                     _externalAlphabet += necessary[buffer];
                     necessary.RemoveAt(buffer);
                 }
                 for (var remaining = Math.Min(maxLength, allowed.Count); remaining > 0; remaining--)
                 {
-                    buffer = _random.Next(0, allowed.Count);
-                    bufferId = _random.Next(0, _externalAlphabet.Length);
+                    buffer   = _random.Next(allowed.Count);
+                    bufferId = _random.Next(_externalAlphabet.Length);
 
                     _externalAlphabet = _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
                     allowed.RemoveAt(buffer);
@@ -925,7 +926,7 @@ namespace JabrAPI
 
             public void GenerateRandomExternal(Int32 maxLength, List<char> necessary, List<char> banned, bool validateParameters = true)
             {
-                List<char> allowed = [.. " " + DEFAULT_CHARS];
+                List<char> allowed = [.. DEFAULT.CHARACTERS.WITHOUT_SPACE];
 
                 if (banned != null && banned.Count > 0)
                 {
@@ -1197,24 +1198,6 @@ namespace JabrAPI
             }
             public override List<Byte> ExportAsBinary()
             {
-                //List<Byte> result = [.. _noisifier.ExportAsBinary()];
-
-                //result.AddRange(ToBinary.BigEndian(_shifts.Count));
-                //result.AddRange(_shifts);
-
-                ////  -1 is needed because we cant physically have alphabets
-                ////  longer than 256 and also smaller than 2
-                ////  but sadly a byte can only fit a range 0-255, while we need 2-256
-                ////  so we transform it from 2-256 into 1-255 and later reconstruct it back
-                ////IsPrimaryPartiallyValid();
-                //result.Add((Byte)(PrLength - 1));
-                //result.AddRange(_primaryAlphabet);
-
-                //result.Add((Byte)(ExLength - 1));
-                //result.AddRange(_externalAlphabet);
-
-                //return result;
-
                 return
                 [
                     .. _noisifier.ExportAsBinary(),
@@ -1425,13 +1408,13 @@ namespace JabrAPI
 
             private List<Byte> GenerateRandomAlphabet(Int32 length)
             {
-                List<Byte> remainingChoices = [.. DEFAULT_BYTES];
+                List<Byte> remainingChoices = [.. DEFAULT.BYTES];
                 List<Byte> resultAlphabet   = [];
 
                 for (var remaining = 0; remaining < length; remaining++)
                 {
                     Byte maxValueInclusive = (Byte)Math.Min(255, remainingChoices.Count - 1);
-                    var chosen   = _random.Next(0, maxValueInclusive);
+                    var chosen   = _random.Next(maxValueInclusive);
                     var chosenId = _random.Next(resultAlphabet.Count);
 
                     resultAlphabet.Insert(chosenId, remainingChoices[chosen]);
