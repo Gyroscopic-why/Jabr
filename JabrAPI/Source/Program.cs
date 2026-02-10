@@ -140,8 +140,11 @@ namespace JabrAPI
             //    ReadKey();
             //}
 
-            RE5.BinaryKey initial2 = new(true);
-            RE5.BinaryKey copy2 = new(false);
+            Noisifier initial2 = new(['1', '2', '3'], true);
+            Noisifier copy2 = new();
+
+            //RE5.EncryptionKey initial2 = new(true);
+            //RE5.EncryptionKey copy2 = new(false);
 
             List<Byte> export = initial2.ExportAsBinary();
 
@@ -149,7 +152,7 @@ namespace JabrAPI
             foreach (var infoByte in export)
                 Write(infoByte + " ");
 
-            copy2.ImportFromBinary(export);
+            copy2.ImportFromBinary(export, true);
             List<Byte> new_import = copy2.ExportAsBinary();
             Write("\n\t\t\tImport:  ");
             foreach (var infoByte in new_import)
@@ -163,8 +166,8 @@ namespace JabrAPI
 
 
 
-            RE5.BinaryKey initial = new(true);
-            RE5.BinaryKey copy    = new(false);
+            RE5.EncryptionKey initial = new(true);
+            RE5.EncryptionKey copy    = new(false);
             Stopwatch timer = new();
 
             List<Byte> exportBuffer = [];

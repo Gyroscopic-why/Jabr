@@ -26,7 +26,7 @@ namespace JabrAPI.Source
             => Copy(otherNoisifier, fullCopy);
         public Noisifier(List<char> banned, bool autoGenerate = true)
         {
-            if (autoGenerate) Default(banned);
+            if (autoGenerate) DefaultGenerate(banned);
             else SetDefault(banned);
         }
         public Noisifier(List<Byte> exported) => ImportFromBinary(exported);
@@ -163,7 +163,7 @@ namespace JabrAPI.Source
                 {
                     try
                     {
-                        Default(bannedForFailsafeRegeneration);
+                        DefaultGenerate(bannedForFailsafeRegeneration);
                     }
                     catch
                     {
@@ -180,38 +180,66 @@ namespace JabrAPI.Source
         {
             try
             {
-                Byte primaryCount = data[0];
-                if (data.Count < primaryCount + 1)
+                Int32 primaryCount = FromBinary.BigEndian<Int32>
+                (
+                    [..
+                        data.GetRange(0, 4)
+                    ]
+                );
+
+
+                if (data.Count < primaryCount + 8)
                 {
                     if (throwExceptions)
                         throw new ArgumentException
                         (
                             $"Data length is insufficient for the specified primaryNoiseCount" +
-                            $" {primaryCount} from data[0]",
+                            $" {primaryCount + 8} from data[0-4]",
                             nameof(data)
                         );
                     return false;
                 }
 
-                var buffer    = data.GetRange(1, primaryCount);
-                _primaryNoise = buffer.ToString() ?? "";
+
+                _primaryNoise = FromBinary.Utf16
+                (
+                    data.GetRange
+                    (
+                        4,
+                        primaryCount
+                    )
+                );
 
 
-                Byte complexCount = data[primaryCount + 1];
-                if (data.Count < complexCount + primaryCount + 2)
+                Int32 complexCount = FromBinary.BigEndian<Int32>
+                (
+                    [..
+                        data.GetRange(primaryCount + 4, 4)
+                    ]
+                );
+
+                if (data.Count < complexCount + primaryCount + 8)
                 {
                     if (throwExceptions)
                         throw new ArgumentException
                         (
                             $"Data length is insufficient for the specified complexNoiseCount" +
-                            $" {complexCount} from data[{primaryCount + 2}]",
+                            $" {complexCount + primaryCount + 8}" +
+                            $"from data[{primaryCount + 4}-{primaryCount+8}]",
                             nameof(data)
                         );
                     return false;
                 }
 
-                buffer = data.GetRange(primaryCount + 2, complexCount);
-                _complexNoise = buffer.ToString() ?? "";
+
+                _complexNoise = FromBinary.Utf16
+                (
+                    data.GetRange
+                    (
+                        primaryCount + 8,
+                        complexCount
+                    )
+                );
             }
             catch
             {
@@ -223,13 +251,16 @@ namespace JabrAPI.Source
 
         public List<Byte> ExportAsBinary()
         {
+            Byte[] exportedPrimary = ToBinary.Utf16(_primaryNoise);
+            Byte[] exportedComplex = ToBinary.Utf16(_complexNoise);
+
             return
             [
-                .. ToBinary.BigEndian(_primaryNoise.Length),
-                .. ToBinary.Utf16(_primaryNoise),
+                .. ToBinary.BigEndian(exportedPrimary.Length),
+                .. exportedPrimary,
 
-                .. ToBinary.BigEndian(_complexNoise.Length),
-                .. ToBinary.Utf16(_complexNoise)
+                .. ToBinary.BigEndian(exportedComplex.Length),
+                .. exportedComplex
             ];
         }
 
@@ -258,12 +289,12 @@ namespace JabrAPI.Source
         public void SetDefaultOnlyCplx(Int32 complexCount = 16)
             => _complexCount = complexCount;
 
-        public void Default(List<char> banned)
+        public  void DefaultGenerate(List<char> banned)
         {
             SetDefault(banned);
             GenerateAll();
         }
-        public void Copy(Noisifier otherNoisifier, bool fullCopy = true)
+        public  void Copy(Noisifier otherNoisifier, bool fullCopy = true)
         {
             Set(otherNoisifier.PrimaryNoise, otherNoisifier.ComplexNoise);
 
@@ -322,10 +353,23 @@ namespace JabrAPI.Source
                     result.RemoveAll(c => c == bannedChar);
             }
 
-            while (result.Count > targetCount)
-                result.RemoveRange(
-                    _random.Next(result.Count),
-                    _random.Next(1, result.Count - targetCount));
+            Int32 chosenId, curCount = result.Count;
+            while (curCount > targetCount)
+            {
+                chosenId = _random.Next(curCount);
+
+                result.RemoveRange
+                (
+                    chosenId,
+                    Math.Min
+                    (                        
+                        curCount - chosenId - 1,
+                        _random.Next(1, curCount - targetCount)
+                    )
+                );
+
+                curCount = result.Count;
+            }
 
             return result;
         }
@@ -392,7 +436,7 @@ namespace JabrAPI.Source
             => Copy(otherNoisifier, fullCopy);
         public BinaryNoisifier(List<Byte> banned, bool autoGenerate = true)
         {
-            if (autoGenerate) Default(banned);
+            if (autoGenerate) DefaultGenerate(banned);
             else SetDefault(banned);
         }
         public BinaryNoisifier(List<Byte> exported) => ImportFromBinary(exported);
@@ -529,7 +573,7 @@ namespace JabrAPI.Source
                 {
                     try
                     {
-                        Default(bannedForFailsafeRegeneration);
+                        DefaultGenerate(bannedForFailsafeRegeneration);
                     }
                     catch
                     {
@@ -625,7 +669,7 @@ namespace JabrAPI.Source
         public void SetDefaultOnlyCplx(Byte complexCount = 16)
             => _complexCount = complexCount;
 
-        public  void Default(List<Byte> banned)
+        public  void DefaultGenerate(List<Byte> banned)
         {
             SetDefault(banned);
             GenerateAll();

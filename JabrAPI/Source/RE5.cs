@@ -45,33 +45,13 @@ namespace JabrAPI
                 _primaryAlphabet  = primaryAlphabet;
                 _externalAlphabet = externalAlphabet;
             }
-            public EncryptionKey(Int32 shiftCount) => _shCount = shiftCount;
+            public EncryptionKey(Int32 shiftCount)
+                => _shCount = shiftCount;
             public EncryptionKey(EncryptionKey otherKey, bool fullCopy = true)
-            {
-                _primaryAlphabet  = otherKey.PrAlphabet;
-                _externalAlphabet = otherKey.ExAlphabet;
-
-                _shifts.Clear();
-                _shifts.AddRange(otherKey.Shifts);
-
-                if (fullCopy)
-                {
-                    _primaryNecessary  = otherKey._primaryNecessary;
-                    _primaryAllowed    = otherKey._primaryAllowed;
-                    _primaryBanned     = otherKey._primaryBanned;
-                    _primaryMaxLength  = otherKey._primaryMaxLength;
-
-                    _externalNecessary = otherKey._externalNecessary;
-                    _externalAllowed   = otherKey._externalAllowed;
-                    _externalBanned    = otherKey._externalBanned;
-                    _externalMaxLength = otherKey._externalMaxLength;
-
-                    _shCount = otherKey._shCount;
-                }
-            }
+                => Copy(otherKey, fullCopy);
             public EncryptionKey(bool autoGenerate = true)
             {
-                if (autoGenerate) Default();
+                if (autoGenerate) DefaultGenerate();
                 else SetDefault();
             }
 
@@ -90,6 +70,7 @@ namespace JabrAPI
             public Int32  ExLength       => _externalAlphabet == null ? -1 : _externalAlphabet.Length;
 
             override public string FinalAlphabet => _externalAlphabet;
+
 
 
 
@@ -229,11 +210,11 @@ namespace JabrAPI
                 try
                 {
                     Int32 parsedShiftCountInBytes = FromBinary.BigEndian<Int32>
-                        (
-                            [.. 
-                               data.GetRange(0, 4)
-                            ]
-                        ) * 2;
+                    (
+                        [.. 
+                            data.GetRange(0, 4)
+                        ]
+                    ) * 2;
 
                     //  12 (Bytes) is the lowest possible length of an exported key
                     //  2x2 bytes reserved for PrLength and ExLength
@@ -260,52 +241,57 @@ namespace JabrAPI
 
 
 
-                    Int32 parsedLengthInBytes = FromBinary.BigEndian<Int16>
-                        (
-                            [..
-                                data.GetRange(parsedShiftCountInBytes + 4, 2)
-                            ]
-                        ) * 2;  //  each char is in UTF16 (2 bytes)
+                    Int32 parsedLengthInBytes = FromBinary.BigEndian<Int32>
+                    (
+                        [..
+                            data.GetRange(parsedShiftCountInBytes + 4, 4)
+                        ]
+                    );
 
-                    if (data.Count < parsedShiftCountInBytes + 4 + parsedLengthInBytes + 6)
+                    if (data.Count < parsedShiftCountInBytes + 4 + parsedLengthInBytes + 8)
                     {
                         if (throwExceptions)
                             throw new ArgumentException
                             (
                                 $"Data length is insufficient for the specified primary alphabet length" +
-                                $" {parsedLengthInBytes / 2} " +
-                                $"from data[{parsedShiftCountInBytes + 4}-{parsedShiftCountInBytes + 6}]",
+                                $" {parsedShiftCountInBytes + 4 + parsedLengthInBytes} " +
+                                $"from data[{parsedShiftCountInBytes + 4}-{parsedShiftCountInBytes + 8}]",
                                 nameof(data)
                             );
                         return false;
                     }
-                    else if (parsedLengthInBytes < 4)
+                    else if (parsedLengthInBytes < 2)
                     {
                         if (throwExceptions)
                             throw new ArgumentException
                             (
                                 $"Primary alphabet length cant be less than 2 (required)" +
-                                $"\nParsed length: {parsedLengthInBytes / 2} " +
-                                $"from data[{parsedShiftCountInBytes + 4}-{parsedShiftCountInBytes + 6}]",
+                                $"\nParsed length: {parsedLengthInBytes} " +
+                                $"from data[{parsedShiftCountInBytes + 4}-{parsedShiftCountInBytes + 8}]",
                                 nameof(data)
                             );
                         return false;
                     }
 
-                    _primaryAlphabet = "";
-                    for (var i = parsedShiftCountInBytes + 6; i < parsedLengthInBytes + parsedShiftCountInBytes + 6; i += 2)
-                        _primaryAlphabet += FromBinary.Utf16(data.GetRange(i, 2));
+                    _primaryAlphabet = FromBinary.Utf16
+                    (
+                        data.GetRange
+                        (
+                            parsedShiftCountInBytes + 8,
+                            parsedLengthInBytes
+                        )
+                    );
 
 
 
                     //  reusing parsedShiftCount as a offset for what we have already read
                     parsedShiftCountInBytes += parsedLengthInBytes + 4;
-                    parsedLengthInBytes = FromBinary.BigEndian<Int16>
-                        (
-                            [..
-                                data.GetRange(parsedShiftCountInBytes + 2, 2)
-                            ]
-                        ) * 2;
+                    parsedLengthInBytes = FromBinary.BigEndian<Int32>
+                    (
+                        [..
+                            data.GetRange(parsedShiftCountInBytes + 4, 4)
+                        ]
+                    );
 
                     if (data.Count < parsedShiftCountInBytes + 4 + parsedLengthInBytes)
                     {
@@ -313,27 +299,34 @@ namespace JabrAPI
                             throw new ArgumentException
                             (
                                 $"Data length is insufficient for the specified external alphabet length" +
-                                $" {parsedLengthInBytes} from data[{parsedShiftCountInBytes + 2}-{parsedShiftCountInBytes + 4}]",
+                                $" {parsedShiftCountInBytes + 4 + parsedLengthInBytes}" +
+                                $"from data[{parsedShiftCountInBytes + 4}-{parsedShiftCountInBytes + 8}]",
                                 nameof(data)
                             );
                         return false;
                     }
-                    else if (parsedLengthInBytes < 4)
+                    else if (parsedLengthInBytes < 2)
                     {
                         if (throwExceptions)
                             throw new ArgumentException
                             (
                                 $"External alphabet length cant be less than 2 (required)" +
-                                $"\nParsed length: {parsedLengthInBytes / 2} " +
-                                $"from data[{parsedShiftCountInBytes + 2}-{parsedShiftCountInBytes + 4}]",
+                                $"\nParsed length: {parsedLengthInBytes} " +
+                                $"from data[{parsedShiftCountInBytes + 4}-{parsedShiftCountInBytes + 8}]",
                                 nameof(data)
                             );
                         return false;
                     }
 
-                    _externalAlphabet = "";
-                    for (var i = parsedShiftCountInBytes + 4; i < parsedLengthInBytes + parsedShiftCountInBytes + 4; i += 2)
-                        _externalAlphabet += FromBinary.Utf16(data.GetRange(i, 2));
+
+                    _externalAlphabet = FromBinary.Utf16
+                    (
+                        data.GetRange
+                        (
+                            parsedShiftCountInBytes + 8,
+                            parsedLengthInBytes
+                        )
+                    );
                 }
                 catch (Exception)
                 {
@@ -344,17 +337,24 @@ namespace JabrAPI
             }
             override public List<Byte> ExportAsBinary()
             {
-                List<Byte> result = [.. ToBinary.BigEndian(_shifts.Count)];
-                for (var curId = 0; curId < _shifts.Count; curId++)
-                    result.AddRange(ToBinary.BigEndian(_shifts[curId]));
+                Byte[] exportedPrimary    = ToBinary.Utf16( _primaryAlphabet);
+                Byte[] exportedExternal   = ToBinary.Utf16(_externalAlphabet);
 
-                result.AddRange(ToBinary.BigEndian((UInt16)PrLength));
-                result.AddRange(ToBinary.Utf16(_primaryAlphabet));
+                List<Byte> exportedShifts = [];
+                foreach (Int16 shift in _shifts)
+                    exportedShifts.AddRange(ToBinary.BigEndian(shift));
 
-                result.AddRange(ToBinary.BigEndian((UInt16)ExLength));
-                result.AddRange(ToBinary.Utf16(_externalAlphabet));
+                return
+                [
+                    .. ToBinary.BigEndian(exportedShifts.Count / 2),
+                    .. exportedShifts,
 
-                return result;
+                    .. ToBinary.BigEndian(exportedPrimary.Length),
+                    .. exportedPrimary,
+
+                    .. ToBinary.BigEndian(exportedExternal.Length),
+                    .. exportedExternal
+                ];
             }
 
 
@@ -574,6 +574,34 @@ namespace JabrAPI
                 => SetDefault(maxLength, [.. banned]);
 
 
+            public  void Copy(EncryptionKey otherKey, bool fullCopy = true)
+            {
+                //_noisifier.Copy(otherKey.Noisifier, fullCopy);
+
+                Set(otherKey.Primary, otherKey.External, otherKey.Shifts);
+
+                if (fullCopy)
+                    SetDefault
+                    (
+                        otherKey._primaryNecessary,
+                        otherKey._primaryAllowed,
+                        otherKey._primaryBanned,
+                        otherKey._primaryMaxLength,
+                        otherKey._externalNecessary,
+                        otherKey._externalAllowed,
+                        otherKey._externalBanned,
+                        otherKey._externalMaxLength
+                    );
+            }
+            private void Set(string primary, string external, List<Int16> shifts)
+            {
+                _primaryAlphabet  = primary;
+                _externalAlphabet = external;
+
+                _shifts.Clear();
+                if (shifts == null || shifts.Count == 0) _shifts.Add(0);
+                else _shifts.AddRange(shifts.GetRange(0, Math.Max(shifts.Count, 255)));
+            }
             override public  void SetDefault()
             {
                 _primaryNecessary  = [.. DEFAULT.CHARACTERS.WITH_SPACE];
@@ -1018,7 +1046,7 @@ namespace JabrAPI
             public BinaryKey(List<Byte> exported) => ImportFromBinary(exported);
             public BinaryKey(bool autoGenerate = true)
             {
-                if (autoGenerate) Default();
+                if (autoGenerate) DefaultGenerate();
                 else SetDefault();
             }
 

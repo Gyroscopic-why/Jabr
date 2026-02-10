@@ -39,7 +39,7 @@ namespace JabrAPI.Source
                     {
                         try
                         {
-                            Default();
+                            DefaultGenerate();
                         }
                         catch
                         {
@@ -67,7 +67,7 @@ namespace JabrAPI.Source
 
             abstract public void SetDefault();
 
-            protected void Default()
+            protected void DefaultGenerate()
             {
                 SetDefault();
                 GenerateAll();
@@ -149,7 +149,7 @@ namespace JabrAPI.Source
                     {
                         try
                         {
-                            Default();
+                            DefaultGenerate();
                         }
                         catch
                         {
@@ -172,7 +172,7 @@ namespace JabrAPI.Source
 
 
             abstract public void SetDefault();
-            protected void Default()
+            protected void DefaultGenerate()
             {
                 SetDefault();
                 GenerateAll();
