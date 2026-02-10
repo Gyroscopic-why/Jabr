@@ -146,17 +146,25 @@ namespace JabrAPI
             RE5.EncryptionKey initial2 = new(true);
             RE5.EncryptionKey copy2 = new(false);
 
-            List<Byte> export = initial2.ExportAsBinary();
+            //List<Byte> export = initial2.ExportAsBinary();
 
-            Write("\n\t\t\tInitial: ");
-            foreach (var infoByte in export)
-                Write(infoByte + " ");
+            //Write("\n\t\t\tInitial: ");
+            //foreach (var infoByte in export)
+            //    Write(infoByte + " ");
 
-            copy2.ImportFromBinary(export, true);
-            List<Byte> new_import = copy2.ExportAsBinary();
-            Write("\n\t\t\tImport:  ");
-            foreach (var infoByte in new_import)
-                Write(infoByte + " ");
+            //copy2.ImportFromBinary(export, true);
+            //List<Byte> new_import = copy2.ExportAsBinary();
+            //Write("\n\t\t\tImport:  ");
+            //foreach (var infoByte in new_import)
+            //    Write(infoByte + " ");
+
+            string export = initial2.ExportAsString();
+
+            Write("\n\t\t\tInitial: " + export);
+
+            copy2.ImportFromString(export, true);
+            string new_import = copy2.ExportAsString();
+            Write("\n\t\t\tImport:  " + new_import);
 
             ReadKey();
 

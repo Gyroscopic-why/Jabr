@@ -176,6 +176,101 @@ namespace JabrAPI.Source
 
 
 
+        public bool ImportFromString(string data, bool throwExceptions = false)
+        {
+            try
+            {
+                Int32 splitterId = data.IndexOf(':'), offset, parsedLength;
+
+                if (splitterId == -1)
+                {
+                    if (throwExceptions)
+                        throw new ArgumentException
+                        (
+                            $"Data doesnt contain splitter for determining PrimaryNoise length" +
+                            $"\ndata.IndexOf(':') == -1",
+                            nameof(data) + "," + nameof(splitterId)
+                        );
+                    return false;
+                }
+                else if (!Int32.TryParse(data.AsSpan(0, splitterId), out parsedLength))
+                {
+                    if (throwExceptions)
+                        throw new ArgumentException
+                        (
+                            $"Unable to parse PrimaryNoise length" +
+                            $"\nExpected length to be at indexes 0-{splitterId}" +
+                            $"\nInvalid sequence: {data[..splitterId]}",
+                            nameof(data) + "," + nameof(splitterId)
+                        );
+                    return false;
+                }
+                else if (data.Length < splitterId + 1 + parsedLength + 4)
+                {
+                    if (throwExceptions)
+                        throw new ArgumentException
+                        (
+                            $"Data is insufficient for expected PrimaryNoise & smallest possible ComplexNoise" +
+                            $"Data length: {data.Length}   <   expected: {splitterId + 1 + parsedLength + 4}",
+                            nameof(data) + "," + nameof(splitterId) + "," + nameof(parsedLength)
+                        );
+                    return false;
+                }
+
+                _primaryNoise = data.Substring(splitterId + 1, parsedLength);
+
+
+                offset = splitterId + 1 + parsedLength;
+                splitterId = data.IndexOf(':', offset);
+
+                if (splitterId == -1)
+                {
+                    if (throwExceptions)
+                        throw new ArgumentException
+                        (
+                            $"Data doesnt contain another splitter for determining ComplexNoise length" +
+                            $"\ndata.IndexOf(':') == -1",
+                            nameof(data) + "," + nameof(splitterId)
+                        );
+                    return false;
+                }
+                else if (!Int32.TryParse(data.AsSpan(offset, splitterId - offset), out parsedLength))
+                {
+                    if (throwExceptions)
+                        throw new ArgumentException
+                        (
+                            $"Unable to parse ComplexNoise length" +
+                            $"\nExpected length to be at indexes {offset}-{splitterId}" +
+                            $"\nInvalid sequence: {data[offset..]}",
+                            nameof(data) + "," + nameof(splitterId)
+                        );
+                    return false;
+                }
+                else if (data.Length < splitterId + 1 + parsedLength)
+                {
+                    if (throwExceptions)
+                        throw new ArgumentException
+                        (
+                            $"Data is insufficient for expected ComplexNoise" +
+                            $"Data length: {data.Length}   <   expected: {splitterId + 1 + parsedLength}",
+                            nameof(data) + "," + nameof(splitterId) + "," + nameof(parsedLength)
+                        );
+                    return false;
+                }
+
+                _complexNoise = data.Substring(splitterId + 1, parsedLength);
+            }
+            catch
+            {
+                if (throwExceptions) throw;
+                return false;
+            }
+            return true;
+        }
+        public string ExportAsString()
+            => _primaryNoise.Length + ":" + _primaryNoise +
+               _complexNoise.Length + ":" + _complexNoise;
+        
         public bool ImportFromBinary(List<Byte> data, bool throwExceptions = false)
         {
             try
@@ -248,7 +343,6 @@ namespace JabrAPI.Source
             }
             return true;
         }
-
         public List<Byte> ExportAsBinary()
         {
             Byte[] exportedPrimary = ToBinary.Utf16(_primaryNoise);

@@ -75,12 +75,97 @@ namespace JabrAPI
 
 
 
-            override public bool   ImportFromString(string data, bool throwExceptions = false)
+            override public bool   ImportFromString(string exportedData, bool throwExceptions = false)
             {
                 try
                 {
-                    Int32 splitterId = data.IndexOf(':'), offset;
-                    Int16 parsedLength, parsedShiftsCount = 0;
+                    string data = exportedData;
+
+                    Int32 splitterId = data.IndexOf(':'), noisifierImportLength, parsedLength;
+
+                    if (splitterId == -1)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data doesnt contain splitter for determining PrimaryNoise length" +
+                                $"\ndata.IndexOf(':') == -1",
+                                nameof(data) + "," + nameof(splitterId)
+                            );
+                        return false;
+                    }
+                    else if (!Int32.TryParse(data.AsSpan(0, splitterId), out parsedLength))
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Unable to parse PrimaryNoise length" +
+                                $"\nExpected length to be at indexes 0-{splitterId}" +
+                                $"\nInvalid sequence: {data[..splitterId]}",
+                                nameof(data) + "," + nameof(splitterId)
+                            );
+                        return false;
+                    }
+                    else if (data.Length < splitterId + 1 + parsedLength + 4)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data is insufficient for expected PrimaryNoise & smallest possible ComplexNoise" +
+                                $"Data length: {data.Length}   <   expected: {splitterId + 1 + parsedLength + 4}",
+                                nameof(data) + "," + nameof(splitterId) + "," + nameof(parsedLength)
+                            );
+                        return false;
+                    }
+
+
+                    noisifierImportLength = splitterId + 1 + parsedLength;
+                    splitterId = data.IndexOf(':', noisifierImportLength);
+
+                    if (splitterId == -1)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data doesnt contain another splitter for determining ComplexNoise length" +
+                                $"\ndata.IndexOf(':') == -1",
+                                nameof(data) + "," + nameof(splitterId)
+                            );
+                        return false;
+                    }
+                    else if (!Int32.TryParse(data.AsSpan(noisifierImportLength, splitterId - noisifierImportLength), out parsedLength))
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Unable to parse ComplexNoise length" +
+                                $"\nExpected length to be at indexes {noisifierImportLength}-{splitterId}" +
+                                $"\nInvalid sequence: {data[noisifierImportLength..]}",
+                                nameof(data) + "," + nameof(splitterId)
+                            );
+                        return false;
+                    }
+                    else if (data.Length < splitterId + 1 + parsedLength)
+                    {
+                        if (throwExceptions)
+                            throw new ArgumentException
+                            (
+                                $"Data is insufficient for expected ComplexNoise" +
+                                $"Data length: {data.Length}   <   expected: " +
+                                $"{noisifierImportLength + splitterId + 1 + parsedLength}",
+                                nameof(data) + "," + nameof(splitterId) + "," + nameof(parsedLength)
+                            );
+                        return false;
+                    }
+
+                    noisifierImportLength += parsedLength + 2;
+                    _noisifier.ImportFromString(data[..noisifierImportLength], throwExceptions);
+
+
+                    data = data[noisifierImportLength..];
+
+                    splitterId = data.IndexOf(':');
+                    Int32 parsedShiftsCount = 0, offset;
 
                     if (splitterId == -1)
                     {
@@ -93,7 +178,7 @@ namespace JabrAPI
                             );
                         return false;
                     }
-                    else if (!Int16.TryParse(data.AsSpan(0, splitterId), out parsedLength))
+                    else if (!Int32.TryParse(data.AsSpan(0, splitterId), out parsedLength))
                     {
                         if (throwExceptions)
                             throw new ArgumentException
@@ -134,7 +219,7 @@ namespace JabrAPI
                             );
                         return false;
                     }
-                    else if (!Int16.TryParse(data.AsSpan(offset, splitterId - offset), out parsedLength))
+                    else if (!Int32.TryParse(data.AsSpan(offset, splitterId - offset), out parsedLength))
                     {
                         if (throwExceptions)
                             throw new ArgumentException
@@ -146,13 +231,13 @@ namespace JabrAPI
                             );
                         return false;
                     }
-                    else if (data.Length < offset + splitterId + 1 + parsedLength)
+                    else if (data.Length < splitterId + 1 + parsedLength)
                     {
                         if (throwExceptions)
                             throw new ArgumentException
                             (
                                 $"Data is insufficient for expected external alphabet" +
-                                $"Data length: {data.Length}   <   expected: {offset + splitterId + 1 + parsedLength}",
+                                $"Data length: {data.Length}   <   expected: {splitterId + 1 + parsedLength}",
                                 nameof(data) + "," + nameof(splitterId) + "," + nameof(parsedLength)
                             );
                         return false;
@@ -201,7 +286,7 @@ namespace JabrAPI
                     result += _shifts[curId] + ",";
                 if (_shifts.Count > 0) result += _shifts[^1];
 
-                return result;
+                return _noisifier.ExportAsString() + result;
             }
 
 
