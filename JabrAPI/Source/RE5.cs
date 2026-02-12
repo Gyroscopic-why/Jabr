@@ -11,7 +11,7 @@ using static JabrAPI.Source.Template;
 
 namespace JabrAPI
 {
-    public class RE5
+    static public class RE5
     {
         public class EncryptionKey : IEncryptionKey
         {
@@ -1705,20 +1705,14 @@ namespace JabrAPI
                         );
                     }
                 }
-                else if (reKey.IsExternalPartiallyValid(throwException))
+                else if (reKey.IsExternalPartiallyValid(throwException)
+                      && reKey.IsPrimaryValid(message,  throwException))
                 {
-                    if (reKey.IsPrimaryValid(message, throwException))
+                    try
                     {
-                        try
-                        {
-                            return FastText(message, reKey);
-                        }
-
-                        catch (Exception)
-                        {
-                            if (throwException) throw;
-                        }
+                        return FastText(message, reKey);
                     }
+                    catch (Exception) { if (throwException) throw; }
                 }
                 return "";
             }
@@ -1859,20 +1853,14 @@ namespace JabrAPI
                         );
                     }
                 }
-                else if (reKey.IsExternalPartiallyValid(throwException))
+                else if (reKey.IsExternalPartiallyValid(throwException)
+                      && reKey.IsPrimaryValid([.. message], throwException))
                 {
-                    if (reKey.IsPrimaryValid([.. message], throwException))
+                    try
                     {
-                        try
-                        {
-                            return FastBytes(message, reKey);
-                        }
-
-                        catch (Exception)
-                        {
-                            if (throwException) throw;
-                        }
+                        return FastBytes(message, reKey);
                     }
+                    catch (Exception) { if (throwException) throw; }
                 }
                 return [];
             }
@@ -1995,20 +1983,14 @@ namespace JabrAPI
                         );
                     }
                 }
-                else if (reKey.IsPrimaryPartiallyValid(throwException))
+                else if (reKey.IsPrimaryPartiallyValid(throwException)
+                      && reKey.IsExternalValid(encrypted, throwException))
                 {
-                    if (reKey.IsExternalValid(encrypted, throwException))
+                    try
                     {
-                        try
-                        {
-                            return FastText(encrypted, reKey);
-                        }
-
-                        catch (Exception)
-                        {
-                            if (throwException) throw;
-                        }
+                        return FastText(encrypted, reKey);
                     }
+                    catch (Exception) { if (throwException) throw; }
                 }
                 return "";
             }
@@ -2042,10 +2024,7 @@ namespace JabrAPI
 
                         return result;
                     }
-                    catch (Exception innerException)
-                    {
-                        exception = innerException;
-                    }
+                    catch (Exception innerException) { exception = innerException; }
                 }
                 return "";
             }
@@ -2157,20 +2136,14 @@ namespace JabrAPI
                         );
                     }
                 }
-                else if (reKey.IsPrimaryPartiallyValid(throwException))
+                else if (reKey.IsPrimaryPartiallyValid(throwException)
+                      && reKey.IsExternalValid(encrypted, throwException))
                 {
-                    if (reKey.IsExternalValid(encrypted, throwException))
+                    try
                     {
-                        try
-                        {
-                            return FastBytes(encrypted, reKey);
-                        }
-
-                        catch (Exception)
-                        {
-                            if (throwException) throw;
-                        }
+                        return FastBytes(encrypted, reKey);
                     }
+                    catch (Exception) { if (throwException) throw; }
                 }
                 return [];
             }
@@ -2204,10 +2177,7 @@ namespace JabrAPI
 
                         return result;
                     }
-                    catch (Exception innerException)
-                    {
-                        exception = innerException;
-                    }
+                    catch (Exception innerException) { exception = innerException; }
                 }
                 return [];
             }

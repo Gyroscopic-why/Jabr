@@ -35,9 +35,15 @@ namespace JabrAPI.Source
 
 
 
-        string PrimaryNoise => _primaryNoise;
-        string ComplexNoise => _complexNoise;
-        List<char> Banned   => _banned;
+        public Int32 PrimaryNoiseCount => _primaryNoise.Length;
+        public Int32 ComplexNoiseCount => _complexNoise.Length;
+
+        public string PrimaryNoise => _primaryNoise;
+        public string ComplexNoise => _complexNoise;
+        public List<char> Banned   => _banned;
+
+        public char RandomPrimaryChar => _primaryNoise[_random.Next(PrimaryNoiseCount)];
+        public char RandomComplexChar => _complexNoise[_random.Next(ComplexNoiseCount)];
 
 
 
@@ -45,7 +51,7 @@ namespace JabrAPI.Source
 
         static public bool IsPrimaryNoiseValidForKey(Template.IEncryptionKey reKey, string primaryNoise, bool throwException = false)
             => IsPrimaryNoiseValidForKey(reKey.FinalAlphabet, primaryNoise, throwException);
-        static public bool IsPrimaryNoiseValidForKey(string exAlphabet,  string primaryNoise, bool throwException = false)
+        static public bool IsPrimaryNoiseValidForKey(string  exAlphabet, string primaryNoise, bool throwException = false)
         {
             return IsNoiseValid
             (
@@ -53,7 +59,7 @@ namespace JabrAPI.Source
                 primaryNoise,
                 new ArgumentException
                 (
-                    $"PrimaryNoise bytes can not overlap with ExternalAlphabet bytes",
+                    $"PrimaryNoise bytes can not overlap with ExternalAlphabet chars",
                     nameof(primaryNoise)
                 ),
                 throwException
@@ -67,7 +73,7 @@ namespace JabrAPI.Source
                 primaryNoise,
                 new ArgumentException
                 (
-                    $"PrimaryNoise bytes can not overlap with message bytes",
+                    $"PrimaryNoise bytes can not overlap with message chars",
                     nameof(primaryNoise)
                 ),
                 throwException
@@ -84,7 +90,7 @@ namespace JabrAPI.Source
 
         static public bool IsComplexNoiseValidForKey(Template.IEncryptionKey reKey, string complexNoise, bool throwException = false)
             => IsComplexNoiseValidForKey(reKey.FinalAlphabet, complexNoise, throwException);
-        static public bool IsComplexNoiseValidForKey(string exAlphabet,  string complexNoise, bool throwException = false)
+        static public bool IsComplexNoiseValidForKey(string  exAlphabet, string complexNoise, bool throwException = false)
         {
             return IsNoiseValid
             (
@@ -92,7 +98,7 @@ namespace JabrAPI.Source
                 complexNoise,
                 new ArgumentException
                 (
-                    $"PrimaryNoise bytes can not overlap with ExternalAlphabet bytes",
+                    $"PrimaryNoise bytes can not overlap with ExternalAlphabet chars",
                     nameof(complexNoise)
                 ),
                 throwException
@@ -106,7 +112,7 @@ namespace JabrAPI.Source
                 complexNoise,
                 new ArgumentException
                 (
-                    $"PrimaryNoise bytes can not overlap with message bytes",
+                    $"PrimaryNoise bytes can not overlap with message chars",
                     nameof(complexNoise)
                 ),
                 throwException
@@ -125,14 +131,14 @@ namespace JabrAPI.Source
         static private bool IsNoiseValid(string exAlphabet_or_message, string primaryNoise_or_complexNoise,
             ArgumentException errorMessage, bool throwException = false)
         {
-            foreach (char noiseByte in primaryNoise_or_complexNoise)
+            foreach (char noiseChar in primaryNoise_or_complexNoise)
             {
-                if (exAlphabet_or_message.Contains(noiseByte))
+                if (exAlphabet_or_message.Contains(noiseChar))
                 {
                     if (throwException) throw new ArgumentException
                         (
                             errorMessage.Message +
-                            $"\nDuplicate byte: {noiseByte}",
+                            $"\nDuplicate char: {noiseChar}",
                             errorMessage.ParamName
                         );
                     return false;
@@ -539,10 +545,16 @@ namespace JabrAPI.Source
 
 
 
-        List<Byte> PrimaryNoise => _primaryNoise;
-        List<Byte> ComplexNoise => _complexNoise;
-        List<Byte> Banned => _banned;
+        public Int32 PrimaryNoiseCount => _primaryNoise.Count;
+        public Int32 ComplexNoiseCount => _complexNoise.Count;
 
+        public List<Byte> PrimaryNoise => _primaryNoise;
+        public List<Byte> ComplexNoise => _complexNoise;
+        public List<Byte> Banned => _banned;
+
+        public Byte RandomPrimaryByte => _primaryNoise[_random.Next(PrimaryNoiseCount)];
+        public Byte RandomComplexByte => _complexNoise[_random.Next(ComplexNoiseCount)];
+        
 
 
 
@@ -908,23 +920,281 @@ namespace JabrAPI.Source
 
     static public class AddNoise
     {
-        static public string Text    (string message, Template.IEncryptionKey reKey)
+        static public string Text    (string message, Template.IEncryptionKey reKey,
+            out Exception? exception, Int32 outputLength = 0)
         {
-            throw new NotImplementedException();
+            if (message == null || message == "" || message.Length < 1)
+            {
+                exception = new ArgumentException
+                (
+                    "Message is invalid - cannot be null or empty",
+                    nameof(message)
+                );
+            }
+            else if (reKey == null)
+            {
+                exception = new ArgumentException
+                (
+                    "Encryption key is undefined (null or empty)",
+                    nameof(reKey)
+                );
+            }
+            else if (reKey.Noisifier == null)
+            {
+                exception = new ArgumentException
+                (
+                    "Noisifier is undefined (null or empty)",
+                    nameof(reKey.Noisifier)
+                );
+            }
+            else
+            {
+                try
+                {
+                    reKey.Noisifier.IsComplexNoiseValidForKey(reKey, true);
+                    reKey.Noisifier.IsPrimaryNoiseValidForKey(reKey, true);
+
+                    reKey.Noisifier.IsComplexNoiseValidForMessage(message, true);
+                    reKey.Noisifier.IsPrimaryNoiseValidForMessage(message, true);
+
+                    string result = FastText(message, reKey, outputLength);
+                    exception = null;
+
+                    return result;
+                }
+                catch (Exception innerException) { exception = innerException; }
+            }
+            return "";
         }
-        static public string FastText(string message, Template.IEncryptionKey reKey)
+        static public string Text(string message, Template.IEncryptionKey reKey,
+            Int32 outputLength = 0, bool throwException = false)
         {
-            throw new NotImplementedException();
+            if (message == null || message == "" || message.Length < 1)
+            {
+                if (throwException)
+                {
+                    throw new ArgumentException
+                    (
+                        "Message is invalid - cannot be null or empty",
+                        nameof(message)
+                    );
+                }
+            }
+            else if (reKey == null)
+            {
+                if (throwException)
+                {
+                    throw new ArgumentException
+                    (
+                        "Encryption key is undefined (null or empty)",
+                        nameof(reKey)
+                    );
+                }
+            }
+            else if (reKey.Noisifier == null)
+            {
+                if (throwException)
+                {
+                    throw new ArgumentException
+                    (
+                        "Noisifier is undefined (null or empty)",
+                        nameof(reKey.Noisifier)
+                    );
+                }
+            }
+            else if (reKey.Noisifier.IsPrimaryNoiseValidForKey(reKey, throwException)
+                  && reKey.Noisifier.IsComplexNoiseValidForKey(reKey, throwException)
+                  && reKey.Noisifier.IsPrimaryNoiseValidForMessage(message, throwException)
+                  && reKey.Noisifier.IsComplexNoiseValidForMessage(message, throwException))
+            {
+                try
+                {
+                    return FastText(message, reKey, outputLength);
+                }
+                catch (Exception) { if (throwException) throw;}
+            }
+            return "";
+        }
+        static public string FastText(string message, Template.IEncryptionKey reKey, Int32 outputLength = 0)
+        {
+            return INTERNAL_FastText
+            (
+                message,
+                reKey.Noisifier,
+                string.Concat
+                (
+                    new HashSet<char>(reKey.FinalAlphabet)
+                ),
+                outputLength
+            );
         }
 
-        static public string Text    (string message, Noisifier noisifier)
+
+        static public string Text(string message, Noisifier noisifier,
+            out Exception? exception, Int32 outputLength = 0)
         {
-            throw new NotImplementedException();
+            if (message == null || message == "" || message.Length < 1)
+            {
+                exception = new ArgumentException
+                (
+                    "Message is invalid - cannot be null or empty",
+                    nameof(message)
+                );
+            }
+            else if (noisifier == null)
+            {
+                exception = new ArgumentException
+                (
+                    "Noisifier is undefined (null or empty)",
+                    nameof(noisifier)
+                );
+            }
+            else
+            {
+                try
+                {
+                    noisifier.IsComplexNoiseValidForMessage(message, true);
+                    noisifier.IsPrimaryNoiseValidForMessage(message, true);
+
+                    string result = FastText(message, noisifier, outputLength);
+                    exception = null;
+
+                    return result;
+                }
+                catch (Exception innerException) { exception = innerException; }
+            }
+            return "";
         }
-        static public string FastText(string message, Noisifier noisifier)
+        static public string Text(string message, Noisifier noisifier,
+            Int32 outputLength = 0, bool throwException = false)
         {
-            throw new NotImplementedException();
+            if (message == null || message == "" || message.Length < 1)
+            {
+                if (throwException)
+                {
+                    throw new ArgumentException
+                    (
+                        "Message is invalid - cannot be null or empty",
+                        nameof(message)
+                    );
+                }
+            }
+            else if (noisifier == null)
+            {
+                if (throwException)
+                {
+                    throw new ArgumentException
+                    (
+                        "Noisifier is undefined (null or empty)",
+                        nameof(noisifier)
+                    );
+                }
+            }
+            else if (noisifier.IsComplexNoiseValidForMessage(message, throwException)
+                  && noisifier.IsPrimaryNoiseValidForMessage(message, throwException))
+            {
+                try
+                {
+                    return FastText(message, noisifier, outputLength);
+                }
+                catch (Exception) { if (throwException) throw; }
+            }
+            return "";
         }
+        static public string FastText(string message, Noisifier noisifier, Int32 outputLength = 0)
+        {
+            return INTERNAL_FastText
+            (
+                message,
+                noisifier,
+                string.Concat
+                (
+                    new HashSet<char>(message)
+                ),
+                outputLength
+            );
+        }
+
+        static private string INTERNAL_FastText(string message, Noisifier noisifier,
+            string fakeSelection, Int32 outputLength = 0)
+        {
+
+            Int32 staticLength = fakeSelection.Length, curLength = message.Length;
+
+            if (outputLength == 0)
+                outputLength = curLength +
+                    (Int32)Math.Pow
+                    (
+                        2,
+                        Math.Min
+                        (
+                            10,
+                            Math.Ceiling
+                            (
+                                Math.Log2(curLength)
+                            )
+                        )
+                    );
+
+            if (message.Length >= outputLength) return message;
+
+            SecureRandom random  = new(128);
+            List<char> withNoise = [.. message];
+            Int32 placementId, noiseCount;
+
+            while (curLength < outputLength)
+            {
+                if (outputLength - curLength > 2 && random.Next(2) == 0)
+                {
+                    placementId = random.Next(curLength);
+                    noiseCount = Math.Min
+                    (
+                        curLength - placementId - 1,
+                        random.Next
+                        (
+                            2,
+                            (Int32)Math.Ceiling
+                            (
+                                Math.Sqrt(outputLength - curLength)
+                            )
+                        )
+                    );
+
+                    for (var count = 0; count < noiseCount - 2; count++)
+                        withNoise.Insert
+                        (
+                            placementId,
+                            fakeSelection[random.Next(staticLength)]
+                        );
+
+                    withNoise.Insert(placementId, noisifier.RandomComplexChar);
+                    withNoise.Insert(placementId + noiseCount - 1, noisifier.RandomComplexChar);
+                }
+                else
+                {
+                    noiseCount = random.Next
+                    (
+                        1,
+                        (Int32)Math.Ceiling
+                        (
+                            Math.Sqrt(outputLength - curLength)
+                        )
+                    );
+
+                    for (var count = 0; count < noiseCount; count++)
+                        withNoise.Insert
+                        (
+                            random.Next(withNoise.Count),
+                            noisifier.RandomPrimaryChar
+                        );
+            }
+            curLength = withNoise.Count;
+            }
+
+            return new string ([.. withNoise]) ?? "";
+        }
+
+
 
 
 

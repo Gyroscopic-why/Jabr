@@ -140,11 +140,75 @@ namespace JabrAPI
             //    ReadKey();
             //}
 
+            RE5.EncryptionKey reKey = new(true);
+            string aboba = "aboba baobab";
+
+            Int32 maxNonEntropy = 0, EXTEND = 128;
+            for (var i = 0; i < 1000; i++)
+            {
+                string encrypted = RE5.Encrypt.Text(aboba, reKey);
+                Write($"\n\tReKey: {reKey.ExAlphabet}, PrNoise: {reKey.Noisifier.PrimaryNoise}, CplxNoise: {reKey.Noisifier.ComplexNoise}");
+                Write("\n\tInitial: " + encrypted);
+
+                Write("\n\tNoised:  ");
+                string noised = AddNoise.Text(encrypted, reKey, EXTEND, false);
+                Int32 count = 0, nonEntropy = 0, thisMaxNonEntropy = 0;
+                bool newWorst = false, noiseAtTheEnd = false;
+                for (var j = 0; j < noised.Length; j++)
+                {
+                    if (!noiseAtTheEnd && noised[j] == encrypted[count])
+                    {
+                        ForegroundColor = ConsoleColor.Green;
+                        count++;
+
+                        if (count >= encrypted.Length)
+                            noiseAtTheEnd = true;
+
+                        nonEntropy++;
+                        if (nonEntropy > maxNonEntropy)
+                        {
+                            maxNonEntropy = nonEntropy;
+                            newWorst = true;
+                        }
+                        if (nonEntropy > thisMaxNonEntropy)
+                            thisMaxNonEntropy = nonEntropy;
+                    }
+                    else
+                    {
+                        ForegroundColor = ConsoleColor.DarkGray;
+                        nonEntropy = 0;
+                    }
+
+                    Write(noised[j]);
+                }
+                ForegroundColor = ConsoleColor.Gray;
+                Write($"\n\tNonEntropy: {thisMaxNonEntropy}(" +
+                    $"{
+                        (Int32)Math.Pow
+                        (
+                            Math.Ceiling
+                            (
+                                (double)encrypted.Length /
+                                (
+                                    EXTEND - encrypted.Length + 1
+                                )
+                            ),
+                            2
+                        )
+                    }), MaxNon: {maxNonEntropy}");
+
+                reKey.Next();
+                if (newWorst) ReadLine();
+                else ReadKey();
+                Clear();
+            }
+
+
             //Noisifier initial2 = new(['1', '2', '3'], true);
             //Noisifier copy2 = new();
 
-            RE5.EncryptionKey initial2 = new(true);
-            RE5.EncryptionKey copy2 = new(false);
+            //RE5.EncryptionKey initial2 = new(true);
+            //RE5.EncryptionKey copy2 = new(false);
 
             //List<Byte> export = initial2.ExportAsBinary();
 
@@ -158,15 +222,15 @@ namespace JabrAPI
             //foreach (var infoByte in new_import)
             //    Write(infoByte + " ");
 
-            string export = initial2.ExportAsString();
+            //string export = initial2.ExportAsString();
 
-            Write("\n\t\t\tInitial: " + export);
+            //Write("\n\t\t\tInitial: " + export);
 
-            copy2.ImportFromString(export, true);
-            string new_import = copy2.ExportAsString();
-            Write("\n\t\t\tImport:  " + new_import);
+            //copy2.ImportFromString(export, true);
+            //string new_import = copy2.ExportAsString();
+            //Write("\n\t\t\tImport:  " + new_import);
 
-            ReadKey();
+            //ReadKey();
 
 
 
