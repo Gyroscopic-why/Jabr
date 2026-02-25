@@ -8,6 +8,7 @@ using static System.Console;
 
 using AVcontrol;
 using JabrAPI.Source;
+using System.Runtime.InteropServices.Marshalling;
 
 
 
@@ -142,16 +143,19 @@ namespace JabrAPI
 
             RE5.EncryptionKey reKey = new(true);
             string aboba = "aboba baobab";
+            Int32 EXTEND = 128;
+            double valueBias = 1.6, powerBias = 1.5;
 
-            Int32 maxNonEntropy = 0, EXTEND = 128;
+            Int32 maxNonEntropy = 0;
             for (var i = 0; i < 1000; i++)
             {
+                reKey.Noisifier.settings.outputLength = EXTEND;
                 string encrypted = RE5.Encrypt.Text(aboba, reKey);
                 Write($"\n\tReKey: {reKey.ExAlphabet}, PrNoise: {reKey.Noisifier.PrimaryNoise}, CplxNoise: {reKey.Noisifier.ComplexNoise}");
                 Write("\n\tInitial: " + encrypted);
 
                 Write("\n\tNoised:  ");
-                string noised = AddNoise.Text(encrypted, reKey, EXTEND, false);
+                string noised = AddNoise.Text(encrypted, reKey, false);
                 Int32 count = 0, nonEntropy = 0, thisMaxNonEntropy = 0;
                 bool newWorst = false, noiseAtTheEnd = false;
                 for (var j = 0; j < noised.Length; j++)
@@ -184,22 +188,32 @@ namespace JabrAPI
                 ForegroundColor = ConsoleColor.Gray;
                 Write($"\n\tNonEntropy: {thisMaxNonEntropy}(" +
                     $"{
-                        (Int32)Math.Pow
+                        Math.Ceiling
                         (
-                            Math.Ceiling
+                            Math.Pow
                             (
-                                (double)encrypted.Length /
+                                encrypted.Length * valueBias /
                                 (
                                     EXTEND - encrypted.Length + 1
-                                )
-                            ),
-                            2
+                                ),
+                                powerBias
+                            )
                         )
-                    }), MaxNon: {maxNonEntropy}");
+                    }), MaxNon: {maxNonEntropy}" +
+                    $"\n\tInitial: {encrypted.Length}, extended: {EXTEND}" +
+                    $"\n\tAvgRatio: {(double)EXTEND / encrypted.Length}, " + 
+                    $"value: {(double) encrypted.Length / (EXTEND - encrypted.Length + 1)}" +
+                    $"\n\tBiased ({valueBias}; {powerBias}) value: {encrypted.Length * powerBias / (EXTEND - encrypted.Length + 1)}" +
+                    $"\n\n\tEnter new EXTEND length: ");
 
                 reKey.Next();
-                if (newWorst) ReadLine();
-                else ReadKey();
+                //if (newWorst) ReadLine();
+                //else ReadKey();
+                
+                if (Int32.TryParse(ReadLine(), out int newExtendBuffer)
+                    && newExtendBuffer > 0)
+                    EXTEND = newExtendBuffer;
+
                 Clear();
             }
 
