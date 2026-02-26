@@ -7,8 +7,6 @@ using static System.Console;
 
 
 using AVcontrol;
-using JabrAPI.Source;
-using System.Runtime.InteropServices.Marshalling;
 
 
 
@@ -18,8 +16,8 @@ namespace JabrAPI
     {
         static void Main()
         {
-            string message = "aboba";
-            Byte[] binMsg = ToBinary.Utf16(message);
+            //string message = "aboba";
+            //Byte[] binMsg = ToBinary.Utf16(message);
 
             //RE5.EncryptionKey reKey = new();
             //RE5.BinaryKey binKey = new();
@@ -51,12 +49,12 @@ namespace JabrAPI
             //RE5.EncryptionKey copy = new(false);
             //Stopwatch timer = new();
 
-            //string exportBuffer = "";
+            //string exportBuffer = "", exportAfterCopy;
 
             //for (var hide = 0; hide < 1; hide++)
             //{
             //    List<Int64> ms1 = [], ms2 = [];
-            //    const Int64 totalAttempts = 10, iterationsPerAttempt = 1_000_000;
+            //    const Int64 totalAttempts = 10, iterationsPerAttempt = 100_000;
             //    Write($"\n\n\n\t\t[i]  - Starting benchmark of {totalAttempts * iterationsPerAttempt / 1_000_000}m Key Export & Import");
 
             //    for (var attempt = 0; attempt < totalAttempts; attempt++)
@@ -79,7 +77,7 @@ namespace JabrAPI
             //            Write("\n\t\t\tIMPORT     - ");
             //            timer.Start();
 
-            //            for (var i = 0; i < iterationsPerAttempt; i++) copy.ImportFromString(exportBuffer);
+            //            for (var i = 0; i < iterationsPerAttempt; i++) copy.ImportFromString(exportBuffer, true);
 
             //            timer.Stop();
             //            ms2.Add(timer.ElapsedMilliseconds);
@@ -93,8 +91,9 @@ namespace JabrAPI
             //        if (attempt % 2 == 1)
             //        {
             //            Write("\n\t\t\tVALIDATING - ");
+            //            exportAfterCopy = copy.ExportAsString();
 
-            //            if (copy.ExportAsString() == exportBuffer)
+            //            if (exportAfterCopy == exportBuffer)
             //            {
             //                ForegroundColor = ConsoleColor.Green;
             //                Write("\tSUCCESS! Import matches export");
@@ -106,7 +105,27 @@ namespace JabrAPI
             //                Write("\tFAILURE! See differences:");
             //                ForegroundColor = ConsoleColor.Gray;
             //                Write("\n\t\t\tInitial: " + exportBuffer);
-            //                Write("\n\t\t\tImport:  " + copy.ExportAsString());
+            //                Write("\n\t\t\tImport:  " + exportAfterCopy);
+
+            //                bool considerInitial = exportBuffer.Length >= exportAfterCopy.Length;
+            //                var  length = considerInitial ? exportAfterCopy.Length : exportBuffer.Length;
+            //                var  countMatched = 0;
+
+            //                Write("\n\t\t\tDiffer:  ");
+            //                for (var i = 0; i < length; i++)
+            //                {
+            //                    if (exportAfterCopy[i] == exportBuffer[countMatched])
+            //                    {
+            //                        countMatched++;
+            //                        ForegroundColor = ConsoleColor.Green;
+            //                    }
+            //                    else ForegroundColor = ConsoleColor.DarkGray;
+
+            //                    if (considerInitial) Write(exportBuffer[i]);
+            //                    else Write(exportAfterCopy[i]);
+            //                }
+
+            //                ReadKey();
             //            }
             //        }
             //    }
@@ -147,7 +166,7 @@ namespace JabrAPI
             double valueBias = 1.6, powerBias = 1.5;
 
             Int32 maxNonEntropy = 0;
-            for (var i = 0; i < 1000; i++)
+            for (var i = 0; i < 10; i++)
             {
                 reKey.Noisifier.settings.outputLength = EXTEND;
                 string encrypted = RE5.Encrypt.Text(aboba, reKey);
@@ -187,8 +206,7 @@ namespace JabrAPI
                 }
                 ForegroundColor = ConsoleColor.Gray;
                 Write($"\n\tNonEntropy: {thisMaxNonEntropy}(" +
-                    $"{
-                        Math.Ceiling
+                    $"{Math.Ceiling
                         (
                             Math.Pow
                             (
@@ -198,18 +216,17 @@ namespace JabrAPI
                                 ),
                                 powerBias
                             )
-                        )
-                    }), MaxNon: {maxNonEntropy}" +
+                        )}), MaxNon: {maxNonEntropy}" +
                     $"\n\tInitial: {encrypted.Length}, extended: {EXTEND}" +
-                    $"\n\tAvgRatio: {(double)EXTEND / encrypted.Length}, " + 
-                    $"value: {(double) encrypted.Length / (EXTEND - encrypted.Length + 1)}" +
+                    $"\n\tAvgRatio: {(double)EXTEND / encrypted.Length}, " +
+                    $"value: {(double)encrypted.Length / (EXTEND - encrypted.Length + 1)}" +
                     $"\n\tBiased ({valueBias}; {powerBias}) value: {encrypted.Length * powerBias / (EXTEND - encrypted.Length + 1)}" +
                     $"\n\n\tEnter new EXTEND length: ");
 
                 reKey.Next();
                 //if (newWorst) ReadLine();
                 //else ReadKey();
-                
+
                 if (Int32.TryParse(ReadLine(), out int newExtendBuffer)
                     && newExtendBuffer > 0)
                     EXTEND = newExtendBuffer;
@@ -253,7 +270,7 @@ namespace JabrAPI
 
 
             RE5.EncryptionKey initial = new(true);
-            RE5.EncryptionKey copy    = new(false);
+            RE5.EncryptionKey copy = new(false);
             Stopwatch timer = new();
 
             List<Byte> exportBuffer = [];

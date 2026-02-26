@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Text;
+using System.Linq;
 using System.Collections.Generic;
+
 
 using AVcontrol;
 
 
 
-namespace JabrAPI.Source
+namespace JabrAPI
 {
     public class Noisifier
     {
@@ -24,7 +27,7 @@ namespace JabrAPI.Source
         public Noisifier(string primaryNoise, string complexNoise)
             => Set(primaryNoise, complexNoise);
         public Noisifier(Noisifier otherNoisifier, bool fullCopy = true)
-            => Copy(otherNoisifier, fullCopy);
+            => CopyFrom(otherNoisifier, fullCopy);
         public Noisifier(List<char> banned, bool autoGenerate = true)
         {
             if (autoGenerate) DefaultGenerate(banned);
@@ -45,6 +48,19 @@ namespace JabrAPI.Source
 
         public char RandomPrimaryChar => _primaryNoise[_random.Next(PrimaryNoiseCount)];
         public char RandomComplexChar => _complexNoise[_random.Next(ComplexNoiseCount)];
+
+        public string RandomPrimarySequence(Int32 count) =>
+            string.Concat(Enumerable.Range(0, count).Select
+            (
+                _ => _primaryNoise[_random.Next(PrimaryNoiseCount)]
+            )
+        );
+        public string RandomComplexSequence(Int32 count) =>
+            string.Concat(Enumerable.Range(0, count).Select
+            (
+                _ => _complexNoise[_random.Next(ComplexNoiseCount)]
+            )
+        );
 
 
 
@@ -395,7 +411,7 @@ namespace JabrAPI.Source
             SetDefault(banned);
             GenerateAll();
         }
-        public  void Copy(Noisifier otherNoisifier, bool fullCopy = true)
+        public  void CopyFrom(Noisifier otherNoisifier, bool fullCopy = true)
         {
             Set(otherNoisifier.PrimaryNoise, otherNoisifier.ComplexNoise);
 
@@ -468,20 +484,28 @@ namespace JabrAPI.Source
 
 
 
-        public string GenerateNoise(Int32 count, List<char> allowed)
+        public string GenerateNoise(int count, List<char> allowed)
         {
-            string result = "";
-            Int32 chosenId;
+            if (count <= 0) return string.Empty;
+            if (count > allowed.Count) throw new ArgumentOutOfRangeException
+                (
+                    $"Count is greater than max possible length: {allowed.Count}"
+                );
 
-            for (var noiseCharId = 0; noiseCharId < count; noiseCharId++)
+            StringBuilder result = new(count);
+            Int32 totalCount = allowed.Count;
+
+            for (var lastUsedId = 0; lastUsedId < count; lastUsedId++)
             {
-                chosenId = _random.Next(allowed.Count);
-                result  += allowed[chosenId];
+                Int32 chosenUnused = _random.Next(lastUsedId, totalCount);
 
-                allowed.RemoveAt(chosenId);
+                (allowed[lastUsedId], allowed[chosenUnused]) =
+                (allowed[chosenUnused], allowed[lastUsedId]);
+
+                result.Append(allowed[lastUsedId]);
             }
 
-            return result;
+            return result.ToString();
         }
 
 
@@ -1098,7 +1122,7 @@ namespace JabrAPI.Source
         }
         static public string FastText(string message, Template.IEncryptionKey reKey)
         {
-            return NEW_INTERNAL_FastText
+            return OLD_INTERNAL_FastText
             (
                 message,
                 reKey.Noisifier,
@@ -1184,7 +1208,7 @@ namespace JabrAPI.Source
         }
         static public string FastText(string message, Noisifier noisifier)
         {
-            return NEW_INTERNAL_FastText
+            return OLD_INTERNAL_FastText
             (
                 message,
                 noisifier,
@@ -1308,20 +1332,16 @@ namespace JabrAPI.Source
                     (outputLength - curLength)
                     / (curLength + 1)
                 ) * 2 + 1;
-            Int32 maxNonEntropy =
-                (Int32)Math.Pow
+            Int32 maxSyntropy = Miscellaneous.CalculateMaxNonEntropy
                 (
-                    Math.Ceiling
-                    (
-                        (double) curLength /
-                        (outputLength - curLength + 1)
-                    ),
-                    2
+                    noisifier.settings.excpectedEntropy,
+                    curLength, outputLength
                 );
 
             SecureRandom random = new(128);
             string almostResult = "";
             fakeSelection = fakeSelection == "" ? noisifier.PrimaryNoise : fakeSelection;
+            Int32 prevFinalUnnoised = 0;
             
 
             for (var i = 0; i <= curLength; i += 256)
@@ -1330,13 +1350,15 @@ namespace JabrAPI.Source
 
                 almostResult += INTERNAL_Round
                 (
-                    message.Substring(i, Math.Min(curLength - i, 255)),
+                    [.. message.Substring(i, Math.Min(curLength - i, 255))],
                     fakeSelection,
                     noisifier,
                     random,
-                    outputLength - almostResult.Length,
+                    outputLength - almostResult.Length - curLength + i,
                     maxAvgNoiseCount,
-                    maxNonEntropy
+                    0,
+                    maxSyntropy,
+                    ref prevFinalUnnoised
                 );
             }
 
@@ -1354,16 +1376,51 @@ namespace JabrAPI.Source
             );
         }
         static private string INTERNAL_Round(
-            string message, string fakeSelection,
+            List<char> message, string fakeSelection,
             Noisifier noisifier, SecureRandom random,
-            Int32 finalMaxRoundLength,
-            Int32 maxAvgNoiseCount, Int32 maxNonEntropy)
+            Int32 finalMaxRoundLength, Int32 maxSyntropy,
+            Int32 maxAvgNoiseCount, Int32 minAvgNoiseCount,
+            ref Int32 prevFinalUnnoised)
         {
-            Int32 initialLength = message.Length, chosenOffset = 0;
+            Int32 initialLength = message.Count, chosenOffset;
 
-            if (initialLength >= finalMaxRoundLength) return message;
+            if (initialLength >= finalMaxRoundLength)
+                return new string ([.. message]);
 
-            const Int32 minimalOffsetStep = 1;
+
+            chosenOffset = random.Next
+            (
+                noisifier.settings.forceOptimalEntropy
+                    && prevFinalUnnoised >= maxSyntropy ?
+                        minAvgNoiseCount + 1 : minAvgNoiseCount,
+                maxAvgNoiseCount
+            );
+
+            if (chosenOffset >= 2 && random.NextBool())
+            {
+                message.Insert(0, noisifier.RandomComplexChar);
+
+                for (var i = 1; i < chosenOffset - 1; i++)
+                {
+                    if (random.NextBool())
+                    {
+                        message.Insert(0, noisifier.RandomComplexChar);
+
+                        i++;
+                    }
+                    else
+                    {
+
+                    }
+                }
+            }
+            else
+            {
+                message.InsertRange(0, "adad");
+            }
+
+
+                const Int32 minimalOffsetStep = 1;
             List<Int32> noiseOffsets = new(initialLength);
             for (var i = 0; i < initialLength; i++)
                 noiseOffsets.Add(0);
@@ -1489,7 +1546,7 @@ namespace JabrAPI.Source
 
 
 
-            static private Int32 CalculateMaxNonEntropy(
+            static public Int32 CalculateMaxNonEntropy(
                 ExpectedEntropy entropySetting,
                 Int32 initial, Int32 extending)
             {

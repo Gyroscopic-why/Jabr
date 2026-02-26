@@ -2,10 +2,10 @@
 using System.Linq;
 using System.Collections.Generic;
 
-using AVcontrol;
+using static JabrAPI.Template;
 
-using JabrAPI.Source;
-using static JabrAPI.Source.Template;
+
+using AVcontrol;
 
 
 
@@ -15,7 +15,8 @@ namespace JabrAPI
     {
         public class EncryptionKey : IEncryptionKey
         {
-            private string _primaryAlphabet  = "";
+            private readonly SetHelper _setHelper;
+            private string  _primaryAlphabet = "";
             private string _externalAlphabet = "";
 
             private List<char>  _primaryNecessary = [],  _primaryAllowed = [],  _primaryBanned = [];
@@ -23,8 +24,11 @@ namespace JabrAPI
             private Int32  _primaryMaxLength = -1, _externalMaxLength = -1;
 
 
+
             public EncryptionKey(string primaryAlphabet, string externalAlphabet, List<Int16> shifts)
             {
+                _setHelper = new(this);
+
                 _primaryAlphabet  = primaryAlphabet;
                 _externalAlphabet = externalAlphabet;
 
@@ -34,6 +38,8 @@ namespace JabrAPI
             }
             public EncryptionKey(string primaryAlphabet, string externalAlphabet, Int16 shift)
             {
+                _setHelper = new(this);
+
                 _primaryAlphabet  = primaryAlphabet;
                 _externalAlphabet = externalAlphabet;
 
@@ -42,17 +48,27 @@ namespace JabrAPI
             }
             public EncryptionKey(string primaryAlphabet, string externalAlphabet)
             {
+                _setHelper = new(this);
+
                 _primaryAlphabet  = primaryAlphabet;
                 _externalAlphabet = externalAlphabet;
             }
             public EncryptionKey(Int32 shiftCount)
-                => _shCount = shiftCount;
+            {
+                _setHelper = new(this);
+                _shCount = shiftCount;
+            }
             public EncryptionKey(EncryptionKey otherKey, bool fullCopy = true)
-                => Copy(otherKey, fullCopy);
+            {
+                _setHelper = new(this);
+                CopyFrom(otherKey, fullCopy);
+            }
             public EncryptionKey(bool autoGenerate = true)
             {
+                _setHelper = new(this);
+
                 if (autoGenerate) DefaultGenerate();
-                else SetDefault();
+                else Set.Default();
             }
 
 
@@ -73,9 +89,131 @@ namespace JabrAPI
 
 
 
+            override public SetHelper Set => _setHelper;
+            public class SetHelper : ISetHelper
+            {
+                private readonly EncryptionKey _reKey;
+
+                internal SetHelper(EncryptionKey reKey)
+                {
+                    _reKey = reKey;
+                }
 
 
-            override public bool   ImportFromString(string exportedData, bool throwExceptions = false)
+
+                override public void Default()
+                {
+                    _reKey._primaryNecessary = [.. DEFAULT.CHARACTERS.WITH_SPACE];
+                    _reKey._externalAllowed  = [.. DEFAULT.CHARACTERS.WITHOUT_SPACE];
+
+                    _reKey._primaryMaxLength  = _reKey._primaryNecessary.Count;
+                    _reKey._externalMaxLength = 8;
+                }
+                public override void ShiftCount(int count) => _reKey._shCount = count;
+
+
+
+                public void Default(List<char> pNecessary, List<char> pAllowed, List<char> pBanned, Int32 pMaxLength,
+                                    List<char> eNecessary, List<char> eAllowed, List<char> eBanned, Int32 eMaxLength)
+                {
+                    _reKey._primaryNecessary  = [.. pNecessary];
+                    _reKey._externalNecessary = [.. eNecessary];
+
+                    _reKey._primaryAllowed  = [.. pAllowed];
+                    _reKey._externalAllowed = [.. eAllowed];
+
+                    _reKey._primaryBanned  = [.. pBanned];
+                    _reKey._externalBanned = [.. eBanned];
+
+                    _reKey._primaryMaxLength  = pMaxLength;
+                    _reKey._externalMaxLength = eMaxLength;
+                }
+                public void Default(string pNecessary, string pAllowed, string pBanned, Int32 pMaxLength,
+                                       string eNecessary, string eAllowed, string eBanned, Int32 eMaxLength)
+                         => Default([.. pNecessary], [.. pAllowed], [.. pBanned], pMaxLength,
+                                    [.. eNecessary], [.. eAllowed], [.. eBanned], eMaxLength);
+
+                public void Default(List<char> pNecessary, List<char> pAllowed, Int32 pMaxLength,
+                                    List<char> eNecessary, List<char> eAllowed, Int32 eMaxLength)
+                {
+                    _reKey._primaryNecessary  = [.. pNecessary];
+                    _reKey._externalNecessary = [.. eNecessary];
+
+                    _reKey._primaryAllowed  = [.. pAllowed];
+                    _reKey._externalAllowed = [.. eAllowed];
+
+                    _reKey._primaryMaxLength  = pMaxLength;
+                    _reKey._externalMaxLength = eMaxLength;
+                }
+                public void Default(string pNecessary, string pAllowed, Int32 pMaxLength,
+                                       string eNecessary, string eAllowed, Int32 eMaxLength)
+                         => Default([.. pNecessary], [.. pAllowed], pMaxLength,
+                                    [.. eNecessary], [.. eAllowed], eMaxLength);
+
+                public void Default(Int32 pMaxLength, List<char> pNecessary, List<char> pBanned,
+                                    Int32 eMaxLength, List<char> eNecessary, List<char> eBanned)
+                {
+                    _reKey._primaryNecessary  = [.. pNecessary];
+                    _reKey._externalNecessary = [.. eNecessary];
+
+                    _reKey._primaryBanned  = [.. pBanned];
+                    _reKey._externalBanned = [.. eBanned];
+
+                    _reKey._primaryMaxLength  = pMaxLength;
+                    _reKey._externalMaxLength = eMaxLength;
+                }
+                public void Default(Int32 pMaxLength, string pNecessary, string pBanned,
+                                    Int32 eMaxLength, string eNecessary, string eBanned)
+                         => Default(pMaxLength, [.. pNecessary], [.. pBanned],
+                                    eMaxLength, [.. eNecessary], [.. eBanned]);
+
+                public void Default(Int32 pMaxLength, List<char> pBanned,
+                                    Int32 eMaxLength, List<char> eBanned)
+                {
+                    _reKey._primaryBanned  = [.. pBanned];
+                    _reKey._externalBanned = [.. eBanned];
+
+                    _reKey._primaryMaxLength  = pMaxLength;
+                    _reKey._externalMaxLength = eMaxLength;
+                }
+                public void Default(Int32 pMaxLength, string pBanned,
+                                    Int32 eMaxLength, string eBanned)
+                         => Default(pMaxLength, [.. pBanned],
+                                    eMaxLength, [.. eBanned]);
+
+                public void Default(List<char> necessary, List<char> allowed, List<char> banned, Int32 maxLength)
+                         => Default(necessary, allowed, banned, maxLength,
+                                    necessary, allowed, banned, maxLength);
+                public void Default(string necessary, string allowed, string banned, Int32 maxLength)
+                         => Default([.. necessary], [.. allowed], [.. banned], maxLength,
+                                    [.. necessary], [.. allowed], [.. banned], maxLength);
+
+                public void Default(List<char> necessary, List<char> allowed, Int32 maxLength)
+                         => Default(necessary, allowed, maxLength,
+                                    necessary, allowed, maxLength);
+                public void Default(string necessary, string allowed, Int32 maxLength)
+                         => Default([.. necessary], [.. allowed], maxLength,
+                                    [.. necessary], [.. allowed], maxLength);
+
+                public void Default(Int32 maxLength, List<char> necessary, List<char> banned)
+                         => Default(maxLength, necessary, banned,
+                                    maxLength, necessary, banned);
+                public void Default(Int32 maxLength, string necessary, string banned)
+                         => Default(maxLength, [.. necessary], [.. banned],
+                                    maxLength, [.. necessary], [.. banned]);
+
+                public void Default(Int32 maxLength, List<char> banned)
+                         => Default(maxLength, banned,
+                                    maxLength, banned);
+                public void Default(Int32 maxLength, string banned)
+                         => Default(maxLength, [.. banned],
+                                    maxLength, [.. banned]);
+            }
+
+
+
+            override public bool   ImportFromString(
+                string exportedData, bool throwExceptions = false)
             {
                 try
                 {
@@ -158,9 +296,8 @@ namespace JabrAPI
                         return false;
                     }
 
-                    noisifierImportLength += parsedLength + 2;
+                    noisifierImportLength = splitterId + parsedLength + 1;
                     _noisifier.ImportFromString(data[..noisifierImportLength], throwExceptions);
-
 
                     data = data[noisifierImportLength..];
 
@@ -279,18 +416,17 @@ namespace JabrAPI
             }
             override public string ExportAsString()
             {
-                string result = _primaryAlphabet.Length + ":" + _primaryAlphabet
-                             + _externalAlphabet.Length + ":" + _externalAlphabet;
+                string mainPart = $"{_primaryAlphabet.Length}:{_primaryAlphabet}" +
+                    $"{_externalAlphabet.Length}:{_externalAlphabet}";
+                
+                string shiftsPart = _shifts.Count > 0 ? string.Join(",", _shifts) : "";
 
-                for (var curId = 0; curId < _shifts.Count - 1; curId++)
-                    result += _shifts[curId] + ",";
-                if (_shifts.Count > 0) result += _shifts[^1];
-
-                return _noisifier.ExportAsString() + result;
+                return _noisifier.ExportAsString() + mainPart + shiftsPart;
             }
 
 
-            override public bool ImportFromBinary(List<Byte> exportData, bool throwExceptions = false)
+            override public bool       ImportFromBinary(
+                List<Byte> exportData, bool throwExceptions = false)
             {
                 try
                 {
@@ -517,7 +653,7 @@ namespace JabrAPI
 
 
             public bool IsPrimaryValid(string message, bool throwException = false)
-                => IsPrimaryValid(message, _primaryAlphabet, throwException);
+                     => IsPrimaryValid(message, _primaryAlphabet, throwException);
             static public bool IsPrimaryValid(string message, string primary, bool throwException = false)
             {
                 if (!IsPrimaryPartiallyValid(primary, throwException)) return false;
@@ -540,7 +676,7 @@ namespace JabrAPI
             }
 
             public bool IsPrimaryPartiallyValid(bool throwException = false)
-                => IsPrimaryPartiallyValid(_primaryAlphabet, throwException);
+                     => IsPrimaryPartiallyValid(_primaryAlphabet, throwException);
             static public bool IsPrimaryPartiallyValid(string primary, bool throwException = false)
             {
                 if (primary == null || primary == "" || primary.Length < 2)
@@ -577,7 +713,7 @@ namespace JabrAPI
 
 
             public bool IsExternalValid(string encrypted, bool throwException = false)
-                => IsExternalValid(encrypted, _externalAlphabet, throwException);
+                     => IsExternalValid(encrypted, _externalAlphabet, throwException);
             static public bool IsExternalValid(string encrypted, string external, bool throwException = false)
             {
                 if (!IsExternalPartiallyValid(external, throwException)) return false;
@@ -600,7 +736,7 @@ namespace JabrAPI
             }
 
             public bool IsExternalPartiallyValid(bool throwException = false)
-                => IsExternalPartiallyValid(_externalAlphabet, throwException);
+                     => IsExternalPartiallyValid(_externalAlphabet, throwException);
             static public bool IsExternalPartiallyValid(string external, bool throwException = false)
             {
                 if (external == null || external == "" || external.Length < 2)
@@ -638,107 +774,14 @@ namespace JabrAPI
 
 
 
-            public void SetDefault(List<char> pNecessary, List<char> pAllowed, List<char> pBanned, Int32 pMaxLength,
-                                   List<char> eNecessary, List<char> eAllowed, List<char> eBanned, Int32 eMaxLength)
+            public  void CopyFrom(EncryptionKey otherKey, bool fullCopy = true)
             {
-                _primaryNecessary  = [.. pNecessary];
-                _externalNecessary = [.. eNecessary];
+                _noisifier.CopyFrom(otherKey.Noisifier, fullCopy);
 
-                _primaryAllowed    = [.. pAllowed];
-                _externalAllowed   = [.. eAllowed];
-
-                _primaryBanned     = [.. pBanned];
-                _externalBanned    = [.. eBanned];
-
-                _primaryMaxLength  = pMaxLength;
-                _externalMaxLength = eMaxLength;
-            }
-            public void SetDefault(string pNecessary, string pAllowed, string pBanned, Int32 pMaxLength,
-                                   string eNecessary, string eAllowed, string eBanned, Int32 eMaxLength)
-                => SetDefault([.. pNecessary], [.. pAllowed], [.. pBanned], pMaxLength,
-                              [.. eNecessary], [.. eAllowed], [.. eBanned], eMaxLength);
-
-
-            public void SetDefault(List<char> pNecessary, List<char> pAllowed, Int32 pMaxLength,
-                                   List<char> eNecessary, List<char> eAllowed, Int32 eMaxLength)
-            {
-                _primaryNecessary  = [.. pNecessary];
-                _externalNecessary = [.. eNecessary];
-
-                _primaryAllowed    = [.. pAllowed];
-                _externalAllowed   = [.. eAllowed];
-
-                _primaryMaxLength  = pMaxLength;
-                _externalMaxLength = eMaxLength;
-            }
-            public void SetDefault(string pNecessary, string pAllowed, Int32 pMaxLength,
-                                   string eNecessary, string eAllowed, Int32 eMaxLength)
-                => SetDefault([.. pNecessary], [.. pAllowed], pMaxLength,
-                              [.. eNecessary], [.. eAllowed], eMaxLength);
-
-
-            public void SetDefault(Int32 pMaxLength, List<char> pNecessary, List<char> pBanned,
-                                   Int32 eMaxLength, List<char> eNecessary, List<char> eBanned)
-            {
-                _primaryNecessary  = [.. pNecessary];
-                _externalNecessary = [.. eNecessary];
-
-                _primaryBanned     = [.. pBanned];
-                _externalBanned    = [.. eBanned];
-
-                _primaryMaxLength  = pMaxLength;
-                _externalMaxLength = eMaxLength;
-            }
-            public void SetDefault(Int32 pMaxLength, string pNecessary, string pBanned,
-                                   Int32 eMaxLength, string eNecessary, string eBanned)
-                => SetDefault(pMaxLength, [.. pNecessary], [.. pBanned], 
-                              eMaxLength, [.. eNecessary], [.. eBanned]);
-
-
-            public void SetDefault(Int32 pMaxLength, List<char> pBanned,
-                                   Int32 eMaxLength, List<char> eBanned)
-            {
-                _primaryBanned     = [.. pBanned];
-                _externalBanned    = [.. eBanned];
-
-                _primaryMaxLength  = pMaxLength;
-                _externalMaxLength = eMaxLength;
-            }
-            public void SetDefault(Int32 pMaxLength, string pBanned,
-                                   Int32 eMaxLength, string eBanned)
-                => SetDefault(pMaxLength, [.. pBanned], 
-                              eMaxLength, [.. eBanned]);
-
-
-            public void SetDefault(List<char> necessary, List<char> allowed, List<char> banned, Int32 maxLength)
-                => SetDefault(necessary, allowed, banned, maxLength, necessary, allowed, banned, maxLength);
-            public void SetDefault(string necessary, string allowed, string banned, Int32 maxLength)
-                => SetDefault([.. necessary], [.. allowed], [.. banned], maxLength);
-
-            public void SetDefault(List<char> necessary, List<char> allowed, Int32 maxLength)
-                => SetDefault(necessary, allowed, maxLength, necessary, allowed, maxLength);
-            public void SetDefault(string necessary, string allowed, Int32 maxLength)
-                => SetDefault([.. necessary], [.. allowed], maxLength);
-
-            public void SetDefault(Int32 maxLength, List<char> necessary, List<char> banned)
-                => SetDefault(maxLength, necessary, banned, maxLength, necessary, banned);
-            public void SetDefault(Int32 maxLength, string necessary, string banned)
-                => SetDefault(maxLength, [.. necessary], [.. banned]);
-
-            public void SetDefault(Int32 maxLength, List<char> banned)
-                => SetDefault(maxLength, banned, maxLength, banned);
-            public void SetDefault(Int32 maxLength, string banned)
-                => SetDefault(maxLength, [.. banned]);
-
-
-            public  void Copy(EncryptionKey otherKey, bool fullCopy = true)
-            {
-                _noisifier.Copy(otherKey.Noisifier, fullCopy);
-
-                Set(otherKey.Primary, otherKey.External, otherKey.Shifts);
+                CopyFrom(otherKey.Primary, otherKey.External, otherKey.Shifts);
 
                 if (fullCopy)
-                    SetDefault
+                    Set.Default
                     (
                         otherKey._primaryNecessary,
                         otherKey._primaryAllowed,
@@ -750,23 +793,22 @@ namespace JabrAPI
                         otherKey._externalMaxLength
                     );
             }
-            private void Set(string primary, string external, List<Int16> shifts)
+            private void CopyFrom(string primary, string external, List<Int16> shifts)
             {
-                _primaryAlphabet  = primary;
+                _primaryAlphabet = primary;
                 _externalAlphabet = external;
 
                 _shifts.Clear();
                 if (shifts == null || shifts.Count == 0) _shifts.Add(0);
-                else _shifts.AddRange(shifts.GetRange(0, Math.Max(shifts.Count, 255)));
+                else _shifts.AddRange
+                    (
+                        shifts.GetRange
+                        (0, Math.Max(shifts.Count, 255))
+                    );
             }
-            override public  void SetDefault()
-            {
-                _primaryNecessary  = [.. DEFAULT.CHARACTERS.WITH_SPACE];
-                _externalAllowed   = [.. DEFAULT.CHARACTERS.WITHOUT_SPACE];
 
-                _primaryMaxLength  = _primaryNecessary.Count;
-                _externalMaxLength = 8;
-            }
+            
+            
             override private protected void GenerateAll()
             {
                 GenerateRandomPrimary();
@@ -785,241 +827,145 @@ namespace JabrAPI
 
 
 
-
-            private void ValidateForPrimaryGeneration (List<char> necessary, List<char> allowed, Int32 maxLength)
+            static private void ValidateForGeneration (List<char> necessary, List<char> allowed, Int32 maxLength)
             {
-                if (necessary != null && necessary.Count > 0)
-                {
-                    _primaryNecessary = necessary;
+                necessary ??= [];
+                allowed   ??= [];
 
-                    for (var id1 = 0; id1 < necessary.Count; id1++)
+                Int32 nCount = necessary.Count, aCount = allowed.Count;
+
+                for (var idN1 = 0; idN1 < nCount; idN1++)
+                {
+                    for (var idN2 = idN1 + 1; idN2 < nCount; idN2++)
                     {
-                        for (var id2 = id1 + 1; id2 < necessary.Count; id2++)
+                        if (necessary[idN1] == necessary[idN2])
                         {
-                            if (necessary[id1] == necessary[id2])
-                            {
-                                throw new ArgumentException
-                                (
-                                    "necessary list cannot include duplicates",
-                                    "necessary, duplicate char: " + necessary[id1]
-                                );
-                            }
+                            throw new ArgumentException
+                            (
+                                $"Necessary list cannot include duplicates" +
+                                $"\nDuplicate char: " + necessary[idN1],
+                                nameof(necessary)
+                            );
                         }
                     }
                 }
-                else _primaryNecessary = [];
 
-                if (allowed != null)
+                for (var idA = 0; idA < aCount; idA++)
                 {
-                    _primaryAllowed = allowed;
-
-                    for (var id1 = 0; id1 < allowed.Count; id1++)
+                    for (var idA2 = idA + 1; idA2 < aCount; idA2++)
                     {
-                        for (var id2 = id1 + 1; id2 < allowed.Count; id2++)
+                        if (allowed[idA] == allowed[idA2])
                         {
-                            if (allowed[id1] == allowed[id2])
-                            {
-                                throw new ArgumentException
-                                (
-                                    "allowed list cannot include duplicates",
-                                    "allowed, duplicate char: " + allowed[id1]
-                                );
-                            }
+                            throw new ArgumentException
+                            (
+                                $"Allowed list cannot include duplicates" +
+                                $"\nDuplicate char: " + allowed[idA],
+                                nameof(allowed)
+                            );
                         }
-                        for (var id2 = 0; id2 < _primaryNecessary.Count; id2++)
+                    }
+                    for (var idN = 0; idN < nCount; idN++)
+                    {
+                        if (allowed[idA] == necessary[idN])
                         {
-                            if (allowed[id1] == _primaryNecessary[id2])
-                            {
-                                throw new ArgumentException
-                                (
-                                    "allowed list cannot include duplicates of necessary list",
-                                    "allowed, _primaryNecessary, duplicate char: " + allowed[id1]
-                                );
-                            }
+                            throw new ArgumentException
+                            (
+                                $"Allowed list cannot include duplicates of Necessary list" +
+                                $"\nDuplicate char: " + allowed[idA],
+                                nameof(allowed) + " " + nameof(necessary)
+                            );
                         }
                     }
                 }
-                else _primaryAllowed = [];
 
 
                 if (maxLength < 2)
                 {
                     throw new ArgumentException
                     (
-                        "Max length is less than the smallest possible alphabet length (2)",
+                        $"Max length is less than the smallest possible alphabet length (2)",
                         nameof(maxLength)
                     );
                 }
-                maxLength -= _primaryNecessary.Count;
+                maxLength -= nCount;
                 if (maxLength < 0)
                 {
                     throw new ArgumentException
                     (
-                        "Max length cannot be less than the number of necessary characters.",
-                        "maxLength: " + maxLength + _primaryNecessary.Count +
-                        ", necessary characters count: " + _primaryNecessary.Count
+                        $"Max length cannot be less than the number of necessary characters." +
+                        $"\nmaxLength: {maxLength + nCount}, " +
+                        $"Necessary count: {nCount}",
+                        nameof(maxLength)
                     );
                 }
-                else if (maxLength > _primaryAllowed.Count)
+                else if (maxLength > aCount)
                 {
                     throw new ArgumentException
                     (
-                        "Max length cannot be more than allowed characters count",
-                        "maxLength: " + maxLength + ", allowed count: " + _primaryAllowed.Count
+                        $"Max length cannot be more than allowed characters count" +
+                        $"\nmaxLength: {maxLength}, allowed count: {aCount}",
+                        nameof(maxLength)
                     );
                 }
 
-                if (_primaryNecessary.Count + _primaryAllowed.Count < 2)
+                if (nCount + aCount < 2)
                 {
                     throw new ArgumentException
                     (
-                        "Not enough characters in necessary and allowed list for a valid key",
-                        "_primaryNecessary.Count + _primaryAllowed.Count < 2"
+                        $"Not enough characters in necessary and allowed list for a valid key" +
+                        $"\nneccessary.Count + allowed.Count: {nCount + aCount} < 2",
+                        nameof(necessary) + " " + nameof(allowed)
                     );
                 }
             }
-            private void ValidateForExternalGeneration(List<char> necessary, List<char> allowed, Int32 maxLength)
+            public string GenerateRandomAlphabet(
+                List<char> necessary, List<char> allowed,
+                Int32 maxLength, bool validateParameters = true)
             {
-                if (necessary != null && necessary.Count > 0)
-                {
-                    _externalNecessary = necessary;
+                necessary ??= [];
+                allowed   ??= [];
 
-                    for (var id1 = 0; id1 < necessary.Count; id1++)
-                    {
-                        for (var id2 = id1 + 1; id2 < necessary.Count; id2++)
-                        {
-                            if (necessary[id1] == necessary[id2])
-                            {
-                                throw new ArgumentException
-                                (
-                                    "necessary list cannot include duplicates",
-                                    "necessary, duplicate char: " + necessary[id1]
-                                );
-                            }
-                        }
-                    }
-                }
-                else _externalNecessary = [];
-
-                if (allowed != null)
-                {
-                    _externalAllowed = allowed;
-
-                    for (var id1 = 0; id1 < allowed.Count; id1++)
-                    {
-                        for (var id2 = id1 + 1; id2 < allowed.Count; id2++)
-                        {
-                            if (allowed[id1] == allowed[id2])
-                            {
-                                throw new ArgumentException
-                                (
-                                    "allowed list cannot include duplicates",
-                                    "allowed, duplicate char: " + allowed[id1]
-                                );
-                            }
-                        }
-                        for (var id2 = 0; id2 < _externalNecessary.Count; id2++)
-                        {
-                            if (allowed[id1] == _externalNecessary[id2])
-                            {
-                                throw new ArgumentException
-                                (
-                                    "allowed list cannot include duplicates of necessary list",
-                                    "allowed, _externalNecessary, duplicate char: " + allowed[id1]
-                                );
-                            }
-                        }
-                    }
-                }
-                else _externalAllowed = [];
-
-
-                if (maxLength < 2)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length is less than the smallest possible alphabet length (2)",
-                        "maxLength < 2"
-                    );
-                }
-                maxLength -= _externalNecessary.Count;
-                if (maxLength < 0)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length cannot be less than the number of necessary characters.",
-                        "maxLength: " + maxLength + _externalNecessary.Count +
-                        ", necessary characters count: " + _externalNecessary.Count
-                    );
-                }
-                else if (maxLength > _externalAllowed.Count)
-                {
-                    throw new ArgumentException
-                    (
-                        "Max length cannot be more than allowed characters count",
-                        "maxLength: " + maxLength + ", allowed count: " + _externalAllowed.Count
-                    );
-                }
-
-                if (_externalNecessary.Count + _externalAllowed.Count < 2)
-                {
-                    throw new ArgumentException
-                    (
-                        "Not enough characters in necessary and allowed list for a valid key",
-                        "_externalNecessary.Count + _externalAllowed.Count < 2"
-                    );
-                }
-            }
-
-
-
-            public void GenerateRandomPrimary(List<char> necessary, List<char> allowed, Int32 maxLength, bool validateParameters = true)
-            {
                 if (validateParameters)
-                {
-                    ValidateForPrimaryGeneration(necessary, allowed, maxLength);
+                    ValidateForGeneration(necessary, allowed, maxLength);
 
-                    necessary = _primaryNecessary;  //  to avoid nullpointer exceptions
-                    allowed   = _primaryAllowed;    //  the _primary variants are always defaulted
-                                                    //  (to a new empty List in worst case)
+                Int32 chosenPosition, chosenUnused, nCount = necessary.Count, aCount = allowed.Count; ;
+                maxLength = Math.Min(maxLength - nCount, allowed.Count);
+                List<char> result = new (maxLength);
+                
+                for (var lastUsedId = 0; lastUsedId < nCount; lastUsedId++)
+                {
+                    chosenUnused = _random.Next(lastUsedId, nCount);
+
+                    result.Add(necessary[chosenUnused]);
+
+                    (necessary[lastUsedId], necessary[chosenUnused]) =
+                    (necessary[chosenUnused], necessary[lastUsedId]);
                 }
 
-                Int32 buffer, bufferId;
-                _primaryAlphabet = "";
-
-
-                while (necessary.Count > 0)
+                for (var lastUsedId = 0; lastUsedId < maxLength; lastUsedId++)
                 {
-                    buffer = _random.Next(necessary.Count);
-                    _primaryAlphabet += necessary[buffer];
-                    necessary.RemoveAt(buffer);
-                }
-                for (var remaining = Math.Min(maxLength, allowed.Count); remaining > 0; remaining--)
-                {
-                    buffer   = _random.Next(allowed.Count);
-                    bufferId = _random.Next(_primaryAlphabet.Length);
+                    chosenUnused   = _random.Next(lastUsedId,  aCount);
+                    chosenPosition = _random.Next(nCount + lastUsedId);
 
-                    _primaryAlphabet = _primaryAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                    allowed.RemoveAt(buffer);
+                    result.Insert(chosenPosition, allowed[chosenUnused]);
+                    
+                    (allowed[lastUsedId], allowed[chosenUnused]) =
+                    (allowed[chosenUnused], allowed[lastUsedId]);
                 }
+
+                return new string([.. result]);
             }
-            public void GenerateRandomPrimary(string necessary, string allowed, Int32 maxLength, bool validateParameters = true)
-                => GenerateRandomPrimary([.. necessary], [.. allowed], maxLength, validateParameters);
-
-
-            public void GenerateRandomPrimary(List<char> allowed, Int32 maxLength, bool validateParameters = true)
-                => GenerateRandomPrimary([], allowed, maxLength, validateParameters);
-            public void GenerateRandomPrimary(string allowed, Int32 maxLength, bool validateParameters = true)
-                => GenerateRandomPrimary([], [.. allowed], maxLength, validateParameters);
-
-
-            public void GenerateRandomPrimary(Int32 maxLength, List<char> necessary, List<char> banned, bool validateParameters = true)
+            public string GenerateRandomAlphabet(
+                Int32 maxLength, List<char> necessary,
+                List<char> banned, bool validateParameters = true)
             {
-                List<char> allowed = [.. DEFAULT.CHARACTERS.WITH_SPACE];
-
-                if (banned != null && banned.Count > 0)
+                List<char> allowed = [.. DEFAULT.CHARACTERS.WITHOUT_SPACE];
+                
+                if (banned != null)
                 {
-                    for (var curId = 0; curId < banned.Count; curId++)
+                    Int32 bCount = banned.Count;
+
+                    for (var curId = 0; curId < bCount; curId++)
                     {
                         for (var id2 = 0; id2 < allowed.Count; id2++)
                         {
@@ -1032,19 +978,43 @@ namespace JabrAPI
                     }
                 }
 
-                GenerateRandomPrimary(necessary, allowed, maxLength, validateParameters);
+                return GenerateRandomAlphabet(necessary, allowed, maxLength, validateParameters);
             }
-            public void GenerateRandomPrimary(Int32 maxLength, string necessary, string banned, bool validateParameters = true)
-                => GenerateRandomPrimary(maxLength, [.. necessary], [.. banned], validateParameters);
-            
 
-            public void GenerateRandomPrimary(Int32 maxLength, List<char> banned, bool validateParameters = true)
-                => GenerateRandomPrimary(maxLength, [], banned, validateParameters);
-            public void GenerateRandomPrimary(Int32 maxLength, string banned, bool validateParameters = true)
-                => GenerateRandomPrimary(maxLength, [], [.. banned], validateParameters);
-            public void GenerateRandomPrimary(Int32 maxLength, bool validateParameters = true) 
-                => GenerateRandomPrimary(maxLength, "", validateParameters);
 
+
+
+
+            public void GenerateRandomPrimary(
+                List<char> necessary, List<char> allowed,
+                Int32 maxLength, bool validateParameters = true)
+                    => _primaryAlphabet = GenerateRandomAlphabet(
+                            necessary, allowed,
+                            maxLength, validateParameters);
+            public void GenerateRandomPrimary(
+                string necessary, string allowed,
+                Int32 maxLength, bool validateParameters = true)
+                    => _primaryAlphabet = GenerateRandomAlphabet(
+                            [.. necessary], [.. allowed],
+                            maxLength, validateParameters);
+
+            public void GenerateRandomPrimary(
+                Int32 maxLength, List<char> necessary,
+                List<char> banned, bool validateParameters = true)
+                    => _primaryAlphabet = GenerateRandomAlphabet(
+                            maxLength, necessary,
+                            banned, validateParameters);
+            public void GenerateRandomPrimary(
+                Int32 maxLength, string necessary,
+                string banned, bool validateParameters = true)
+                    => _primaryAlphabet = GenerateRandomAlphabet(
+                            maxLength, [.. necessary],
+                            [.. banned], validateParameters);
+
+            public void GenerateRandomPrimary(
+                Int32 maxLength, bool validateParameters = true) 
+                    => _primaryAlphabet = GenerateRandomAlphabet(
+                            maxLength, [], [], validateParameters);
             public void GenerateRandomPrimary()
             {
                 if (_primaryAllowed != null && _primaryAllowed.Count > 0)
@@ -1065,86 +1035,45 @@ namespace JabrAPI
                             }
                         }
                     }
-                    GenerateRandomPrimary(_primaryNecessary, allowed, _primaryMaxLength);
+                     _primaryAlphabet = GenerateRandomAlphabet(_primaryNecessary, allowed,  _primaryMaxLength);
                 }
-                else GenerateRandomPrimary(_primaryNecessary, [], _primaryNecessary.Count);
+                else _primaryAlphabet = GenerateRandomAlphabet(_primaryNecessary, [], _primaryNecessary.Count);
             }
 
 
 
 
-            public void GenerateRandomExternal(List<char> necessary, List<char> allowed, Int32 maxLength, bool validateParameters = true)
-            {
-                if (validateParameters)
-                {
-                    ValidateForExternalGeneration(necessary, allowed, maxLength);
 
-                    necessary = _externalNecessary;  //  to avoid nullpointer exceptions
-                    allowed   = _externalAllowed;    //  the _external variants are always defaulted
-                                                     //  (to a new empty List in worst case)
-                }
+            public void GenerateRandomExternal(
+                List<char> necessary, List<char> allowed,
+                Int32 maxLength, bool validateParameters = true)
+                    => _externalAlphabet = GenerateRandomAlphabet(
+                            necessary, allowed,
+                            maxLength, validateParameters);
+            public void GenerateRandomExternal(
+                string necessary, string allowed,
+                Int32 maxLength, bool validateParameters = true)
+                    => _externalAlphabet = GenerateRandomAlphabet(
+                            [.. necessary], [.. allowed],
+                            maxLength, validateParameters);
 
-                Int32 buffer, bufferId;
-                _externalAlphabet = "";
+            public void GenerateRandomExternal(
+                Int32 maxLength, List<char> necessary,
+                List<char> banned, bool validateParameters = true)
+                    => _externalAlphabet = GenerateRandomAlphabet(
+                            maxLength, necessary,
+                            banned, validateParameters);
+            public void GenerateRandomExternal(
+                Int32 maxLength, string necessary,
+                string banned, bool validateParameters = true)
+                    => _externalAlphabet = GenerateRandomAlphabet(
+                            maxLength, [.. necessary],
+                            [.. banned], validateParameters);
 
-                while (necessary.Count > 0)
-                {
-                    buffer = _random.Next(necessary.Count);
-                    _externalAlphabet += necessary[buffer];
-                    necessary.RemoveAt(buffer);
-                }
-                for (var remaining = Math.Min(maxLength, allowed.Count); remaining > 0; remaining--)
-                {
-                    buffer   = _random.Next(allowed.Count);
-                    bufferId = _random.Next(_externalAlphabet.Length);
-
-                    _externalAlphabet = _externalAlphabet.Insert(bufferId, allowed[buffer].ToString());
-                    allowed.RemoveAt(buffer);
-                }
-            }
-            public void GenerateRandomExternal(string necessary, string allowed, Int32 maxLength, bool validateParameters = true)
-                => GenerateRandomExternal([.. necessary], [.. allowed], maxLength, validateParameters);
-
-
-            public void GenerateRandomExternal(List<char> allowed, Int32 maxLength, bool validateParameters = true)
-                => GenerateRandomExternal([], allowed, maxLength, validateParameters);
-            public void GenerateRandomExternal(string allowed, Int32 maxLength, bool validateParameters = true)
-                => GenerateRandomExternal([], [.. allowed], maxLength, validateParameters);
-
-
-            public void GenerateRandomExternal(Int32 maxLength, List<char> necessary, List<char> banned, bool validateParameters = true)
-            {
-                List<char> allowed = [.. DEFAULT.CHARACTERS.WITHOUT_SPACE];
-
-                if (banned != null && banned.Count > 0)
-                {
-                    for (var curId = 0; curId < banned.Count; curId++)
-                    {
-                        for (var id2 = 0; id2 < allowed.Count; id2++)
-                        {
-                            if (banned[curId] == allowed[id2])
-                            {
-                                allowed.RemoveAt(id2);
-                                id2--;
-                            }
-                        }
-                    }
-                }
-
-                GenerateRandomExternal(necessary, allowed, maxLength, validateParameters);
-            }
-            public void GenerateRandomExternal(Int32 maxLength, string necessary, string banned, bool validateParameters = true)
-                => GenerateRandomExternal(maxLength, [.. necessary], [.. banned], validateParameters);
-
-
-            public void GenerateRandomExternal(Int32 maxLength, List<char> banned, bool validateParameters = true)
-                => GenerateRandomExternal(maxLength, [], banned, validateParameters);
-            public void GenerateRandomExternal(Int32 maxLength, string banned, bool validateParameters = true)
-                => GenerateRandomExternal(maxLength, [], [.. banned], validateParameters);
-            public void GenerateRandomExternal(Int32 maxLength, bool validateParameters = true) 
-                => GenerateRandomExternal(maxLength, "", validateParameters);
-
-
+            public void GenerateRandomExternal(
+                Int32 maxLength, bool validateParameters = true) 
+                    => _externalAlphabet = GenerateRandomAlphabet(
+                            maxLength, [], [], validateParameters);
             public void GenerateRandomExternal()
             {
                 if (_externalAllowed != null &&  _externalAllowed.Count > 0)
@@ -1165,9 +1094,9 @@ namespace JabrAPI
                             }
                         }
                     }
-                    GenerateRandomExternal(_externalNecessary, allowed, _externalMaxLength);
+                     _externalAlphabet = GenerateRandomAlphabet(_externalNecessary, allowed, _externalMaxLength);
                 }
-                else GenerateRandomExternal(_externalNecessary, [], _externalNecessary.Count);
+                else _externalAlphabet = GenerateRandomAlphabet(_externalNecessary, [], _externalNecessary.Count);
             }
 
 
@@ -1186,7 +1115,7 @@ namespace JabrAPI
                 GenerateRandomShifts(count, 0, (Int16)(_externalAlphabet.Length - 1));
             }
             public void GenerateRandomShifts()
-                => GenerateRandomShifts(_random.Next(128, 384));
+                    => GenerateRandomShifts(_random.Next(128, 384));
         }
 
         public class BinaryKey : IBinaryKey

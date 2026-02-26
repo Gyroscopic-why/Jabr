@@ -2,7 +2,7 @@
 
 
 
-namespace JabrAPI.Source
+namespace JabrAPI
 {
     static internal class DEFAULT
     {
