@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using AVcontrol;
 
 
-
 namespace JabrAPI
 {
     public class Noisifier
@@ -942,10 +941,18 @@ namespace JabrAPI
 
         public bool  useDynamicOutputAlignment = true;
         public CharacterOutputBoundaryAlignment boundaryAlignment = 
-            CharacterOutputBoundaryAlignment.c1024;
+               CharacterOutputBoundaryAlignment.c1024;
 
         public bool forceOptimalEntropy = true;
         public ExpectedEntropy excpectedEntropy = ExpectedEntropy.C1_Medium;
+
+
+        public double primaryNoiseCharBiasPercents = 50.0;
+        public double complexNoisePairBiasPercents = 25.0;
+        public double complexNoiseIntervalBiasPercents = 66.6;
+
+
+        public Int32 chunkSizeForSplitting = 15;
     }
     public class BinaryNoisificationSettings
     {
@@ -953,10 +960,18 @@ namespace JabrAPI
 
         public bool useDynamicOutputAlignment = true;
         public BinaryOutputBoundaryAlignment boundaryAlignment =
-            BinaryOutputBoundaryAlignment.KByte1;
+               BinaryOutputBoundaryAlignment.KByte1;
 
         public bool forceOptimalEntropy = true;
         public ExpectedEntropy excpectedEntropy = ExpectedEntropy.C1_Medium;
+
+
+        public double primaryNoiseCharBiasPercents = 50.0;
+        public double complexNoisePairBiasPercents = 25.0;
+        public double complexNoiseIntervalBiasPercents = 66.6;
+
+
+        public Int32 chunkSizeForSplitting = 256;
     }
 
     public enum BinaryOutputBoundaryAlignment
@@ -1298,9 +1313,19 @@ namespace JabrAPI
 
             return new string ([.. withNoise]) ?? "";
         }
-        static private string NEW_INTERNAL_FastText(string message, Noisifier noisifier,
+        static public string NEW_INTERNAL_FastText(string message, Noisifier noisifier,
             string fakeSelection)
         {
+            Int32 chunkSize = noisifier.settings.chunkSizeForSplitting;
+
+            if (chunkSize < 1)
+                throw new ArgumentException
+                (
+                    $"Impossible to split data into chunks of size: {chunkSize}",
+                    nameof(noisifier.settings)
+                );
+
+
             Int32 outputLength = noisifier.settings.outputLength,
                   curLength = message.Length;
 
@@ -1335,102 +1360,256 @@ namespace JabrAPI
             Int32 maxSyntropy = Miscellaneous.CalculateMaxNonEntropy
                 (
                     noisifier.settings.excpectedEntropy,
-                    curLength, outputLength
+                    curLength,
+                    outputLength
                 );
 
             SecureRandom random = new(128);
-            string almostResult = "";
+            List<char> almostResult = new(outputLength);
             fakeSelection = fakeSelection == "" ? noisifier.PrimaryNoise : fakeSelection;
             Int32 prevFinalUnnoised = 0;
-            
 
-            for (var i = 0; i <= curLength; i += 256)
+
+            for (var chunk = 0; chunk <= curLength; chunk += chunkSize)
             {
                 random.Reseed();
 
-                almostResult += INTERNAL_Round
+                Int32 maxRoundLength =
+                    Math.Min
+                    (
+                        (chunkSize + chunk),
+                        curLength
+                    )
+                        * outputLength
+                        / curLength
+                        - almostResult.Count;
+               
+
+                almostResult.AddRange
                 (
-                    [.. message.Substring(i, Math.Min(curLength - i, 255))],
-                    fakeSelection,
-                    noisifier,
-                    random,
-                    outputLength - almostResult.Length - curLength + i,
-                    maxAvgNoiseCount,
-                    0,
-                    maxSyntropy,
-                    ref prevFinalUnnoised
+                    AdditionRound
+                    (
+                        [.. message.Substring
+                        (
+                            chunk,
+                            Math.Min
+                            (
+                                curLength - chunk,
+                                chunkSize
+                            )
+                        )],
+                        fakeSelection,
+                        noisifier,
+                        random,
+                        maxRoundLength,
+                        maxSyntropy,
+                        0,  //  minAvgNoiseCount
+                        maxAvgNoiseCount,
+                        ref prevFinalUnnoised
+                    )
                 );
+
+                Console.Write($"\n\t{chunk / chunkSize})       ");
+                Console.BackgroundColor = ConsoleColor.Red;
+                Console.Write("".PadLeft(almostResult.Count, ' '));
+                Console.BackgroundColor = ConsoleColor.Black;
             }
 
 
 
 
+            return new string([.. almostResult]);
 
 
-            return INTERNAL_SplitIntoRounds
-            (
-                message,
-                noisifier,
-                fakeSelection,
-                outputLength
-            );
+            //return INTERNAL_SplitIntoRounds
+            //(
+            //    message,
+            //    noisifier,
+            //    fakeSelection,
+            //    outputLength
+            //);
         }
-        static private string INTERNAL_Round(
+        static private List<char> AdditionRound(
             List<char> message, string fakeSelection,
             Noisifier noisifier, SecureRandom random,
-            Int32 finalMaxRoundLength, Int32 maxSyntropy,
-            Int32 maxAvgNoiseCount, Int32 minAvgNoiseCount,
+            Int32 maxRoundLength, Int32 maxSyntropy,
+            Int32 minAvgNoiseCount, Int32 maxAvgNoiseCount,
             ref Int32 prevFinalUnnoised)
         {
-            Int32 initialLength = message.Count, chosenOffset;
-
-            if (initialLength >= finalMaxRoundLength)
-                return new string ([.. message]);
+            Int32 initialLength  = message.Count, chosenOffset;
+            if   (initialLength >= maxRoundLength)
+            {
+                prevFinalUnnoised = initialLength;
+                return message;
+            }
 
 
             chosenOffset = random.Next
             (
                 noisifier.settings.forceOptimalEntropy
-                    && prevFinalUnnoised >= maxSyntropy ?
-                        minAvgNoiseCount + 1 : minAvgNoiseCount,
-                maxAvgNoiseCount
+                    && prevFinalUnnoised >= maxSyntropy
+                    && minAvgNoiseCount <= 0 ?
+                       minAvgNoiseCount + 1 : minAvgNoiseCount,
+                Math.Min
+                (
+                    Math.Min
+                    (
+                        maxAvgNoiseCount,
+                        maxRoundLength - message.Count + 1
+                    ),
+                    maxRoundLength - message.Count - initialLength / maxSyntropy + 1
+                )
             );
 
-            if (chosenOffset >= 2 && random.NextBool())
+
+            if (chosenOffset > 0)
             {
-                message.Insert(0, noisifier.RandomComplexChar);
+                prevFinalUnnoised = 1;
 
-                for (var i = 1; i < chosenOffset - 1; i++)
+                if (chosenOffset >= 2 && random.NextBoolChance(
+                    noisifier.settings.complexNoiseIntervalBiasPercents))
                 {
-                    if (random.NextBool())
-                    {
-                        message.Insert(0, noisifier.RandomComplexChar);
+                    message.InsertRange
+                    (
+                        0,
+                        noisifier.RandomComplexSequence(2)
+                    );
 
-                        i++;
-                    }
-                    else
+                    for (var i = 1; i < chosenOffset - 1; i++)
                     {
+                        if (i < chosenOffset - 2 &&
+                            random.NextBoolChance(
+                                noisifier.settings.complexNoisePairBiasPercents))
+                        {
+                            message.InsertRange
+                            (
+                                1,
+                                noisifier.RandomComplexSequence(2)
+                            );
 
+                            i++;
+                        }
+                        else if (random.NextBoolChance(
+                                 noisifier.settings.primaryNoiseCharBiasPercents))
+                            message.Insert
+                            (
+                                1,
+                                noisifier.RandomPrimaryChar
+                            );
+                        else message.Insert
+                            (
+                                1,
+                                fakeSelection
+                                [
+                                    random.Next(fakeSelection.Length)
+                                ]
+                            );
                     }
                 }
+                else message.InsertRange
+                    (
+                        0,
+                        noisifier.RandomPrimarySequence(chosenOffset)
+                    );
             }
-            else
+            else prevFinalUnnoised += 2;
+
+
+            if (message.Count >= maxRoundLength)
             {
-                message.InsertRange(0, "adad");
+                prevFinalUnnoised = message.Count - chosenOffset + 1;
+                return message;
             }
 
-
-                const Int32 minimalOffsetStep = 1;
-            List<Int32> noiseOffsets = new(initialLength);
-            for (var i = 0; i < initialLength; i++)
-                noiseOffsets.Add(0);
-            noiseOffsets[0] = chosenOffset;
+            
+            const Int32 minOffsetStep = 1;
+            Int32 totalOffset = minOffsetStep + chosenOffset;
 
 
+            for (var i = 1; i <= initialLength; i++)
+            {
+                chosenOffset = random.Next
+                (
+                    noisifier.settings.forceOptimalEntropy
+                        && prevFinalUnnoised >= maxSyntropy
+                        && i < initialLength
+                        && minAvgNoiseCount <= 0 ?
+                           minAvgNoiseCount + 1 : minAvgNoiseCount,
+                    Math.Min
+                    (
+                        Math.Min
+                        (
+                            maxAvgNoiseCount,
+                            maxRoundLength - message.Count + 1
+                        ),
+                        maxRoundLength - message.Count - (initialLength - i + 1) / maxSyntropy + 1
+                    )
+                );
 
+                if (chosenOffset > 0)
+                {
+                    prevFinalUnnoised = 0;
 
+                    if (chosenOffset >= 2 && random.NextBoolChance(
+                        noisifier.settings.complexNoiseIntervalBiasPercents))
+                    {
+                        message.InsertRange
+                        (
+                            totalOffset,
+                            noisifier.RandomComplexSequence(2)
+                        );
 
-            return "";
+                        for (var j = 1; j < chosenOffset - 1; j++)
+                        {
+                            if (j < chosenOffset - 2 &&
+                            random.NextBoolChance(
+                                noisifier.settings.complexNoisePairBiasPercents))
+                            {
+                                message.InsertRange
+                                (
+                                    totalOffset + minOffsetStep,
+                                    noisifier.RandomComplexSequence(2)
+                                );
+
+                                j++;
+                            }
+                            else if (random.NextBoolChance(
+                                noisifier.settings.primaryNoiseCharBiasPercents))
+                                message.Insert
+                                (
+                                    totalOffset + minOffsetStep,
+                                    noisifier.RandomPrimaryChar
+                                );
+                            else message.Insert
+                                (
+                                    totalOffset + minOffsetStep,
+                                    fakeSelection
+                                    [
+                                        random.Next(fakeSelection.Length)
+                                    ]
+                                );
+                        }
+                    }
+                    else message.InsertRange
+                        (
+                            totalOffset,
+                            noisifier.RandomPrimarySequence(chosenOffset)
+                        );
+                }
+
+                totalOffset += chosenOffset + minOffsetStep;
+
+                if (message.Count >= maxRoundLength)
+                {
+                    prevFinalUnnoised = message.Count - totalOffset + 1;
+                    return message;
+                }
+
+                prevFinalUnnoised++;
+            }
+
+            prevFinalUnnoised++;
+            return message;
         }
         static private string INTERNAL_SplitIntoRounds(string message, Noisifier noisifier,
             string fakeSelection, Int32 outputLength = 0)

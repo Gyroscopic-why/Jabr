@@ -118,10 +118,8 @@ namespace JabrAPI
             public void GenerateRandomShifts(Int16 minVal, Int16 maxVal)
                 => GenerateRandomShifts(_random.Next(256, 512), minVal, maxVal);
         }
-        abstract public class ISetHelper
+        abstract public class ISetHelper()
         {
-            internal ISetHelper() { }
-
             abstract public void Default();
             abstract public void ShiftCount(Int32 count);
         }

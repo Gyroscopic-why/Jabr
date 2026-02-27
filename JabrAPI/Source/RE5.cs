@@ -93,10 +93,70 @@ namespace JabrAPI
             public class SetHelper : ISetHelper
             {
                 private readonly EncryptionKey _reKey;
+                private readonly SensetiveSetHelper _sensitiveSetHelper;
 
-                internal SetHelper(EncryptionKey reKey)
+                public SetHelper(EncryptionKey reKey)
                 {
                     _reKey = reKey;
+                    _sensitiveSetHelper = new(_reKey);
+                }
+
+
+                public SensetiveSetHelper Sensitive => _sensitiveSetHelper;
+                public class SensetiveSetHelper(EncryptionKey reKey)
+                {
+                    private readonly EncryptionKey _reKey = reKey;
+
+
+                    public void PrAlphabet(string prAlphabet)
+                            => _reKey._primaryAlphabet = prAlphabet;
+                    public void PrimaryAlphabet(string primaryAlphabet)
+                            => _reKey._primaryAlphabet = primaryAlphabet;
+                    public bool SafePrAlphabet(string prAlphabet)
+                    {
+                        if (!_reKey.IsPrimaryValid(prAlphabet)) return false;
+                        _reKey._primaryAlphabet  = prAlphabet;
+                        return true;
+                    }
+                    public bool SafePrimaryAlphabet(string primaryAlphabet)
+                    {
+                        if (!_reKey.IsPrimaryValid(primaryAlphabet)) return false;
+                        _reKey._primaryAlphabet  = primaryAlphabet;
+                        return true;
+                    }
+
+
+
+                    public void ExAlphabet(string exAlphabet)
+                            => _reKey._externalAlphabet= exAlphabet;
+                    public void ExternalAlphabet(string externalAlphabet)
+                            => _reKey._externalAlphabet = externalAlphabet;
+                    public bool SafeExAlphabet(string exAlphabet)
+                    {
+                        if (!_reKey.IsExternalValid(exAlphabet)) return false;
+                        _reKey._externalAlphabet  = exAlphabet;
+                        return true;
+                    }
+                    public bool SafeExternalAlphabet(string externalAlphabet)
+                    {
+                        if (!_reKey.IsExternalValid(externalAlphabet)) return false;
+                        _reKey._externalAlphabet  = externalAlphabet;
+                        return true;
+                    }
+
+
+                    public void Shifts(List<Int16> shifts)
+                    {
+                        _reKey._shifts.Clear();
+                        _reKey._shifts.AddRange(shifts.Count > 0 ? shifts : [0]);
+                    }
+                    public bool SafeShifts(List<Int16> shifts)
+                    {
+                        if (shifts.Max() > _reKey.ExLength) return false;
+                        _reKey._shifts.Clear();
+                        _reKey._shifts.AddRange(shifts);
+                        return true;
+                    }
                 }
 
 

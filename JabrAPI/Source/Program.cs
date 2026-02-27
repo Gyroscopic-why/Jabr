@@ -160,25 +160,43 @@ namespace JabrAPI
             //    ReadKey();
             //}
 
+            SecureRandom random = new(128);
             RE5.EncryptionKey reKey = new(true);
             string aboba = "aboba baobab";
-            Int32 EXTEND = 128;
+            Int32 EXTEND = 128, attemptCount = 0;
+            reKey.Noisifier.settings.outputLength = EXTEND;
             double valueBias = 1.6, powerBias = 1.5;
 
             Int32 maxNonEntropy = 0;
-            for (var i = 0; i < 10; i++)
+            for (var i = 0; i < 10000; i++)
             {
-                reKey.Noisifier.settings.outputLength = EXTEND;
+                Write("\n\tAttempt: " + ++attemptCount);
+                //reKey.Set.Sensitive.ExAlphabet("Xv+");
+                //reKey.Noisifier.SetDefault(['X', 'x', 'V', 'v', 'Х', 'х', '+', ',', '.']);
+                reKey.Set.Default(162, "", 8, ".,");
+                reKey.Noisifier.SetDefault([',', '.']);
+                //reKey.Noisifier.Next();
+
                 string encrypted = RE5.Encrypt.Text(aboba, reKey);
+                //EXTEND = random.Next(encrypted.Length + 2, encrypted.Length * 5);
+                reKey.Noisifier.settings.outputLength = EXTEND;
                 Write($"\n\tReKey: {reKey.ExAlphabet}, PrNoise: {reKey.Noisifier.PrimaryNoise}, CplxNoise: {reKey.Noisifier.ComplexNoise}");
                 Write("\n\tInitial: " + encrypted);
 
+                Write("\n\tAdding noise to data..");
+
+                //string noised = AddNoise.Text(encrypted, reKey, false);
+                string noised = AddNoise.NEW_INTERNAL_FastText(encrypted, reKey.Noisifier, ",.");
+
+
                 Write("\n\tNoised:  ");
-                string noised = AddNoise.Text(encrypted, reKey, false);
                 Int32 count = 0, nonEntropy = 0, thisMaxNonEntropy = 0;
                 bool newWorst = false, noiseAtTheEnd = false;
                 for (var j = 0; j < noised.Length; j++)
                 {
+                    if (j % reKey.Noisifier.settings.chunkSizeForSplitting == 0)
+                        BackgroundColor = ConsoleColor.Blue;
+
                     if (!noiseAtTheEnd && noised[j] == encrypted[count])
                     {
                         ForegroundColor = ConsoleColor.Green;
@@ -203,6 +221,7 @@ namespace JabrAPI
                     }
 
                     Write(noised[j]);
+                    BackgroundColor = ConsoleColor.Black;
                 }
                 ForegroundColor = ConsoleColor.Gray;
                 Write($"\n\tNonEntropy: {thisMaxNonEntropy}(" +
@@ -217,19 +236,35 @@ namespace JabrAPI
                                 powerBias
                             )
                         )}), MaxNon: {maxNonEntropy}" +
-                    $"\n\tInitial: {encrypted.Length}, extended: {EXTEND}" +
+                    $"\n\tInitial: {encrypted.Length}, extended: {noised.Length}({EXTEND})" +
                     $"\n\tAvgRatio: {(double)EXTEND / encrypted.Length}, " +
                     $"value: {(double)encrypted.Length / (EXTEND - encrypted.Length + 1)}" +
                     $"\n\tBiased ({valueBias}; {powerBias}) value: {encrypted.Length * powerBias / (EXTEND - encrypted.Length + 1)}" +
                     $"\n\n\tEnter new EXTEND length: ");
 
                 reKey.Next();
-                //if (newWorst) ReadLine();
+                //if (
+                //newWorst ||
+                //thisMaxNonEntropy > Math.Ceiling
+                //    (
+                //        Math.Pow
+                //        (
+                //            encrypted.Length * valueBias /
+                //            (
+                //                EXTEND - encrypted.Length + 1
+                //            ),
+                //            powerBias
+                //        )
+                //    )
+                //        ) ReadLine();
                 //else ReadKey();
 
-                if (Int32.TryParse(ReadLine(), out int newExtendBuffer)
-                    && newExtendBuffer > 0)
+                if (Int32.TryParse(ReadLine(), out Int32 newExtendBuffer)
+                    && newExtendBuffer > encrypted.Length)
+                {
                     EXTEND = newExtendBuffer;
+                    maxNonEntropy = 0;
+                }
 
                 Clear();
             }
