@@ -9,7 +9,7 @@ using AVcontrol;
 
 
 
-namespace JabrAPI.Source
+namespace JabrAPI
 {
     internal class Demo
     {
@@ -127,9 +127,9 @@ namespace JabrAPI.Source
                 for (var curShift = 0; curShift < reKey.Shifts.Length; curShift++) 
                     Write(reKey.Shifts[curShift] + " ");*/
 
-                string enc = RE5.Encrypt(msg, reKey, true);
-                string test = RE5.EncryptWithConsoleInfo(msg, reKey);
-                List<Int16> bin = RE5.EncryptToBinaryUtf16(msg, reKey);
+                string enc  = RE5.Encrypt.Text(msg, reKey, true);
+                string test = Legacy.RE5_WithConsoleInfo.Encrypt(msg, reKey);
+                List<Int16> bin = RE5.Encrypt.TextToBinary_Utf16(msg, reKey);
 
 
                 Demo.AlgorithmTest(enc, test, Encoding.Unicode.GetString(ToBinary.LittleEndian(bin.ToArray())));

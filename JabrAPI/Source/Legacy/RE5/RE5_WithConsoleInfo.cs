@@ -9,20 +9,22 @@ using AVcontrol;
 
 
 
-namespace JabrAPI
+namespace JabrAPI.Legacy
 {
-    public class Legacy
+    static public class RE5_WithConsoleInfo
     {
-        static public  string RE5_EncryptWithConsoleInfo(string message, RE5.EncryptionKey reKey, bool displayInfo = true)
+        static public string Encrypt(
+            string message, RE5.EncryptionKey reKey, bool displayInfo = true)
         {
-            try { return RE5_UnsafeEncryptWithConsoleInfo(message, reKey, displayInfo); }
+            try { return UnsafeEncrypt(message, reKey, displayInfo); }
             catch { return ""; }
         }
-        static public  string RE5_EncryptWithConsoleInfo(string message, RE5.EncryptionKey reKey, out Exception? exception)
+        static public string Encrypt(
+            string message, RE5.EncryptionKey reKey, out Exception? exception)
         {
             try
             {
-                string result = RE5_UnsafeEncryptWithConsoleInfo(message, reKey);
+                string result = UnsafeEncrypt(message, reKey);
                 exception = null;
 
                 return result;
@@ -33,7 +35,8 @@ namespace JabrAPI
                 return "";
             }
         }
-        static private string RE5_UnsafeEncryptWithConsoleInfo(string message, RE5.EncryptionKey reKey, bool displayInfo = true)
+        static private string UnsafeEncrypt(
+            string message, RE5.EncryptionKey reKey, bool displayInfo = true)
         {
             Int32 exLength = reKey.ExLength, messageLength = message.Length, shCount = reKey.ShCount;
             Int32[] buffer = new Int32[messageLength], ids = new Int32[messageLength];
@@ -85,22 +88,24 @@ namespace JabrAPI
                 encrypted += exAlphabet[buffer[curId] % exLength] + encoding;
             }
 
-            if (displayInfo) RE5_EncryptingInfo(buffer, exLength, maxEncodingLength, [.. shifts], shCount, ids, encrypted, message, messageLength);
+            if (displayInfo) EncryptingInfo(buffer, exLength, maxEncodingLength, [.. shifts], shCount, ids, encrypted, message, messageLength);
             return encrypted;
         }
 
 
 
-        static public  string RE5_DecryptWithConsoleInfo(string encrypted, RE5.EncryptionKey reKey, bool displayInfo = true)
+        static public string Decrypt(
+            string encrypted, RE5.EncryptionKey reKey, bool displayInfo = true)
         {
-            try { return RE5_UnsafeDecryptWithConsoleInfo(encrypted, reKey, displayInfo); }
+            try { return UnsafeDecrypt(encrypted, reKey, displayInfo); }
             catch { return ""; }
         }
-        static public  string RE5_DecryptWithConsoleInfo(string encrypted, RE5.EncryptionKey reKey, out Exception? exception, bool displayInfo = true)
+        static public string Decrypt(
+            string encrypted, RE5.EncryptionKey reKey, out Exception? exception, bool displayInfo = true)
         {
             try
             {
-                string result = RE5_UnsafeDecryptWithConsoleInfo(encrypted, reKey, displayInfo);
+                string result = UnsafeDecrypt(encrypted, reKey, displayInfo);
                 exception = null;
 
                 return result;
@@ -111,7 +116,8 @@ namespace JabrAPI
                 return "";
             }
         }
-        static private string RE5_UnsafeDecryptWithConsoleInfo(string encrypted, RE5.EncryptionKey reKey, bool displayInfo = true)
+        static private string UnsafeDecrypt(
+            string encrypted, RE5.EncryptionKey reKey, bool displayInfo = true)
         {
             Int32 exLength = reKey.ExLength, encryptedLength = encrypted.Length, shCount = reKey.ShCount, encCurId = 0;
             Int32[] buffer = new Int32[encryptedLength], ids = new Int32[encryptedLength];
@@ -129,13 +135,13 @@ namespace JabrAPI
                     ) / exLength
                 );
             Int32 maxEncodingLength = exLength == 10 ?
-                DigitsInPositive(helper)  // Optimisation for base 10 encoding
+                Utils.DigitCount(helper)  // Optimisation for base 10 encoding
               : Numsys.AsList
               (
-                    helper.ToString(),
-                    10,
-                    exLength
-                ).Count;
+                  helper.ToString(),
+                  10,
+                  exLength
+              ).Count;
 
             Int32 realMessageLength = encryptedLength / (maxEncodingLength + 1);
             Int32[] decodedIds = new Int32[realMessageLength];
@@ -178,18 +184,21 @@ namespace JabrAPI
                 decrypted += prAlphabet[decodedIds[curId]];
             }
 
-            if (displayInfo) RE5_DecryptingInfo(buffer, exLength, maxEncodingLength, [.. shifts], shCount, ids, decodedIds, encrypted, decrypted, realMessageLength);
+            if (displayInfo) DecryptingInfo(buffer, exLength, maxEncodingLength, [.. shifts], shCount, ids, decodedIds, encrypted, decrypted, realMessageLength);
             return decrypted;
         }
 
 
 
-        static private void RE5_EncryptingInfo(Int32[] buffer, Int32 exLength, Int32 maxEncodingLength, Int16[] shifts, Int32 shCount, Int32[] ids, string encrypted, string message, Int32 messageLength)
+        static private void EncryptingInfo(
+            Int32[] buffer, Int32 exLength, Int32 maxEncodingLength,
+            Int16[] shifts, Int32 shCount, Int32[] ids,
+            string encrypted, string message, Int32 messageLength)
         {
             //  margin = for ids, bf = buffer, sh = shifts, el = externalAlphabet.Length, sz = message length
-            Int32 margin   = DigitsAmount(ids.Max());
-            Int32 marginBf = DigitsAmount(buffer.Max()),  marginSh = DigitsAmount(shifts.Max());
-            Int32 marginSz = DigitsAmount(messageLength), marginEl = DigitsAmount(exLength - 1);
+            Int32 margin = Utils.DigitCount(ids.Max());
+            Int32 marginBf = Utils.DigitCount(buffer.Max()), marginSh = Utils.DigitCount(shifts.Max());
+            Int32 marginSz = Utils.DigitCount(messageLength), marginEl = Utils.DigitCount(exLength - 1);
 
 
             //---  First character (its encryption is a bit different so we do it manually)
@@ -197,22 +206,22 @@ namespace JabrAPI
             for (var ext = 1; ext < marginSz; ext++) Write(" ");
             Write("0] total:  ");
 
-            for (var ext = DigitsAmount(buffer[0]); ext < marginBf; ext++) Write(" ");
+            for (var ext = Utils.DigitCount(buffer[0]); ext < marginBf; ext++) Write(" ");
             Write(buffer[0] + " (");
 
-            for (var ext = DigitsAmount(buffer[0] % exLength); ext < marginEl; ext++) Write(" ");
+            for (var ext = Utils.DigitCount(buffer[0] % exLength); ext < marginEl; ext++) Write(" ");
             ForegroundColor = ConsoleColor.Magenta;
             Write(buffer[0] % exLength);
             ForegroundColor = ConsoleColor.Gray;
             Write(") = ");
 
-            for (var ext = DigitsAmount(shifts[0]); ext < marginSh; ext++) Write(" ");
+            for (var ext = Utils.DigitCount(shifts[0]); ext < marginSh; ext++) Write(" ");
             ForegroundColor = shifts[0] == 0 ? ConsoleColor.Red : ConsoleColor.Cyan;
             Write(shifts[0]);
             ForegroundColor = ConsoleColor.Gray;
             Write(" + ");
 
-            for (var ext = DigitsAmount(ids[0]); ext < margin; ext++) Write(" ");
+            for (var ext = Utils.DigitCount(ids[0]); ext < margin; ext++) Write(" ");
             ForegroundColor = ConsoleColor.Green;
             Write(ids[0]);
             ForegroundColor = ConsoleColor.Gray;
@@ -228,31 +237,31 @@ namespace JabrAPI
             for (var curId = 1; curId < messageLength; curId++)
             {
                 Write("\n\t");
-                for (var ext = DigitsAmount(curId); ext < marginSz; ext++) Write(" ");
+                for (var ext = Utils.DigitCount(curId); ext < marginSz; ext++) Write(" ");
                 Write(curId + "] total:  ");
 
-                for (var ext = DigitsAmount(buffer[curId]); ext < marginBf; ext++) Write(" ");
+                for (var ext = Utils.DigitCount(buffer[curId]); ext < marginBf; ext++) Write(" ");
                 Write(buffer[curId] + " (");
 
-                for (var ext = DigitsAmount(buffer[0] % exLength); ext < marginEl; ext++) Write(" ");
+                for (var ext = Utils.DigitCount(buffer[0] % exLength); ext < marginEl; ext++) Write(" ");
                 ForegroundColor = ConsoleColor.Magenta;
                 Write(buffer[curId] % exLength);
                 ForegroundColor = ConsoleColor.Gray;
                 Write(") = ");
 
-                for (var ext = DigitsAmount(shifts[curId % shCount]); ext < marginSh; ext++) Write(" ");
+                for (var ext = Utils.DigitCount(shifts[curId % shCount]); ext < marginSh; ext++) Write(" ");
                 ForegroundColor = shifts[curId % shCount] == 0 ? ConsoleColor.Red : ConsoleColor.Cyan;
                 Write(shifts[curId % shCount]);
                 ForegroundColor = ConsoleColor.Gray;
                 Write(" + ");
 
-                for (var ext = DigitsAmount(ids[curId]); ext < margin; ext++) Write(" ");
+                for (var ext = Utils.DigitCount(ids[curId]); ext < margin; ext++) Write(" ");
                 ForegroundColor = curId % 2 == 0 ? ConsoleColor.Green : ConsoleColor.DarkYellow;
                 Write(ids[curId]);
                 ForegroundColor = ConsoleColor.Gray;
                 Write(" + ");
 
-                for (var ext = DigitsAmount(ids[curId - 1]); ext < margin; ext++) Write(" ");
+                for (var ext = Utils.DigitCount(ids[curId - 1]); ext < margin; ext++) Write(" ");
                 ForegroundColor = curId % 2 == 0 ? ConsoleColor.DarkYellow : ConsoleColor.Green;
                 Write(ids[curId - 1]);
                 ForegroundColor = ConsoleColor.Gray;
@@ -288,12 +297,15 @@ namespace JabrAPI
             }
             ForegroundColor = ConsoleColor.Gray;
         }
-        static private void RE5_DecryptingInfo(Int32[] buffer, Int32 exLength, Int32 maxEncodingLength, Int16[] shifts, Int32 shCount, Int32[] ids, Int32[] decodedIds, string encrypted, string decrypted, Int32 messageLength)
+        static private void DecryptingInfo(
+            Int32[] buffer, Int32 exLength, Int32 maxEncodingLength,
+            Int16[] shifts, Int32 shCount, Int32[] ids, Int32[] decodedIds,
+            string encrypted, string decrypted, Int32 messageLength)
         {
             //  margin = for ids, bf = buffer, sh = shifts, el = externalAlphabet.Length, sz = message length, en = parsed encoding
-            Int32 margin   = DigitsAmount(ids.Max()),        marginEn = DigitsAmount(decodedIds.Max() - buffer.Min());
-            Int32 marginSz = DigitsAmount(messageLength),    marginEl = DigitsAmount(exLength);
-            Int32 marginBf = DigitsAmount(decodedIds.Max()), marginSh = DigitsAmount(shifts.Max());
+            Int32 margin = Utils.DigitCount(ids.Max()), marginEn = Utils.DigitCount(decodedIds.Max() - buffer.Min());
+            Int32 marginSz = Utils.DigitCount(messageLength), marginEl = Utils.DigitCount(exLength);
+            Int32 marginBf = Utils.DigitCount(decodedIds.Max()), marginSh = Utils.DigitCount(shifts.Max());
 
 
             //---  First character (its encryption is a bit different so we do it manually)
@@ -301,28 +313,28 @@ namespace JabrAPI
             for (var ext = 1; ext < marginSz; ext++) Write(" ");
             Write("0] total:  ");
 
-            for (var ext = DigitsAmount(decodedIds[0]); ext < marginBf; ext++) Write(" ");
+            for (var ext = Utils.DigitCount(decodedIds[0]); ext < marginBf; ext++) Write(" ");
             Write(decodedIds[0] + " (");
 
-            for (var ext = DigitsAmount(decodedIds[0] % exLength); ext < marginEl; ext++) Write(" ");
+            for (var ext = Utils.DigitCount(decodedIds[0] % exLength); ext < marginEl; ext++) Write(" ");
             ForegroundColor = ConsoleColor.Magenta;
             Write(decodedIds[0] % exLength);
             ForegroundColor = ConsoleColor.Gray;
             Write(") = ");
 
-            for (var ext = DigitsAmount(decodedIds[0] - buffer[0]); ext < marginEn; ext++) Write(" ");
+            for (var ext = Utils.DigitCount(decodedIds[0] - buffer[0]); ext < marginEn; ext++) Write(" ");
             ForegroundColor = ConsoleColor.DarkGray;
             Write(decodedIds[0] - buffer[0]);
             ForegroundColor = ConsoleColor.Gray;
             Write(" - ");
 
-            for (var ext = DigitsAmount(shifts[0]); ext < marginSh; ext++) Write(" ");
+            for (var ext = Utils.DigitCount(shifts[0]); ext < marginSh; ext++) Write(" ");
             ForegroundColor = shifts[0] == 0 ? ConsoleColor.Red : ConsoleColor.Cyan;
             Write(shifts[0]);
             ForegroundColor = ConsoleColor.Gray;
             Write(" + ");
 
-            for (var ext = DigitsAmount(ids[0]); ext < margin; ext++) Write(" ");
+            for (var ext = Utils.DigitCount(ids[0]); ext < margin; ext++) Write(" ");
             ForegroundColor = ConsoleColor.Green;
             Write(ids[0]);
             ForegroundColor = ConsoleColor.Gray;
@@ -339,37 +351,37 @@ namespace JabrAPI
             for (var curId = 1; curId < messageLength; curId++)
             {
                 Write("\n\t");
-                for (var ext = DigitsAmount(curId); ext < marginSz; ext++) Write(" ");
+                for (var ext = Utils.DigitCount(curId); ext < marginSz; ext++) Write(" ");
                 Write(curId + "] total:  ");
 
-                for (var ext = DigitsAmount(decodedIds[curId]); ext < marginBf; ext++) Write(" ");
+                for (var ext = Utils.DigitCount(decodedIds[curId]); ext < marginBf; ext++) Write(" ");
                 Write(decodedIds[curId] + " (");
 
-                for (var ext = DigitsAmount(decodedIds[curId] % exLength); ext < marginEl; ext++) Write(" ");
+                for (var ext = Utils.DigitCount(decodedIds[curId] % exLength); ext < marginEl; ext++) Write(" ");
                 ForegroundColor = ConsoleColor.Magenta;
                 Write(decodedIds[curId] % exLength);
                 ForegroundColor = ConsoleColor.Gray;
                 Write(") = ");
 
-                for (var ext = DigitsAmount(decodedIds[curId] - buffer[curId]); ext < marginEn; ext++) Write(" ");
+                for (var ext = Utils.DigitCount(decodedIds[curId] - buffer[curId]); ext < marginEn; ext++) Write(" ");
                 ForegroundColor = ConsoleColor.DarkGray;
                 Write(decodedIds[curId] - buffer[curId]);
                 ForegroundColor = ConsoleColor.Gray;
                 Write(" - ");
 
-                for (var ext = DigitsAmount(shifts[curId % shCount]); ext < marginSh; ext++) Write(" ");
+                for (var ext = Utils.DigitCount(shifts[curId % shCount]); ext < marginSh; ext++) Write(" ");
                 ForegroundColor = shifts[curId % shCount] == 0 ? ConsoleColor.Red : ConsoleColor.Cyan;
                 Write(shifts[curId % shCount]);
                 ForegroundColor = ConsoleColor.Gray;
                 Write(" + ");
 
-                for (var ext = DigitsAmount(ids[curId * (maxEncodingLength + 1)]); ext < margin; ext++) Write(" ");
+                for (var ext = Utils.DigitCount(ids[curId * (maxEncodingLength + 1)]); ext < margin; ext++) Write(" ");
                 ForegroundColor = curId % 2 == 0 ? ConsoleColor.Green : ConsoleColor.DarkYellow;
                 Write(ids[curId * (maxEncodingLength + 1)]);
                 ForegroundColor = ConsoleColor.Gray;
                 Write(" - ");
 
-                for (var ext = DigitsAmount(decodedIds[curId - 1]); ext < marginBf; ext++) Write(" ");
+                for (var ext = Utils.DigitCount(decodedIds[curId - 1]); ext < marginBf; ext++) Write(" ");
                 ForegroundColor = curId % 2 == 0 ? ConsoleColor.DarkYellow : ConsoleColor.Green;
                 Write(decodedIds[curId - 1]);
                 ForegroundColor = ConsoleColor.Gray;
@@ -412,23 +424,5 @@ namespace JabrAPI
             ForegroundColor = ConsoleColor.Gray;
             Write("\n\tReadable:  " + decrypted);
         }
-
-
-
-
-
-        static private Int32 DigitsAmount(Int32 number)
-        {
-            if (number >= 0) return DigitsInPositive(number);
-            else return number > -10 ? 1 : number > -100 ? 2
-                      : number > -1_000 ? 3 : number > -10_000 ? 4
-                      : number > -100_000 ? 5 : number > -1_000_000 ? 6
-                      : number > -10_000_000 ? 7 : number > -100_000_000 ? 8
-                      : number > -1_000_000_000 ? 9 : 10;
-        }
-        static private Int32 DigitsInPositive(Int32 posNumber)
-            => posNumber < 10 ? 1 : posNumber < 100 ? 2 : posNumber < 1_000 ? 3
-            : posNumber < 10_000 ? 4 : posNumber < 100_000 ? 5 : posNumber < 1_000_000 ? 6
-            : posNumber < 10_000_000 ? 7 : posNumber < 100_000_000 ? 8 : posNumber < 1_000_000_000 ? 9 : 10;
     }
 }

@@ -186,7 +186,7 @@ namespace JabrAPI
                 Write("\n\tAdding noise to data..");
 
                 //string noised = AddNoise.Text(encrypted, reKey, false);
-                string noised = AddNoise.NEW_INTERNAL_FastText(encrypted, reKey.Noisifier, ",.");
+                string noised = Noise.Internal.NEW_FastText(encrypted, reKey.Noisifier, ",.");
 
 
                 Write("\n\tNoised:  ");

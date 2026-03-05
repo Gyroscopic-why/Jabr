@@ -20,23 +20,34 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Source\Ciphers\RE3\RE3.cs" />
+    <Compile Remove="Source\Ciphers\RE4\RE4.cs" />
     <Compile Remove="Source\Demo.cs" />
+    <Compile Remove="Source\Demo\Demo.cs" />
+    <Compile Remove="Source\Demo\Test_Benchmarker.cs" />
     <Compile Remove="Source\RE3.cs" />
     <Compile Remove="Source\RE4.cs" />
     <Compile Remove="Source\Test_Benchmarker.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Source\Demo.cs" />
-    <None Include="Source\RE3.cs" />
-    <None Include="Source\RE4.cs" />
-    <None Include="Source\Test_Benchmarker.cs" />
+    <None Include="Source\Ciphers\RE3\RE3.cs" />
+    <None Include="Source\Ciphers\RE4\RE4.cs" />
+    <None Include="Source\Demo\Demo.cs" />
+    <None Include="Source\Demo\Test_Benchmarker.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="AVcontrol">
       <HintPath>..\lib\AVcontrol.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Source\Ciphers\RE5\Decrypt\WithNoise\" />
+    <Folder Include="Source\Ciphers\RE5\Encrypt\WithNoise\" />
+    <Folder Include="Source\Legacy\RE4\" />
+    <Folder Include="Source\Legacy\RE3\" />
   </ItemGroup>
 
 </Project>
