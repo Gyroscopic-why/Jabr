@@ -25,50 +25,47 @@ namespace JabrAPI.RE5
         public EncryptionKey(string primaryAlphabet, string externalAlphabet, List<Int16> shifts)
         {
             _setHelper = new(this);
-            _validateHelper = new ValidateHelper(this);
+            _validateHelper = new(this);
 
-            _primaryAlphabet = primaryAlphabet;
-            _externalAlphabet = externalAlphabet;
-
-            _shifts.Clear();
-            if (shifts == null || shifts.Count == 0) _shifts.Add(0);
-            else _shifts.AddRange(shifts);
+            Set.Sensitive.PrAlphabet(primaryAlphabet);
+            Set.Sensitive.PrAlphabet(externalAlphabet);
+            Set.Sensitive.Shifts(shifts);
         }
         public EncryptionKey(string primaryAlphabet, string externalAlphabet, Int16 shift)
         {
             _setHelper = new(this);
-            _validateHelper = new ValidateHelper(this);
+            _validateHelper = new(this);
 
-            _primaryAlphabet = primaryAlphabet;
-            _externalAlphabet = externalAlphabet;
-
-            _shifts.Clear();
-            _shifts.Add(shift);
+            Set.Sensitive.PrAlphabet(primaryAlphabet);
+            Set.Sensitive.PrAlphabet(externalAlphabet);
+            Set.Sensitive.Shift(shift);
         }
         public EncryptionKey(string primaryAlphabet, string externalAlphabet)
         {
             _setHelper = new(this);
-            _validateHelper = new ValidateHelper(this);
+            _validateHelper = new(this);
 
-            _primaryAlphabet = primaryAlphabet;
-            _externalAlphabet = externalAlphabet;
+            Set.Sensitive.PrAlphabet(primaryAlphabet);
+            Set.Sensitive.ExAlphabet(externalAlphabet);
         }
         public EncryptionKey(Int32 shiftCount)
         {
             _setHelper = new(this);
-            _validateHelper = new ValidateHelper(this);
-            _shCount = shiftCount;
+            _validateHelper = new(this);
+
+            Set.ShiftCount(shiftCount);
         }
         public EncryptionKey(EncryptionKey otherKey, bool fullCopy = true)
         {
             _setHelper = new(this);
-            _validateHelper = new ValidateHelper(this);
+            _validateHelper = new(this);
+
             CopyFrom(otherKey, fullCopy);
         }
         public EncryptionKey(bool autoGenerate = true)
         {
             _setHelper = new(this);
-            _validateHelper = new ValidateHelper(this);
+            _validateHelper = new(this);
 
             if (autoGenerate) DefaultGenerate();
             else Set.Default();
@@ -77,13 +74,15 @@ namespace JabrAPI.RE5
         public EncryptionKey(List<Byte> binaryExportData, bool throwExceptions = false)
         {
             _setHelper = new(this);
-            _validateHelper = new ValidateHelper(this);
+            _validateHelper = new(this);
+
             ImportFromBinary(binaryExportData, throwExceptions);
         }
         public EncryptionKey(string stringExportData, bool throwExceptions = false)
         {
             _setHelper = new(this);
-            _validateHelper = new ValidateHelper(this);
+            _validateHelper = new(this);
+
             ImportFromString(stringExportData, throwExceptions);
         }
     }

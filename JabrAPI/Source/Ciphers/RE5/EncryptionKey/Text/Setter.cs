@@ -76,6 +76,7 @@ namespace JabrAPI.RE5
                 }
 
 
+
                 public void Shifts(List<Int16> shifts)
                 {
                     _reKey._shifts.Clear();
@@ -85,7 +86,19 @@ namespace JabrAPI.RE5
                 {
                     if (shifts.Max() > _reKey.ExLength) return false;
                     _reKey._shifts.Clear();
-                    _reKey._shifts.AddRange(shifts);
+                    _reKey._shifts.AddRange(shifts.Count > 0 ? shifts : [0]);
+                    return true;
+                }
+                public void Shift(Int16 shift)
+                {
+                    _reKey._shifts.Clear();
+                    _reKey._shifts.Add(shift);
+                }
+                public bool SafeShifts(Int16 shift)
+                {
+                    if (_reKey.Shifts.Max() > _reKey.ExLength) return false;
+                    _reKey._shifts.Clear();
+                    _reKey._shifts.Add(shift);
                     return true;
                 }
             }
@@ -95,12 +108,12 @@ namespace JabrAPI.RE5
             override public void Default()
             {
                 _reKey._primaryNecessary = [.. DEFAULT.CHARACTERS.WITH_SPACE];
-                _reKey._externalAllowed = [.. DEFAULT.CHARACTERS.WITHOUT_SPACE];
+                _reKey._externalAllowed  = [.. DEFAULT.CHARACTERS.WITHOUT_SPACE];
 
-                _reKey._primaryMaxLength = _reKey._primaryNecessary.Count;
+                _reKey._primaryMaxLength  = _reKey._primaryNecessary.Count;
                 _reKey._externalMaxLength = 8;
             }
-            public override void ShiftCount(int count) => _reKey._shCount = count;
+            public override void ShiftCount(Int32 count) => _reKey._shCount = count;
 
 
 

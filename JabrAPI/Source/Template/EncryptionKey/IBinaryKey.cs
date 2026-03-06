@@ -14,15 +14,21 @@ namespace JabrAPI.Template
         protected readonly BinaryNoisifier _noisifier = new();
 
         protected readonly List<Byte> _shifts = [0];
-        protected Byte _shCount = 0;
+        protected Int32 _shCount = 0;
 
 
 
         public BinaryNoisifier Noisifier => _noisifier;
+
+        virtual public ISetHelper? Set => null;
+        virtual public IBinaryValidateHelper? IsValid => null;
+
+
+
         public List<Byte> Shifts => _shifts;
         public Int32 ShAmount => _shifts == null ? -1 : _shifts.Count;
         public Int32 ShLength => _shifts == null ? -1 : _shifts.Count;
-        public Int32 ShCount => _shifts == null ? -1 : _shifts.Count;
+        public Int32 ShCount  => _shifts == null ? -1 : _shifts.Count;
 
         abstract public List<Byte> FinalAlphabet { get; }
 
@@ -59,13 +65,9 @@ namespace JabrAPI.Template
 
 
 
-        public void SetShiftCount(Byte count) => _shCount = count;
-
-
-        abstract public void SetDefault();
         protected void DefaultGenerate()
         {
-            SetDefault();
+            Set!.Default();
             GenerateAll();
         }
         abstract protected private void GenerateAll();

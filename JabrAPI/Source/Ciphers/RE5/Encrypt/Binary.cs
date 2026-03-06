@@ -35,8 +35,7 @@ namespace JabrAPI.RE5
                     );
                 }
             }
-            else if (reKey.IsExternalPartiallyValid(throwException)
-                  && reKey.IsPrimaryValid([.. message], throwException))
+            else if (reKey.IsValid.ForEncryption([.. message], throwException))
             {
                 try
                 {
@@ -68,8 +67,7 @@ namespace JabrAPI.RE5
             {
                 try
                 {
-                    reKey.IsExternalPartiallyValid(true);
-                    reKey.IsPrimaryValid([.. message], true);
+                    reKey.IsValid.ForEncryption([.. message], true);
 
                     List<Byte> result = FastBytes(message, reKey);
                     exception = null;

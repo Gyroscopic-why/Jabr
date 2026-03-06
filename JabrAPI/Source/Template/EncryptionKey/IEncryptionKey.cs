@@ -28,7 +28,7 @@ namespace JabrAPI.Template
         public List<Int16> Shifts => _shifts;
         public Int32 ShAmount => _shifts == null ? -1 : _shifts.Count;
         public Int32 ShLength => _shifts == null ? -1 : _shifts.Count;
-        public Int32 ShCount => _shifts == null ? -1 : _shifts.Count;
+        public Int32 ShCount  => _shifts == null ? -1 : _shifts.Count;
 
         abstract public string FinalAlphabet { get; }
 

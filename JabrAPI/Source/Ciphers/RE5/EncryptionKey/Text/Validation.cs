@@ -116,18 +116,18 @@ namespace JabrAPI.RE5
             public override bool ForEncryption(string message, bool throwException = false)
             {
                 return PartiallyHelper.External(_reKey.ExAlphabet, throwException)
-                    && Primary(message, throwException);
+                    && Primary(message, _reKey.PrAlphabet, throwException);
             }
             public override bool ForDecryption(string message, bool throwException = false)
             {
                 return PartiallyHelper.Primary(_reKey.PrAlphabet, throwException)
-                      && External(message, throwException);
+                      && External(message, _reKey.ExAlphabet, throwException);
             }
 
 
 
             public bool Primary(string message, bool throwException = false)
-                     => Primary(message, _reKey.Primary, throwException);
+                     => Primary(message, _reKey.PrAlphabet, throwException);
             static public bool Primary(string message, string primary, bool throwException = false)
             {
                 if (!PartiallyHelper.Primary(primary, throwException)) return false;
