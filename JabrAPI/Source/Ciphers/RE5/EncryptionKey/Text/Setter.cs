@@ -19,17 +19,24 @@ namespace JabrAPI.RE5
             private readonly EncryptionKey _reKey;
             private readonly SensetiveSetHelper _sensitiveSetHelper;
 
-            public SetHelper(EncryptionKey reKey)
+            internal SetHelper(EncryptionKey reKey)
             {
                 _reKey = reKey;
                 _sensitiveSetHelper = new(_reKey);
             }
 
 
+
             public SensetiveSetHelper Sensitive => _sensitiveSetHelper;
-            public class SensetiveSetHelper(EncryptionKey reKey)
+            public class SensetiveSetHelper
             {
-                private readonly EncryptionKey _reKey = reKey;
+                private readonly EncryptionKey _reKey;
+
+                internal SensetiveSetHelper(EncryptionKey reKey)
+                {
+                    _reKey = reKey;
+                }
+
 
 
                 public void PrAlphabet(string prAlphabet)
@@ -38,13 +45,13 @@ namespace JabrAPI.RE5
                         => _reKey._primaryAlphabet = primaryAlphabet;
                 public bool SafePrAlphabet(string prAlphabet)
                 {
-                    if (!_reKey.IsPrimaryValid(prAlphabet)) return false;
+                    if (!_reKey.IsValid.Primary(prAlphabet)) return false;
                     _reKey._primaryAlphabet = prAlphabet;
                     return true;
                 }
                 public bool SafePrimaryAlphabet(string primaryAlphabet)
                 {
-                    if (!_reKey.IsPrimaryValid(primaryAlphabet)) return false;
+                    if (!_reKey.IsValid.Primary(primaryAlphabet)) return false;
                     _reKey._primaryAlphabet = primaryAlphabet;
                     return true;
                 }
@@ -57,13 +64,13 @@ namespace JabrAPI.RE5
                         => _reKey._externalAlphabet = externalAlphabet;
                 public bool SafeExAlphabet(string exAlphabet)
                 {
-                    if (!_reKey.IsExternalValid(exAlphabet)) return false;
+                    if (!_reKey.IsValid.External(exAlphabet)) return false;
                     _reKey._externalAlphabet = exAlphabet;
                     return true;
                 }
                 public bool SafeExternalAlphabet(string externalAlphabet)
                 {
-                    if (!_reKey.IsExternalValid(externalAlphabet)) return false;
+                    if (!_reKey.IsValid.External(externalAlphabet)) return false;
                     _reKey._externalAlphabet = externalAlphabet;
                     return true;
                 }

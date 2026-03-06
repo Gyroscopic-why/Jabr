@@ -19,7 +19,9 @@ namespace JabrAPI.Template
 
 
         public Noisifier Noisifier => _noisifier;
+
         virtual public ISetHelper? Set => null;
+        virtual public IValidateHelper? IsValid => null;
 
 
 

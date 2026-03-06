@@ -149,7 +149,7 @@ namespace JabrAPI.Noise
                 Int32 maxRoundLength =
                     Math.Min
                     (
-                        (chunkSize + chunk),
+                        chunkSize + chunk,
                         curLength
                     )
                         * outputLength

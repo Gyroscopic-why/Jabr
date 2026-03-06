@@ -427,10 +427,10 @@ namespace JabrAPI.RE5
         }
         override public List<Byte> ExportAsBinary()
         {
-            Byte[] exportedPrimary = ToBinary.Utf16(_primaryAlphabet);
+            Byte[] exportedPrimary  = ToBinary.Utf16(_primaryAlphabet);
             Byte[] exportedExternal = ToBinary.Utf16(_externalAlphabet);
 
-            List<Byte> exportedShifts = [];
+            List<Byte> exportedShifts = new (_shifts.Count * 2);
             foreach (Int16 shift in _shifts)
                 exportedShifts.AddRange(ToBinary.BigEndian(shift));
 
@@ -438,14 +438,14 @@ namespace JabrAPI.RE5
             [
                 .. _noisifier.ExportAsBinary(),
 
-                    .. ToBinary.BigEndian(exportedShifts.Count / 2),
-                    .. exportedShifts,
+                .. ToBinary.BigEndian(exportedShifts.Count / 2),
+                .. exportedShifts,
 
-                    .. ToBinary.BigEndian(exportedPrimary.Length),
-                    .. exportedPrimary,
+                .. ToBinary.BigEndian(exportedPrimary.Length),
+                .. exportedPrimary,
 
-                    .. ToBinary.BigEndian(exportedExternal.Length),
-                    .. exportedExternal
+                .. ToBinary.BigEndian(exportedExternal.Length),
+                .. exportedExternal
             ];
         }
     }

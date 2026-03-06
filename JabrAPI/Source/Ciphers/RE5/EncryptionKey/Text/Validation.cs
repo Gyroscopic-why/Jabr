@@ -9,122 +9,170 @@ namespace JabrAPI.RE5
 {
     public partial class EncryptionKey : IEncryptionKey
     {
-        public bool IsPrimaryValid(string message, bool throwException = false)
-                 => IsPrimaryValid(message, _primaryAlphabet, throwException);
-        static public bool IsPrimaryValid(string message, string primary, bool throwException = false)
-        {
-            if (!IsPrimaryPartiallyValid(primary, throwException)) return false;
+        override public ValidateHelper IsValid => _validateHelper;
 
-            foreach (char c in message)
+
+        public class ValidateHelper : IValidateHelper
+        {
+            private readonly EncryptionKey _reKey;
+            private readonly PartiallyHelper _partiallyHelper;
+
+            
+            
+            internal ValidateHelper(EncryptionKey reKey)
             {
-                if (!primary.Contains(c))
+                _reKey = reKey;
+                _partiallyHelper = new(reKey);
+            }
+
+
+
+            public PartiallyHelper Partially => _partiallyHelper;
+            public class PartiallyHelper
+            {
+                private readonly EncryptionKey _reKey;
+
+                internal PartiallyHelper(EncryptionKey reKey)
                 {
-                    if (throwException)
-                        throw new ArgumentException
-                        (
-                            $"Message contains characters not present in the primary alphabet" +
-                            $"\nMissing character: {c}",
-                            nameof(primary)
-                        );
-                    return false;
+                    _reKey = reKey;
                 }
-            }
-            return true;
-        }
 
-        public bool IsPrimaryPartiallyValid(bool throwException = false)
-                 => IsPrimaryPartiallyValid(_primaryAlphabet, throwException);
-        static public bool IsPrimaryPartiallyValid(string primary, bool throwException = false)
-        {
-            if (primary == null || primary == "" || primary.Length < 2)
-            {
-                if (throwException)
-                    throw new ArgumentException
-                    (
-                        "Primary alphabet is not set or is too short",
-                        nameof(primary)
-                    );
-                return false;
-            }
-            for (var curId = 0; curId < primary.Length; curId++)
-            {
-                for (var id2 = curId + 1; id2 < primary.Length; id2++)
+
+
+                public bool Primary(bool throwException = false)
+                         => Primary(_reKey.PrAlphabet, throwException);
+                static public bool Primary(string primary, bool throwException = false)
                 {
-                    if (primary[curId] == primary[id2])
+                    if (primary == null || primary == "" || primary.Length < 2)
                     {
                         if (throwException)
                             throw new ArgumentException
                             (
-                                $"Primary alphabet contains duplicates characters" +
-                                $"\nDuplicate char: {primary[curId]}",
+                                "Primary alphabet is not set or is too short",
+                                nameof(primary)
+                            );
+                        return false;
+                    }
+                    for (var curId = 0; curId < primary.Length; curId++)
+                    {
+                        for (var id2 = curId + 1; id2 < primary.Length; id2++)
+                        {
+                            if (primary[curId] == primary[id2])
+                            {
+                                if (throwException)
+                                    throw new ArgumentException
+                                    (
+                                        $"Primary alphabet contains duplicates characters" +
+                                        $"\nDuplicate char: {primary[curId]}",
+                                        nameof(primary)
+                                    );
+                                return false;
+                            }
+                        }
+                    }
+
+                    return true;
+                }
+
+
+                public bool External(bool throwException = false)
+                         => External(_reKey.ExAlphabet, throwException);
+                static public bool External(string external, bool throwException = false)
+                {
+                    if (external == null || external == "" || external.Length < 2)
+                    {
+                        if (throwException)
+                            throw new ArgumentException
+                            (
+                                "External alphabet is not set or is too short",
+                                nameof(external)
+                            );
+                        return false;
+                    }
+                    for (var curId = 0; curId < external.Length; curId++)
+                    {
+                        for (var id2 = curId + 1; id2 < external.Length; id2++)
+                        {
+                            if (external[curId] == external[id2])
+                            {
+                                if (throwException)
+                                    throw new ArgumentException
+                                    (
+                                        $"External alphabet contains duplicates characters" +
+                                        $"Duplicate char: {external[curId]}",
+                                        nameof(external)
+                                    );
+                                return false;
+                            }
+                        }
+                    }
+
+                    return true;
+                }
+            }
+
+
+
+            public override bool ForEncryption(string message, bool throwException = false)
+            {
+                return PartiallyHelper.External(_reKey.ExAlphabet, throwException)
+                    && Primary(message, throwException);
+            }
+            public override bool ForDecryption(string message, bool throwException = false)
+            {
+                return PartiallyHelper.Primary(_reKey.PrAlphabet, throwException)
+                      && External(message, throwException);
+            }
+
+
+
+            public bool Primary(string message, bool throwException = false)
+                     => Primary(message, _reKey.Primary, throwException);
+            static public bool Primary(string message, string primary, bool throwException = false)
+            {
+                if (!PartiallyHelper.Primary(primary, throwException)) return false;
+
+                foreach (char c in message)
+                {
+                    if (!primary.Contains(c))
+                    {
+                        if (throwException)
+                            throw new ArgumentException
+                            (
+                                $"Message contains characters not present in the primary alphabet" +
+                                $"\nMissing character: {c}",
                                 nameof(primary)
                             );
                         return false;
                     }
                 }
+                return true;
             }
 
-            return true;
-        }
 
 
-
-        public bool IsExternalValid(string encrypted, bool throwException = false)
-                 => IsExternalValid(encrypted, _externalAlphabet, throwException);
-        static public bool IsExternalValid(string encrypted, string external, bool throwException = false)
-        {
-            if (!IsExternalPartiallyValid(external, throwException)) return false;
-
-            foreach (char c in encrypted)
+            public bool External(string encrypted, bool throwException = false)
+                     => External(encrypted, _reKey.ExAlphabet, throwException);
+            static public bool External(string encrypted, string external, bool throwException = false)
             {
-                if (!external.Contains(c))
+                if (!PartiallyHelper.External(external, throwException)) return false;
+
+                foreach (char c in encrypted)
                 {
-                    if (throwException)
-                        throw new ArgumentException
-                        (
-                            $"Message contains characters not present in the external alphabet" +
-                            $"\nMissing character: {c}",
-                            nameof(external)
-                        );
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public bool IsExternalPartiallyValid(bool throwException = false)
-                 => IsExternalPartiallyValid(_externalAlphabet, throwException);
-        static public bool IsExternalPartiallyValid(string external, bool throwException = false)
-        {
-            if (external == null || external == "" || external.Length < 2)
-            {
-                if (throwException)
-                    throw new ArgumentException
-                    (
-                        "External alphabet is not set or is too short",
-                        nameof(external)
-                    );
-                return false;
-            }
-            for (var curId = 0; curId < external.Length; curId++)
-            {
-                for (var id2 = curId + 1; id2 < external.Length; id2++)
-                {
-                    if (external[curId] == external[id2])
+                    if (!external.Contains(c))
                     {
                         if (throwException)
                             throw new ArgumentException
                             (
-                                $"External alphabet contains duplicates characters" +
-                                $"Duplicate char: {external[curId]}",
+                                $"Message contains characters not present in the external alphabet" +
+                                $"\nMissing character: {c}",
                                 nameof(external)
                             );
                         return false;
                     }
                 }
+                return true;
             }
-
-            return true;
         }
     }
 }

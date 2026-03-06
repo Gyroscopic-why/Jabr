@@ -34,8 +34,7 @@ namespace JabrAPI.RE5
                     );
                 }
             }
-            else if (reKey.IsPrimaryPartiallyValid(throwException)
-                    && reKey.IsExternalValid(encrypted, throwException))
+            else if (reKey.IsValid.ForDecryption(encrypted, throwException))
             {
                 try
                 {
@@ -67,8 +66,7 @@ namespace JabrAPI.RE5
             {
                 try
                 {
-                    reKey.IsPrimaryPartiallyValid(true);
-                    reKey.IsExternalValid(encrypted, true);
+                    reKey.IsValid.ForDecryption(encrypted, true);
 
                     string result = FastText(encrypted, reKey);
                     exception = null;
