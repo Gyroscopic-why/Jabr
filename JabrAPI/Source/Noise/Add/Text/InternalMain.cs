@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
+
 using AVcontrol;
 
 
@@ -12,7 +13,7 @@ namespace JabrAPI.Noise
         static public string OLD_FastText(string message, Noisifier noisifier, string fakeSelection)
         {
             Int32 staticLength = fakeSelection.Length, curLength = message.Length,
-                outputLength = noisifier.settings.outputLength;
+                outputLength = noisifier.settings.OutputLength;
 
             if (outputLength == 0)
                 outputLength = curLength +
@@ -88,7 +89,7 @@ namespace JabrAPI.Noise
         }
         static public string NEW_FastText(string message, Noisifier noisifier, string fakeSelection)
         {
-            Int32 chunkSize = noisifier.settings.chunkSizeForSplitting;
+            Int32 chunkSize = noisifier.settings.ChunkSizeForSplitting;
 
             if (chunkSize < 1)
                 throw new ArgumentException
@@ -98,7 +99,7 @@ namespace JabrAPI.Noise
                 );
 
 
-            Int32 outputLength = noisifier.settings.outputLength,
+            Int32 outputLength = noisifier.settings.OutputLength,
                   curLength = message.Length;
 
             if (outputLength == 0)
@@ -108,7 +109,7 @@ namespace JabrAPI.Noise
                     2,
                     Math.Min
                     (
-                        (Int32)noisifier.settings.boundaryAlignment,
+                        (Int32)noisifier.settings.BoundaryAlignment,
                         Math.Ceiling
                         (
                             Math.Log2(curLength)
@@ -116,7 +117,7 @@ namespace JabrAPI.Noise
                     )
                 );
                 if (curLength > outputLength &&
-                    noisifier.settings.useDynamicOutputAlignment)
+                    noisifier.settings.UseDynamicOutputAlignment)
                     outputLength *= (1 + curLength / outputLength);
             }
             if (message.Length >= outputLength) return message;
@@ -131,7 +132,7 @@ namespace JabrAPI.Noise
                 ) * 2 + 1;
             Int32 maxSyntropy = Miscellaneous.CalculateMaxNonEntropy
                 (
-                    noisifier.settings.excpectedEntropy,
+                    noisifier.settings.ExpectedEntropy,
                     curLength,
                     outputLength
                 );

@@ -1,38 +1,73 @@
 ﻿using System;
 
 
+using JabrAPI.Template;
+
+
 
 namespace JabrAPI.Noise
 {
-    abstract public class INoiseSettings
-    {
-        public Int32 outputLength = 0;
+    public class NoiseSettings(
+            Int32 outputLength = 0,
+            bool  useDynamicOutputAlignment = true,
 
-        public bool useDynamicOutputAlignment = true;
+            bool  forceOptimalEntropy = true,
+            ExpectedEntropy expectedEntropy = ExpectedEntropy.C1_Medium,
 
-        public bool forceOptimalEntropy = true;
-        public ExpectedEntropy excpectedEntropy = ExpectedEntropy.C1_Medium;
+            double primaryNoiseBiasPercents         = 50.0,
+            double complexNoisePairBiasPercents     = 25.0,
+            double complexNoiseIntervalBiasPercents = 66.6,
 
+            Int32 chunkSizeForSplitting = 64,
+            TextOutputBoundaryAlignment boundaryAlignment
+                = TextOutputBoundaryAlignment.c256
+        ) : INoiseSettings (
+            outputLength,
+            useDynamicOutputAlignment,
 
-        public double primaryNoiseBiasPercents         = 50.0;
-        public double complexNoisePairBiasPercents     = 25.0;
-        public double complexNoiseIntervalBiasPercents = 66.6;
+            forceOptimalEntropy,
+            expectedEntropy,
 
+            primaryNoiseBiasPercents,
+            complexNoisePairBiasPercents,
+            complexNoiseIntervalBiasPercents,
 
-        public Int32 chunkSizeForSplitting = 256;
+            chunkSizeForSplitting
+    ) {
+        public TextOutputBoundaryAlignment BoundaryAlignment
+            { get; set; } = boundaryAlignment;
     }
-    
 
 
-    public class NoiseSettings : INoiseSettings
-    {
-        public TextOutputBoundaryAlignment boundaryAlignment =
-               TextOutputBoundaryAlignment.c1024;
-    }
-    public class BinaryNoiseSettings : INoiseSettings
-    {
-        public BinaryOutputBoundaryAlignment boundaryAlignment =
-               BinaryOutputBoundaryAlignment.KByte1;
+    public class BinaryNoiseSettings(
+        Int32 outputLength = 0,
+        bool useDynamicOutputAlignment = true,
+
+        bool forceOptimalEntropy = true,
+        ExpectedEntropy expectedEntropy = ExpectedEntropy.C1_Medium,
+
+        double primaryNoiseBiasPercents = 50.0,
+        double complexNoisePairBiasPercents = 25.0,
+        double complexNoiseIntervalBiasPercents = 66.6,
+
+        Int32 chunkSizeForSplitting = 256,
+        BinaryOutputBoundaryAlignment boundaryAlignment
+            = BinaryOutputBoundaryAlignment.KByte1
+        ) : INoiseSettings (
+            outputLength,
+            useDynamicOutputAlignment,
+
+            forceOptimalEntropy,
+            expectedEntropy,
+
+            primaryNoiseBiasPercents,
+            complexNoisePairBiasPercents,
+            complexNoiseIntervalBiasPercents,
+
+            chunkSizeForSplitting
+    ) {
+        public BinaryOutputBoundaryAlignment BoundaryAlignment
+            { get; set; } = boundaryAlignment;
     }
 
 

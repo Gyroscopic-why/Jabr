@@ -164,7 +164,7 @@ namespace JabrAPI
             RE5.EncryptionKey reKey = new(true);
             string aboba = "aboba baobab";
             Int32 EXTEND = 128, attemptCount = 0;
-            reKey.Noisifier.settings.outputLength = EXTEND;
+            reKey.Noisifier.settings.OutputLength = EXTEND;
             double valueBias = 1.6, powerBias = 1.5;
 
             Int32 maxNonEntropy = 0;
@@ -174,12 +174,12 @@ namespace JabrAPI
                 //reKey.Set.Sensitive.ExAlphabet("Xv+");
                 //reKey.Noisifier.SetDefault(['X', 'x', 'V', 'v', 'Х', 'х', '+', ',', '.']);
                 reKey.Set.Default(162, "", 8, ".,");
-                reKey.Noisifier.SetDefault([',', '.']);
+                reKey.Noisifier.Set.Default([',', '.']);
                 //reKey.Noisifier.Next();
 
                 string encrypted = RE5.Encrypt.Text(aboba, reKey);
                 //EXTEND = random.Next(encrypted.Length + 2, encrypted.Length * 5);
-                reKey.Noisifier.settings.outputLength = EXTEND;
+                reKey.Noisifier.settings.OutputLength = EXTEND;
                 Write($"\n\tReKey: {reKey.ExAlphabet}, PrNoise: {reKey.Noisifier.PrimaryNoise}, CplxNoise: {reKey.Noisifier.ComplexNoise}");
                 Write("\n\tInitial: " + encrypted);
 
@@ -194,7 +194,7 @@ namespace JabrAPI
                 bool newWorst = false, noiseAtTheEnd = false;
                 for (var j = 0; j < noised.Length; j++)
                 {
-                    if (j % reKey.Noisifier.settings.chunkSizeForSplitting == 0)
+                    if (j % reKey.Noisifier.settings.ChunkSizeForSplitting == 0)
                         BackgroundColor = ConsoleColor.Blue;
 
                     if (!noiseAtTheEnd && noised[j] == encrypted[count])

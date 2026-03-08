@@ -121,14 +121,14 @@ namespace JabrAPI
                     for (; ; )
                     {
                         Clear();
-                        int prLength = encryptionKey.PrLength;
-                        int length = text.Length;
+                        Int32 prLength = encryptionKey.PrLength;
+                        Int32 length = text.Length;
                         string prAlphabet = encryptionKey.PrAlphabet;
                         Write("\n\tMessage:   (" + length.ToString() + ") " + text);
                         Write("\n\tPrimary:   (" + prLength.ToString() + ") ");
-                        for (int i = 0; i < prLength; i++)
+                        for (Int32 i = 0; i < prLength; i++)
                         {
-                            for (int j = 0; j < length; j++)
+                            for (Int32 j = 0; j < length; j++)
                             {
                                 if (prAlphabet[i] == text[j])
                                 {
@@ -202,14 +202,14 @@ namespace JabrAPI
                         for (; ; )
                         {
                             Clear();
-                            int prLength2 = encryptionKey.PrLength;
-                            int length2 = text.Length;
+                            Int32 prLength2 = encryptionKey.PrLength;
+                            Int32 length2 = text.Length;
                             string prAlphabet2 = encryptionKey.PrAlphabet;
                             Write("\n\tMessage:   (" + length2.ToString() + ") " + text);
                             Write("\n\tPrimary:   (" + prLength2.ToString() + ") ");
-                            for (int k = 0; k < prLength2; k++)
+                            for (Int32 k = 0; k < prLength2; k++)
                             {
-                                for (int l = 0; l < length2; l++)
+                                for (Int32 l = 0; l < length2; l++)
                                 {
                                     if (prAlphabet2[k] == text[l])
                                     {

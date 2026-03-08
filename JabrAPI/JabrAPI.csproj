@@ -10,11 +10,11 @@
     <Title>JabrAPI</Title>
     <Version>5.0.0</Version>
     <Authors>Gyroscopic</Authors>
-    <Description>API for RE ciphers from the Jabr family</Description>
+    <Description>Cryptography API for RE ciphers from the Jabr family</Description>
     <PackageProjectUrl>https://github.com/Gyroscopic-why/Jabr</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Gyroscopic-why/Jabr</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>cryptography;ciphers;encryptor;encryption;decryption;re;re5;re4</PackageTags>
+    <PackageTags>cryptography;ciphers;encryptor;encryption;decryption;re;re5;re4;noise;noisification;noisify;denoisify;noised</PackageTags>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <DelaySign>False</DelaySign>
   </PropertyGroup>
@@ -22,12 +22,8 @@
   <ItemGroup>
     <Compile Remove="Source\Ciphers\RE3\RE3.cs" />
     <Compile Remove="Source\Ciphers\RE4\RE4.cs" />
-    <Compile Remove="Source\Demo.cs" />
     <Compile Remove="Source\Demo\Demo.cs" />
     <Compile Remove="Source\Demo\Test_Benchmarker.cs" />
-    <Compile Remove="Source\RE3.cs" />
-    <Compile Remove="Source\RE4.cs" />
-    <Compile Remove="Source\Test_Benchmarker.cs" />
   </ItemGroup>
 
   <ItemGroup>

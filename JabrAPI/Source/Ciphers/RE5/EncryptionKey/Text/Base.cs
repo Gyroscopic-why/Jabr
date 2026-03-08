@@ -24,7 +24,7 @@ namespace JabrAPI.RE5
 
         public EncryptionKey(string primaryAlphabet, string externalAlphabet, List<Int16> shifts)
         {
-            _setHelper = new(this);
+            _setHelper      = new(this);
             _validateHelper = new(this);
 
             Set.Sensitive.PrAlphabet(primaryAlphabet);
@@ -33,7 +33,7 @@ namespace JabrAPI.RE5
         }
         public EncryptionKey(string primaryAlphabet, string externalAlphabet, Int16 shift)
         {
-            _setHelper = new(this);
+            _setHelper      = new(this);
             _validateHelper = new(this);
 
             Set.Sensitive.PrAlphabet(primaryAlphabet);
@@ -42,7 +42,7 @@ namespace JabrAPI.RE5
         }
         public EncryptionKey(string primaryAlphabet, string externalAlphabet)
         {
-            _setHelper = new(this);
+            _setHelper      = new(this);
             _validateHelper = new(this);
 
             Set.Sensitive.PrAlphabet(primaryAlphabet);
@@ -50,21 +50,21 @@ namespace JabrAPI.RE5
         }
         public EncryptionKey(Int32 shiftCount)
         {
-            _setHelper = new(this);
+            _setHelper      = new(this);
             _validateHelper = new(this);
 
             Set.ShiftCount(shiftCount);
         }
         public EncryptionKey(EncryptionKey otherKey, bool fullCopy = true)
         {
-            _setHelper = new(this);
+            _setHelper      = new(this);
             _validateHelper = new(this);
 
             CopyFrom(otherKey, fullCopy);
         }
         public EncryptionKey(bool autoGenerate = true)
         {
-            _setHelper = new(this);
+            _setHelper      = new(this);
             _validateHelper = new(this);
 
             if (autoGenerate) DefaultGenerate();
@@ -73,14 +73,14 @@ namespace JabrAPI.RE5
 
         public EncryptionKey(List<Byte> binaryExportData, bool throwExceptions = false)
         {
-            _setHelper = new(this);
+            _setHelper      = new(this);
             _validateHelper = new(this);
 
             ImportFromBinary(binaryExportData, throwExceptions);
         }
         public EncryptionKey(string stringExportData, bool throwExceptions = false)
         {
-            _setHelper = new(this);
+            _setHelper      = new(this);
             _validateHelper = new(this);
 
             ImportFromString(stringExportData, throwExceptions);

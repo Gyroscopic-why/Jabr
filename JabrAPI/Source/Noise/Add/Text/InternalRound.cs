@@ -27,7 +27,7 @@ namespace JabrAPI.Noise
 
             chosenOffset = random.Next
             (
-                noisifier.settings.forceOptimalEntropy
+                noisifier.settings.ForceOptimalEntropy
                     && prevFinalUnnoised >= maxSyntropy
                     && minAvgNoiseCount <= 0 ?
                        minAvgNoiseCount + 1 : minAvgNoiseCount,
@@ -45,7 +45,7 @@ namespace JabrAPI.Noise
                 prevFinalUnnoised = 1;
 
                 if (chosenOffset >= 2 && random.NextBoolChance(
-                    noisifier.settings.complexNoiseIntervalBiasPercents))
+                    noisifier.settings.ComplexNoiseIntervalBiasPercents))
                 {
                     message.InsertRange
                     (
@@ -57,7 +57,7 @@ namespace JabrAPI.Noise
                     {
                         if (i < chosenOffset - 2 &&
                             random.NextBoolChance(
-                                noisifier.settings.complexNoisePairBiasPercents))
+                                noisifier.settings.ComplexNoisePairBiasPercents))
                         {
                             message.InsertRange
                             (
@@ -68,7 +68,7 @@ namespace JabrAPI.Noise
                             i++;
                         }
                         else if (random.NextBoolChance(
-                                 noisifier.settings.primaryNoiseBiasPercents))
+                                 noisifier.settings.PrimaryNoiseBiasPercents))
                             message.Insert
                             (
                                 1,
@@ -108,7 +108,7 @@ namespace JabrAPI.Noise
             {
                 chosenOffset = random.Next
                 (
-                    noisifier.settings.forceOptimalEntropy
+                    noisifier.settings.ForceOptimalEntropy
                         && prevFinalUnnoised >= maxSyntropy
                         && i < initialLength
                         && minAvgNoiseCount <= 0 ?
@@ -127,7 +127,7 @@ namespace JabrAPI.Noise
                     prevFinalUnnoised = 0;
 
                     if (chosenOffset >= 2 && random.NextBoolChance(
-                        noisifier.settings.complexNoiseIntervalBiasPercents))
+                        noisifier.settings.ComplexNoiseIntervalBiasPercents))
                     {
                         message.InsertRange
                         (
@@ -139,7 +139,7 @@ namespace JabrAPI.Noise
                         {
                             if (j < chosenOffset - 2 &&
                             random.NextBoolChance(
-                                noisifier.settings.complexNoisePairBiasPercents))
+                                noisifier.settings.ComplexNoisePairBiasPercents))
                             {
                                 message.InsertRange
                                 (
@@ -150,7 +150,7 @@ namespace JabrAPI.Noise
                                 j++;
                             }
                             else if (random.NextBoolChance(
-                                noisifier.settings.primaryNoiseBiasPercents))
+                                noisifier.settings.PrimaryNoiseBiasPercents))
                                 message.Insert
                                 (
                                     totalOffset + minOffsetStep,

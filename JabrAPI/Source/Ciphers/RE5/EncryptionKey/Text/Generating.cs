@@ -22,7 +22,7 @@ namespace JabrAPI.RE5
             }
             else GenerateRandomShifts(_shifts.Count);
 
-            _noisifier.SetDefault([.. External]);
+            _noisifier.Set.Default([.. External]);
             _noisifier.Next(false);
         }
 

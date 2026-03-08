@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+
+
 using JabrAPI.Template;
 
 
@@ -23,7 +25,7 @@ namespace JabrAPI.Noise
             {
                 exception = new ArgumentException
                 (
-                    "Encryption key is undefined (null or empty)",
+                    "Encryption key is undefined (null)",
                     nameof(reKey)
                 );
             }
@@ -31,7 +33,7 @@ namespace JabrAPI.Noise
             {
                 exception = new ArgumentException
                 (
-                    "Noisifier is undefined (null or empty)",
+                    "Noisifier is undefined (null)",
                     nameof(reKey.Noisifier)
                 );
             }
@@ -39,13 +41,9 @@ namespace JabrAPI.Noise
             {
                 try
                 {
-                    reKey.Noisifier.IsComplexNoiseValidForKey(reKey, true);
-                    reKey.Noisifier.IsPrimaryNoiseValidForKey(reKey, true);
+                    reKey.Noisifier.IsValid.ForAdding(reKey, message, true);
 
-                    reKey.Noisifier.IsComplexNoiseValidForMessage(message, true);
-                    reKey.Noisifier.IsPrimaryNoiseValidForMessage(message, true);
-
-                    string result = FastText(message, reKey);
+                    string result = FastText(message, reKey.Noisifier);
                     exception = null;
 
                     return result;
@@ -74,7 +72,7 @@ namespace JabrAPI.Noise
                 {
                     throw new ArgumentException
                     (
-                        "Encryption key is undefined (null or empty)",
+                        "Encryption key is undefined (null)",
                         nameof(reKey)
                     );
                 }
@@ -85,36 +83,20 @@ namespace JabrAPI.Noise
                 {
                     throw new ArgumentException
                     (
-                        "Noisifier is undefined (null or empty)",
+                        "Noisifier is undefined (null)",
                         nameof(reKey.Noisifier)
                     );
                 }
             }
-            else if (reKey.Noisifier.IsPrimaryNoiseValidForKey(reKey, throwException)
-                  && reKey.Noisifier.IsComplexNoiseValidForKey(reKey, throwException)
-                  && reKey.Noisifier.IsPrimaryNoiseValidForMessage(message, throwException)
-                  && reKey.Noisifier.IsComplexNoiseValidForMessage(message, throwException))
+            else if (reKey.Noisifier.IsValid.ForAdding(message, throwException))
             {
                 try
                 {
-                    return FastText(message, reKey);
+                    return FastText(message, reKey.Noisifier);
                 }
                 catch { if (throwException) throw; }
             }
             return "";
-        }
-        static public string FastText(string message, IEncryptionKey reKey)
-        {
-            return Internal.OLD_FastText
-            (
-                message,
-                reKey.Noisifier,
-                string.Concat
-                (
-                    new HashSet<char>
-                    (reKey.FinalAlphabet)
-                )
-            );
         }
 
 
@@ -134,7 +116,7 @@ namespace JabrAPI.Noise
             {
                 exception = new ArgumentException
                 (
-                    "Noisifier is undefined (null or empty)",
+                    "Noisifier is undefined (null)",
                     nameof(noisifier)
                 );
             }
@@ -142,8 +124,7 @@ namespace JabrAPI.Noise
             {
                 try
                 {
-                    noisifier.IsComplexNoiseValidForMessage(message, true);
-                    noisifier.IsPrimaryNoiseValidForMessage(message, true);
+                    noisifier.IsValid.ForAdding(message, true);
 
                     string result = FastText(message, noisifier);
                     exception = null;
@@ -174,13 +155,12 @@ namespace JabrAPI.Noise
                 {
                     throw new ArgumentException
                     (
-                        "Noisifier is undefined (null or empty)",
+                        "Noisifier is undefined (null)",
                         nameof(noisifier)
                     );
                 }
             }
-            else if (noisifier.IsComplexNoiseValidForMessage(message, throwException)
-                  && noisifier.IsPrimaryNoiseValidForMessage(message, throwException))
+            else if (noisifier.IsValid.ForAdding(message, throwException))
             {
                 try
                 {

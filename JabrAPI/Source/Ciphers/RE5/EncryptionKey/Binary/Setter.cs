@@ -1,8 +1,9 @@
-﻿using JabrAPI.Template;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using static JabrAPI.RE5.EncryptionKey.SetHelper;
+using System.Collections.Generic;
+
+
+using JabrAPI.Template;
 
 
 
@@ -120,12 +121,12 @@ namespace JabrAPI.RE5
 
 
 
-            public override void ShiftCount(Int32 count) => _binKey._shCount = count;
             public override void Default()
             {
                 _binKey._compactedPrMaxLength = 255;
                 _binKey._compactedExMaxLength = 7;
             }
+            public override void ShiftCount(Int32 count) => _binKey._shCount = count;
 
 
 

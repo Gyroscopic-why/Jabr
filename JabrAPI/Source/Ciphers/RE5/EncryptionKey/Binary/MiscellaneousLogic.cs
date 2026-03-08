@@ -23,6 +23,8 @@ namespace JabrAPI.RE5
                     otherKey._compactedExMaxLength
                 );
         }
+
+
         private void CopyFrom(List<Byte> primary, List<Byte> external, List<Byte> shifts)
         {
             _primaryAlphabet.Clear();
