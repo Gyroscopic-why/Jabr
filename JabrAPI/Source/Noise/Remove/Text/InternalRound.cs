@@ -15,8 +15,7 @@ namespace JabrAPI.Noise
             string primaryNoise, string complexNoise)
         {
             Int32 dataStartId = 0;
-            //StringBuilder dynamicResult = new(noised.Length);
-            string dynamicResult = "";
+            StringBuilder dynamicResult = new(noised.Length);
 
             for (var i = 0; i < noised.Length; i++)
             {
@@ -25,9 +24,8 @@ namespace JabrAPI.Noise
                 if (complexNoise.Contains(curChar))
                 {
                     if (!ignoringIsActive)
-                        //dynamicResult.Append(
-                        //    Utils.Interval(noised, dataStartId, i));
-                        dynamicResult += Utils.Interval(noised, dataStartId, i);
+                        dynamicResult.Append(
+                            Utils.Interval(noised, dataStartId, i));
 
                     ignoringIsActive = !ignoringIsActive;
                     dataStartId = i + 1;
@@ -36,9 +34,8 @@ namespace JabrAPI.Noise
                 else if (primaryNoise.Contains(curChar))
                 {
                     if (!ignoringIsActive)
-                        //dynamicResult.Append(
-                        //    Utils.Interval(noised, dataStartId, i));
-                        dynamicResult += Utils.Interval(noised, dataStartId, i);
+                        dynamicResult.Append(
+                            Utils.Interval(noised, dataStartId, i));
 
                     dataStartId = i + 1;
                     continue;
@@ -46,9 +43,8 @@ namespace JabrAPI.Noise
             }
 
             if (!ignoringIsActive)
-                //dynamicResult.Append(
-                //    Utils.Interval(noised, dataStartId, noised.Length - 1));
-                dynamicResult += Utils.Interval(noised, dataStartId, noised.Length);
+                dynamicResult.Append(
+                    Utils.Interval(noised, dataStartId, noised.Length));
 
             return dynamicResult.ToString();
         }

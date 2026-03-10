@@ -4,7 +4,7 @@
 
 namespace JabrAPI.Noise
 {
-    static internal class Miscellaneous
+    static internal partial class Miscellaneous
     {
         private class SyntropyBiases(double valueBias, double powerBias)
         {

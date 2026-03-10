@@ -146,7 +146,7 @@ namespace JabrAPI.Noise
                                     totalOffset + minOffsetStep,
                                     noisifier.RandomComplexSequence(2)
                                 );
-
+                                
                                 j++;
                             }
                             else if (random.NextBoolChance(

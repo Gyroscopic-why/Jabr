@@ -188,6 +188,7 @@ namespace JabrAPI.Noise
             }
 
 
+            fakeSelection = noisifier.PrimaryNoise;
             while (almostResult.Count < outputLength)
             {
                 random.Reseed();

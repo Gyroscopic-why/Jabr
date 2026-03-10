@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 
 using JabrAPI.Template;
+using static JabrAPI.Noise.Miscellaneous;
 
 
 
@@ -14,31 +15,7 @@ namespace JabrAPI.Noise
         static public List<Byte> Bytes(List<Byte> message, IBinaryKey reKey,
             out Exception? exception)
         {
-            if (message == null || message.Count < 1)
-            {
-                exception = new ArgumentException
-                (
-                    "Message is invalid - cannot be null or empty",
-                    nameof(message)
-                );
-            }
-            else if (reKey == null)
-            {
-                exception = new ArgumentException
-                (
-                    "Encryption key is undefined (null)",
-                    nameof(reKey)
-                );
-            }
-            else if (reKey.Noisifier == null)
-            {
-                exception = new ArgumentException
-                (
-                    "Noisifier is undefined (null)",
-                    nameof(reKey.Noisifier)
-                );
-            }
-            else
+            if (IsMessageAndReKeyAndNoisifierValid(message, reKey, out exception))
             {
                 try
                 {
@@ -48,10 +25,7 @@ namespace JabrAPI.Noise
                     reKey.Noisifier.IsComplexNoiseValidForMessage(message, true);
                     reKey.Noisifier.IsPrimaryNoiseValidForMessage(message, true);
 
-                    List<Byte> result = FastBytes(message, reKey.Noisifier);
-                    exception = null;
-
-                    return result;
+                    return FastBytes(message, reKey.Noisifier);
                 }
                 catch (Exception innerException) { exception = innerException; }
             }
@@ -60,51 +34,9 @@ namespace JabrAPI.Noise
         static public List<Byte> Bytes(List<Byte> message, IBinaryKey reKey,
             bool throwException = false)
         {
-            if (message == null || message.Count < 1)
-            {
-                if (throwException)
-                {
-                    throw new ArgumentException
-                    (
-                        "Message is invalid - cannot be null or empty",
-                        nameof(message)
-                    );
-                }
-            }
-            else if (reKey == null)
-            {
-                if (throwException)
-                {
-                    throw new ArgumentException
-                    (
-                        "Encryption key is undefined (null)",
-                        nameof(reKey)
-                    );
-                }
-            }
-            else if (reKey.Noisifier == null)
-            {
-                if (throwException)
-                {
-                    throw new ArgumentException
-                    (
-                        "Noisifier is undefined (null)",
-                        nameof(reKey.Noisifier)
-                    );
-                }
-            }
-            else if (reKey.Noisifier.IsPrimaryNoiseValidForKey(reKey, throwException)
-                  && reKey.Noisifier.IsComplexNoiseValidForKey(reKey, throwException)
-                  && reKey.Noisifier.IsPrimaryNoiseValidForMessage(message, throwException)
-                  && reKey.Noisifier.IsComplexNoiseValidForMessage(message, throwException))
-            {
-                try
-                {
-                    return FastBytes(message, reKey.Noisifier);
-                }
-                catch { if (throwException) throw; }
-            }
-            return [];
+            List<Byte> result = Bytes(message, reKey, out Exception? exception);
+            if (exception != null && throwException) throw exception;
+            return result;
         }
 
 
@@ -112,33 +44,14 @@ namespace JabrAPI.Noise
         static public List<Byte> Bytes(List<Byte> message, BinaryNoisifier noisifier,
             out Exception? exception)
         {
-            if (message == null || message.Count < 1)
-            {
-                exception = new ArgumentException
-                (
-                    "Message is invalid - cannot be null or empty",
-                    nameof(message)
-                );
-            }
-            else if (noisifier == null)
-            {
-                exception = new ArgumentException
-                (
-                    "Noisifier is undefined (null)",
-                    nameof(noisifier)
-                );
-            }
-            else
+            if (IsMessageAndNoisifierValid(message, noisifier, out exception))
             {
                 try
                 {
                     noisifier.IsComplexNoiseValidForMessage(message, true);
                     noisifier.IsPrimaryNoiseValidForMessage(message, true);
 
-                    List<Byte> result = FastBytes(message, noisifier);
-                    exception = null;
-
-                    return result;
+                    return FastBytes(message, noisifier);
                 }
                 catch (Exception innerException) { exception = innerException; }
             }
@@ -147,38 +60,9 @@ namespace JabrAPI.Noise
         static public List<Byte> Bytes(List<Byte> message, BinaryNoisifier noisifier,
             bool throwException = false)
         {
-            if (message == null || message.Count < 1)
-            {
-                if (throwException)
-                {
-                    throw new ArgumentException
-                    (
-                        "Message is invalid - cannot be null or empty",
-                        nameof(message)
-                    );
-                }
-            }
-            else if (noisifier == null)
-            {
-                if (throwException)
-                {
-                    throw new ArgumentException
-                    (
-                        "Noisifier is undefined (null)",
-                        nameof(noisifier)
-                    );
-                }
-            }
-            else if (noisifier.IsComplexNoiseValidForMessage(message, throwException)
-                  && noisifier.IsPrimaryNoiseValidForMessage(message, throwException))
-            {
-                try
-                {
-                    return FastBytes(message, noisifier);
-                }
-                catch { if (throwException) throw; }
-            }
-            return [];
+            List<Byte> result = Bytes(message, noisifier, out Exception? exception);
+            if (exception != null && throwException) throw exception;
+            return result;
         }
         static public List<Byte> FastBytes(List<Byte> message, BinaryNoisifier noisifier)
         {
