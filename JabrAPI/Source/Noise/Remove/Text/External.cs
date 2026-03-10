@@ -87,7 +87,7 @@ namespace JabrAPI.Noise
                     );
                 }
             }
-            else if (reKey.Noisifier.IsValid.ForAdding(noised, throwException))
+            else if (reKey.Noisifier.IsValid.ForRemoving(reKey, noised, throwException))
             {
                 try
                 {
@@ -123,8 +123,6 @@ namespace JabrAPI.Noise
             {
                 try
                 {
-                    noisifier.IsValid.ForAdding(noised, true);
-
                     string result = FastText(noised, noisifier);
                     exception = null;
 
@@ -159,7 +157,7 @@ namespace JabrAPI.Noise
                     );
                 }
             }
-            else if (noisifier.IsValid.ForAdding(noised, throwException))
+            else
             {
                 try
                 {

@@ -27,26 +27,19 @@ namespace JabrAPI
 
             public override bool ForAdding  (string message, bool throwException = false)
             {
-                return ComplexForMessage(message, true) ||
-                       PrimaryForMessage(message, true);
+                return ComplexForMessage(message, throwException) ||
+                       PrimaryForMessage(message, throwException);
             }
             public override bool ForAdding  (IEncryptionKey reKey, string message, bool throwException = false)
             {
                 return ForAdding(message, throwException)     ||
-                       ComplexForKey(reKey, true) ||
-                       PrimaryForKey(reKey, true);
-            }
-
-            public override bool ForRemoving(string message, bool throwException = false)
-            {
-                return ComplexForMessage(message, true) ||
-                       PrimaryForMessage(message, true);
+                       ComplexForKey(reKey, throwException) ||
+                       PrimaryForKey(reKey, throwException);
             }
             public override bool ForRemoving(IEncryptionKey reKey, string message, bool throwException = false)
             {
-                return ForAdding(message, throwException)     ||
-                       ComplexForKey(reKey, true) ||
-                       PrimaryForKey(reKey, true);
+                return ComplexForKey(reKey, throwException) ||
+                       PrimaryForKey(reKey, throwException);
             }
 
 
