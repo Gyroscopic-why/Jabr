@@ -177,6 +177,18 @@ namespace JabrAPI
                 reKey.Noisifier.Set.Default([',', '.']);
                 //reKey.Noisifier.Next();
 
+
+                //reKey.Set.Sensitive.PrAlphabet(DEFAULT.CHARACTERS.WITH_SPACE);
+                //reKey.Set.Sensitive.ExAlphabet("ACH");
+                //reKey.Noisifier.Set.Sensitive.PrNoise("`");
+                //reKey.Noisifier.Set.Sensitive.CplxNoise("+");
+
+
+
+
+
+
+
                 string encrypted = RE5.Encrypt.Text(aboba, reKey);
                 //EXTEND = random.Next(encrypted.Length + 2, encrypted.Length * 5);
                 reKey.Noisifier.settings.OutputLength = EXTEND;
@@ -186,7 +198,9 @@ namespace JabrAPI
                 Write("\n\tAdding noise to data..");
 
                 //string noised = AddNoise.Text(encrypted, reKey, false);
-                string noised = Noise.Internal.NEW_FastText(encrypted, reKey.Noisifier, ",.");
+                string noised = Noise.Internal.AddFastText(encrypted, reKey.Noisifier, ",.");
+
+                string denoised = Noise.Remove.FastText(noised, reKey.Noisifier);
 
 
                 Write("\n\tNoised:  ");
@@ -224,6 +238,51 @@ namespace JabrAPI
                     BackgroundColor = ConsoleColor.Black;
                 }
                 ForegroundColor = ConsoleColor.Gray;
+
+
+                Write("\n\tDnoised: " + denoised);
+                Write("\n\tMatches: ");
+                for (var j = 0; j < Math.Min(denoised.Length, encrypted.Length); j++)
+                {
+                    if (denoised[j] == encrypted[j])
+                         ForegroundColor = ConsoleColor.Green;
+                    else ForegroundColor = ConsoleColor.DarkGray;
+
+                    Write(denoised[j]);
+                }
+                ForegroundColor = ConsoleColor.Red;
+                Write
+                (
+                    denoised.AsSpan(
+                        Math.Min(denoised.Length, encrypted.Length),
+                        Math.Min
+                        (
+                            0,
+                             denoised.Length - Math.Min
+                            (denoised.Length, encrypted.Length)
+                        )
+                    )
+                );
+                Write
+                (
+                    encrypted.AsSpan(
+                        Math.Min(denoised.Length, encrypted.Length),
+                        Math.Min
+                        (
+                            0,
+                             encrypted.Length - Math.Min
+                            (denoised.Length, encrypted.Length)
+                        )
+                    )
+                );
+                ForegroundColor = ConsoleColor.Gray;
+                Write("\n\tInitial: " + encrypted);
+                Write("\n\tDecrypt: " + RE5.Decrypt.Text(encrypted, reKey, false));
+
+
+
+
+
                 Write($"\n\tNonEntropy: {thisMaxNonEntropy}(" +
                     $"{Math.Ceiling
                         (

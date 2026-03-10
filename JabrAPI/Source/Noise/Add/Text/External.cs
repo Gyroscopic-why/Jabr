@@ -172,7 +172,7 @@ namespace JabrAPI.Noise
         }
         static public string FastText(string message, Noisifier noisifier)
         {
-            return Internal.OLD_FastText
+            return Internal.AddFastText
             (
                 message,
                 noisifier,

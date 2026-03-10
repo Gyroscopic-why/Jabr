@@ -10,7 +10,7 @@ namespace JabrAPI.Noise
 {
     static internal partial class Internal
     {
-        static public string OLD_FastText(string message, Noisifier noisifier, string fakeSelection)
+        static public string OLD_AddFastText(string message, Noisifier noisifier, string fakeSelection)
         {
             Int32 staticLength = fakeSelection.Length, curLength = message.Length,
                 outputLength = noisifier.settings.OutputLength;
@@ -87,7 +87,7 @@ namespace JabrAPI.Noise
 
             return new string([.. withNoise]) ?? "";
         }
-        static public string NEW_FastText(string message, Noisifier noisifier, string fakeSelection)
+        static public string AddFastText(string message, Noisifier noisifier, string fakeSelection)
         {
             Int32 chunkSize = noisifier.settings.ChunkSizeForSplitting;
 

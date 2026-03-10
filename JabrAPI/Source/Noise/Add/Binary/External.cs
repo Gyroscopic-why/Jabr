@@ -182,7 +182,7 @@ namespace JabrAPI.Noise
         }
         static public List<Byte> FastBytes(List<Byte> message, BinaryNoisifier noisifier)
         {
-            return Internal.NEW_FastBytes
+            return Internal.AddFastBytes
             (
                 message,
                 noisifier,
