@@ -173,8 +173,8 @@ namespace JabrAPI
                 Write("\n\tAttempt: " + ++attemptCount);
                 //reKey.Set.Sensitive.ExAlphabet("Xv+");
                 //reKey.Noisifier.SetDefault(['X', 'x', 'V', 'v', 'Х', 'х', '+', ',', '.']);
-                reKey.Set.Default(162, "", 8, ".,");
-                reKey.Noisifier.Set.Default([',', '.']);
+                //reKey.Set.Default(162, "", 8, ".,");
+                //reKey.Noisifier.Set.Default([',', '.']);
                 //reKey.Noisifier.Next();
 
 
