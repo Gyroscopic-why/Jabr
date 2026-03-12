@@ -11,11 +11,11 @@ namespace JabrAPI.RE5
 {
     static public partial class Decrypt
     {
-        static public List<Byte> Bytes(List<Byte> encrypted, BinaryKey reKey, bool throwException = false)
+        static public List<Byte> Bytes(List<Byte> encrypted, BinaryKey reKey, bool throwExceptions = false)
         {
             if (encrypted == null || encrypted.Count < 1)
             {
-                if (throwException)
+                if (throwExceptions)
                 {
                     throw new ArgumentException
                     (
@@ -26,7 +26,7 @@ namespace JabrAPI.RE5
             }
             else if (reKey == null)
             {
-                if (throwException)
+                if (throwExceptions)
                 {
                     throw new ArgumentException
                     (
@@ -35,13 +35,13 @@ namespace JabrAPI.RE5
                     );
                 }
             }
-            else if (reKey.IsValid.ForDecryption(encrypted, throwException))
+            else if (reKey.IsValid.ForDecryption(encrypted, throwExceptions))
             {
                 try
                 {
                     return FastBytes(encrypted, reKey);
                 }
-                catch (Exception) { if (throwException) throw; }
+                catch (Exception) { if (throwExceptions) throw; }
             }
             return [];
         }

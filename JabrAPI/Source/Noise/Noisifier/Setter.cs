@@ -1,7 +1,8 @@
-﻿using JabrAPI.Template;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
+
+
+using JabrAPI.Template;
 
 
 
@@ -12,7 +13,7 @@ namespace JabrAPI
         public SetHelper Set => _setHelper;
 
 
-        public class SetHelper : INoiseSetHelper
+        public class SetHelper
         {
             private readonly Noisifier _noisifier;
             private readonly SensetiveSetHelper _sensitiveSetHelper;
@@ -77,16 +78,16 @@ namespace JabrAPI
 
 
 
-            public override void Default(Int32 primaryCount = 8, Int32 complexCount = 16)
+            public void Default(Int32 primaryCount = 8, Int32 complexCount = 16)
             {
                 _noisifier._primaryCount = primaryCount;
                 _noisifier._complexCount = complexCount;
             }
             
 
-            public override void DefaultOnlyPr  (Int32 primaryCount = 8)
+            public void DefaultOnlyPr  (Int32 primaryCount = 8)
                 => _noisifier._primaryCount = primaryCount;
-            public override void DefaultOnlyCplx(Int32 complexCount = 16)
+            public void DefaultOnlyCplx(Int32 complexCount = 16)
                 => _noisifier._complexCount = complexCount;
 
 

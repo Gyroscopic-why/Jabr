@@ -39,13 +39,13 @@ namespace JabrAPI.RE5
 
 
 
-                public bool Primary(bool throwException = false)
-                         => Primary(_reKey.PrAlphabet, throwException);
-                static public bool Primary(string primary, bool throwException = false)
+                public bool Primary(bool throwExceptions = false)
+                         => Primary(_reKey.PrAlphabet, throwExceptions);
+                static public bool Primary(string primary, bool throwExceptions = false)
                 {
                     if (primary == null || primary == "" || primary.Length < 2)
                     {
-                        if (throwException)
+                        if (throwExceptions)
                             throw new ArgumentException
                             (
                                 "Primary alphabet is not set or is too short",
@@ -59,7 +59,7 @@ namespace JabrAPI.RE5
                         {
                             if (primary[curId] == primary[id2])
                             {
-                                if (throwException)
+                                if (throwExceptions)
                                     throw new ArgumentException
                                     (
                                         $"Primary alphabet contains duplicates characters" +
@@ -75,13 +75,13 @@ namespace JabrAPI.RE5
                 }
 
 
-                public bool External(bool throwException = false)
-                         => External(_reKey.ExAlphabet, throwException);
-                static public bool External(string external, bool throwException = false)
+                public bool External(bool throwExceptions = false)
+                         => External(_reKey.ExAlphabet, throwExceptions);
+                static public bool External(string external, bool throwExceptions = false)
                 {
                     if (external == null || external == "" || external.Length < 2)
                     {
-                        if (throwException)
+                        if (throwExceptions)
                             throw new ArgumentException
                             (
                                 "External alphabet is not set or is too short",
@@ -95,7 +95,7 @@ namespace JabrAPI.RE5
                         {
                             if (external[curId] == external[id2])
                             {
-                                if (throwException)
+                                if (throwExceptions)
                                     throw new ArgumentException
                                     (
                                         $"External alphabet contains duplicates characters" +
@@ -113,30 +113,30 @@ namespace JabrAPI.RE5
 
 
 
-            public override bool ForEncryption(string message, bool throwException = false)
+            public override bool ForEncryption(string message, bool throwExceptions = false)
             {
-                return PartiallyHelper.External(_reKey.ExAlphabet, throwException)
-                    && Primary(message, _reKey.PrAlphabet, throwException);
+                return PartiallyHelper.External(_reKey.ExAlphabet, throwExceptions)
+                    && Primary(message, _reKey.PrAlphabet, throwExceptions);
             }
-            public override bool ForDecryption(string message, bool throwException = false)
+            public override bool ForDecryption(string message, bool throwExceptions = false)
             {
-                return PartiallyHelper.Primary(_reKey.PrAlphabet, throwException)
-                      && External(message, _reKey.ExAlphabet, throwException);
+                return PartiallyHelper.Primary(_reKey.PrAlphabet, throwExceptions)
+                      && External(message, _reKey.ExAlphabet, throwExceptions);
             }
 
 
 
-            public bool Primary(string message, bool throwException = false)
-                     => Primary(message, _reKey.PrAlphabet, throwException);
-            static public bool Primary(string message, string primary, bool throwException = false)
+            public bool Primary(string message, bool throwExceptions = false)
+                     => Primary(message, _reKey.PrAlphabet, throwExceptions);
+            static public bool Primary(string message, string primary, bool throwExceptions = false)
             {
-                if (!PartiallyHelper.Primary(primary, throwException)) return false;
+                if (!PartiallyHelper.Primary(primary, throwExceptions)) return false;
 
                 foreach (char c in message)
                 {
                     if (!primary.Contains(c))
                     {
-                        if (throwException)
+                        if (throwExceptions)
                             throw new ArgumentException
                             (
                                 $"Message contains characters not present in the primary alphabet" +
@@ -151,17 +151,17 @@ namespace JabrAPI.RE5
 
 
 
-            public bool External(string encrypted, bool throwException = false)
-                     => External(encrypted, _reKey.ExAlphabet, throwException);
-            static public bool External(string encrypted, string external, bool throwException = false)
+            public bool External(string encrypted, bool throwExceptions = false)
+                     => External(encrypted, _reKey.ExAlphabet, throwExceptions);
+            static public bool External(string encrypted, string external, bool throwExceptions = false)
             {
-                if (!PartiallyHelper.External(external, throwException)) return false;
+                if (!PartiallyHelper.External(external, throwExceptions)) return false;
 
                 foreach (char c in encrypted)
                 {
                     if (!external.Contains(c))
                     {
-                        if (throwException)
+                        if (throwExceptions)
                             throw new ArgumentException
                             (
                                 $"Message contains characters not present in the external alphabet" +

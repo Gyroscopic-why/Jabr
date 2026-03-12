@@ -23,10 +23,10 @@ namespace JabrAPI.Noise
             exception = null;
             return true;
         }
-        static internal bool IsMessageValid(string message, bool throwException = false)
+        static internal bool IsMessageValid(string message, bool throwExceptions = false)
         {
             bool isValid = IsMessageValid(message, out Exception? exception);
-            if (!isValid && throwException) throw exception!;
+            if (!isValid && throwExceptions) throw exception!;
             return isValid;
         }
 
@@ -44,10 +44,10 @@ namespace JabrAPI.Noise
             exception = null;
             return true;
         }
-        static internal bool IsNoisifierValid(Noisifier noisifier, bool throwException = false)
+        static internal bool IsNoisifierValid(Noisifier noisifier, bool throwExceptions = false)
         {
             bool isValid = IsNoisifierValid(noisifier, out Exception? exception);
-            if (!isValid && throwException) throw exception!;
+            if (!isValid && throwExceptions) throw exception!;
             return isValid;
         }
 
@@ -65,10 +65,10 @@ namespace JabrAPI.Noise
             exception = null;
             return true;
         }
-        static internal bool IsReKeyValid(IEncryptionKey reKey, bool throwException = false)
+        static internal bool IsReKeyValid(IEncryptionKey reKey, bool throwExceptions = false)
         {
             bool isValid = IsReKeyValid(reKey, out Exception? exception);
-            if (!isValid && throwException) throw exception!;
+            if (!isValid && throwExceptions) throw exception!;
             return isValid;
         }
 
@@ -81,10 +81,10 @@ namespace JabrAPI.Noise
             return isValid;
         }
         static internal bool IsMessageAndNoisifierValid(
-            string message, Noisifier noisifier, bool throwException = false)
+            string message, Noisifier noisifier, bool throwExceptions = false)
         {
             bool isValid = IsMessageAndNoisifierValid(message, noisifier, out Exception? exception);
-            if (!isValid && throwException) throw exception!;
+            if (!isValid && throwExceptions) throw exception!;
             return isValid;
         }
 
@@ -96,10 +96,10 @@ namespace JabrAPI.Noise
             return isValid;
         }
         static internal bool IsMessageAndReKeyAndNoisifierValid(
-            string message, IEncryptionKey reKey, bool throwException = false)
+            string message, IEncryptionKey reKey, bool throwExceptions = false)
         {
             bool isValid = IsMessageAndReKeyAndNoisifierValid(message, reKey, out Exception? exception);
-            if (!isValid && throwException) throw exception!;
+            if (!isValid && throwExceptions) throw exception!;
             return isValid;
         }
     }

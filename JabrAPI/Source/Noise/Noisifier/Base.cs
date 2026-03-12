@@ -40,7 +40,23 @@ namespace JabrAPI
 
             CopyFrom(otherNoisifier, fullCopy);
         }
-        public Noisifier(List<char> banned, bool autoGenerate = true)
+
+        public Noisifier(string stringExportData, bool throwExceptions = false)
+        {
+            _setHelper = new(this);
+            _validateHelper = new(this);
+
+            ImportFromString(stringExportData, throwExceptions);
+        }
+        public Noisifier(List<Byte> binaryExportData, bool throwExceptions = false)
+        {
+            _setHelper = new(this);
+            _validateHelper = new(this);
+
+            ImportFromBinary(binaryExportData, throwExceptions);
+        }
+
+        public Noisifier(bool autoGenerate, List<char> banned)
         {
             _setHelper = new(this);
             _validateHelper = new(this);
@@ -48,19 +64,10 @@ namespace JabrAPI
             if (autoGenerate) DefaultGenerate(banned);
             else Set.Default(banned);
         }
-        public Noisifier(List<Byte> exported)
-        {
-            _setHelper = new(this);
-            _validateHelper = new(this);
-
-            ImportFromBinary(exported);
-        }
         public Noisifier()
         {
             _setHelper = new(this);
             _validateHelper = new(this);
-
-            Set.Default();
         }
     }
 }

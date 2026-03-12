@@ -39,13 +39,13 @@ namespace JabrAPI.RE5
                 
 
 
-                public bool Primary(bool throwException = false)
-                    => Primary(_binKey.PrAlphabet, throwException);
-                static public bool Primary(List<Byte> primary, bool throwException = false)
+                public bool Primary(bool throwExceptions = false)
+                    => Primary(_binKey.PrAlphabet, throwExceptions);
+                static public bool Primary(List<Byte> primary, bool throwExceptions = false)
                 {
                     if (primary == null || primary.Count < 2 || primary.Count > 256)
                     {
-                        if (throwException)
+                        if (throwExceptions)
                         {
                             throw new ArgumentException
                             (
@@ -61,7 +61,7 @@ namespace JabrAPI.RE5
                         {
                             if (primary[curId] == primary[id2])
                             {
-                                if (throwException)
+                                if (throwExceptions)
                                 {
                                     throw new ArgumentException
                                     (
@@ -79,13 +79,13 @@ namespace JabrAPI.RE5
                 }
 
 
-                public bool External(bool throwException = false)
-                    => External(_binKey.ExAlphabet, throwException);
-                static public bool External(List<Byte> external, bool throwException = false)
+                public bool External(bool throwExceptions = false)
+                    => External(_binKey.ExAlphabet, throwExceptions);
+                static public bool External(List<Byte> external, bool throwExceptions = false)
                 {
                     if (external == null || external.Count < 2 || external.Count > 256)
                     {
-                        if (throwException)
+                        if (throwExceptions)
                         {
                             throw new ArgumentException
                             (
@@ -101,7 +101,7 @@ namespace JabrAPI.RE5
                         {
                             if (external[curId] == external[id2])
                             {
-                                if (throwException)
+                                if (throwExceptions)
                                 {
                                     throw new ArgumentException
                                     (
@@ -121,30 +121,30 @@ namespace JabrAPI.RE5
 
 
 
-            public override bool ForEncryption(List<Byte> message, bool throwException = false)
+            public override bool ForEncryption(List<Byte> message, bool throwExceptions = false)
             {
-                return PartiallyHelper.External(_binKey.ExAlphabet, throwException)
-                    && Primary(message, _binKey.PrAlphabet, throwException);
+                return PartiallyHelper.External(_binKey.ExAlphabet, throwExceptions)
+                    && Primary(message, _binKey.PrAlphabet, throwExceptions);
             }
-            public override bool ForDecryption(List<Byte> message, bool throwException = false)
+            public override bool ForDecryption(List<Byte> message, bool throwExceptions = false)
             {
-                return PartiallyHelper.Primary(_binKey.PrAlphabet, throwException)
-                        && External(message, _binKey.ExAlphabet, throwException);
+                return PartiallyHelper.Primary(_binKey.PrAlphabet, throwExceptions)
+                        && External(message, _binKey.ExAlphabet, throwExceptions);
             }
 
 
 
-            public bool Primary(List<Byte> message, bool throwException = false)
-                => Primary(message, _binKey.PrAlphabet, throwException);
-            static public bool Primary(List<Byte> message, List<Byte> primary, bool throwException = false)
+            public bool Primary(List<Byte> message, bool throwExceptions = false)
+                => Primary(message, _binKey.PrAlphabet, throwExceptions);
+            static public bool Primary(List<Byte> message, List<Byte> primary, bool throwExceptions = false)
             {
-                if (PartiallyHelper.Primary(primary, throwException)) return false;
+                if (PartiallyHelper.Primary(primary, throwExceptions)) return false;
 
                 foreach (Byte b in message)
                 {
                     if (!primary.Contains(b))
                     {
-                        if (throwException)
+                        if (throwExceptions)
                         {
                             throw new ArgumentException
                             (
@@ -161,17 +161,17 @@ namespace JabrAPI.RE5
 
 
 
-            public bool External(List<Byte> encrypted, bool throwException = false)
-                => External(encrypted, _binKey.ExAlphabet, throwException);
-            static public bool External(List<Byte> encrypted, List<Byte> external, bool throwException = false)
+            public bool External(List<Byte> encrypted, bool throwExceptions = false)
+                => External(encrypted, _binKey.ExAlphabet, throwExceptions);
+            static public bool External(List<Byte> encrypted, List<Byte> external, bool throwExceptions = false)
             {
-                if (!PartiallyHelper.External(external, throwException)) return false;
+                if (!PartiallyHelper.External(external, throwExceptions)) return false;
 
                 foreach (Byte b in encrypted)
                 {
                     if (!external.Contains(b))
                     {
-                        if (throwException)
+                        if (throwExceptions)
                         {
                             throw new ArgumentException
                             (

@@ -127,16 +127,16 @@ namespace JabrAPI
 
 
 
-            public bool IsAlphabetValid(string message, bool throwException = false)
-                => IsAlphabetValid(message, _alphabet, throwException);
-            static public bool IsAlphabetValid(string message, string alphabet, bool throwException = false)
+            public bool IsAlphabetValid(string message, bool throwExceptions = false)
+                => IsAlphabetValid(message, _alphabet, throwExceptions);
+            static public bool IsAlphabetValid(string message, string alphabet, bool throwExceptions = false)
             {
-                if (!IsAlphabetPartiallyValid(alphabet, throwException)) return false;
+                if (!IsAlphabetPartiallyValid(alphabet, throwExceptions)) return false;
                 foreach (char c in message)
                 {
                     if (!alphabet.Contains(c))
                     {
-                        if (throwException)
+                        if (throwExceptions)
                         {
                             throw new ArgumentException
                             (
@@ -152,13 +152,13 @@ namespace JabrAPI
                 return true;
             }
 
-            public bool IsAlphabetPartiallyValid(bool throwException = false)
-                => IsAlphabetPartiallyValid(_alphabet, throwException);
-            static public bool IsAlphabetPartiallyValid(string alphabet, bool throwException = false)
+            public bool IsAlphabetPartiallyValid(bool throwExceptions = false)
+                => IsAlphabetPartiallyValid(_alphabet, throwExceptions);
+            static public bool IsAlphabetPartiallyValid(string alphabet, bool throwExceptions = false)
             {
                 if (alphabet == null || alphabet == "" || alphabet.Length < 2)
                 {
-                    if (throwException)
+                    if (throwExceptions)
                     {
                         throw new ArgumentException
                         (
@@ -523,11 +523,11 @@ namespace JabrAPI
 
 
 
-        static public string Encrypt(string message, EncryptionKey reKey, bool throwException = false)
+        static public string Encrypt(string message, EncryptionKey reKey, bool throwExceptions = false)
         {
             if (message == null || message == "" || message.Length < 1)
             {
-                if (throwException)
+                if (throwExceptions)
                 {
                     throw new ArgumentException
                     (
@@ -538,7 +538,7 @@ namespace JabrAPI
             }
             else if (reKey == null)
             {
-                if (throwException)
+                if (throwExceptions)
                 {
                     throw new ArgumentException
                     (
@@ -547,7 +547,7 @@ namespace JabrAPI
                     );
                 }
             }
-            else if (reKey.IsAlphabetValid(message, throwException))
+            else if (reKey.IsAlphabetValid(message, throwExceptions))
             {
                 try
                 {
@@ -556,7 +556,7 @@ namespace JabrAPI
 
                 catch (Exception)
                 {
-                    if (throwException) throw;
+                    if (throwExceptions) throw;
                 }
             }
 
@@ -615,11 +615,11 @@ namespace JabrAPI
 
 
 
-        static public string Decrypt(string encrypted, EncryptionKey reKey, bool throwException = false)
+        static public string Decrypt(string encrypted, EncryptionKey reKey, bool throwExceptions = false)
         {
             if (encrypted == null || encrypted == "" || encrypted.Length < 1)
             {
-                if (throwException)
+                if (throwExceptions)
                 {
                     throw new ArgumentException
                     (
@@ -630,7 +630,7 @@ namespace JabrAPI
             }
             else if (reKey == null)
             {
-                if (throwException)
+                if (throwExceptions)
                 {
                     throw new ArgumentException
                     (
@@ -639,7 +639,7 @@ namespace JabrAPI
                     );
                 }
             }
-            else if (reKey.IsAlphabetValid(encrypted, throwException))
+            else if (reKey.IsAlphabetValid(encrypted, throwExceptions))
             {
                 try
                 {
@@ -648,7 +648,7 @@ namespace JabrAPI
 
                 catch (Exception)
                 {
-                    if (throwException) throw;
+                    if (throwExceptions) throw;
                 }
             }
 
@@ -710,8 +710,8 @@ namespace JabrAPI
 
 
 
-        static public bool IsAlphabetValid(string message, string primary, bool throwException = false) => EncryptionKey.IsAlphabetValid(message, primary, throwException);
-        static public bool IsAlphabetPartiallyValid(string primary, bool throwException = false) => EncryptionKey.IsAlphabetPartiallyValid(primary, throwException);
+        static public bool IsAlphabetValid(string message, string primary, bool throwExceptions = false) => EncryptionKey.IsAlphabetValid(message, primary, throwExceptions);
+        static public bool IsAlphabetPartiallyValid(string primary, bool throwExceptions = false) => EncryptionKey.IsAlphabetPartiallyValid(primary, throwExceptions);
 
     }
 }

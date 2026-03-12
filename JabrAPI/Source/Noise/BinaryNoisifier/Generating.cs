@@ -1,19 +1,18 @@
 ﻿using System;
-using System.Text;
 using System.Collections.Generic;
 
 
 
 namespace JabrAPI
 {
-    public partial class Noisifier
+    public partial class BinaryNoisifier
     {
         public void Next(bool throwExceptions = true)
         {
             try { GenerateAll(); }
             catch { if (throwExceptions) throw; }
         }
-        public void Next(List<char> bannedForFailsafeRegeneration,
+        public void Next(List<Byte> bannedForFailsafeRegeneration,
             bool resetSettingsToDefaultIfFailed = true, bool throwExceptions = true)
         {
             try
@@ -44,7 +43,7 @@ namespace JabrAPI
             GeneratePrimary(false);
             GenerateComplex(true);
         }
-        public  void DefaultGenerate(List<char> banned)
+        public void DefaultGenerate(List<Byte> banned)
         {
             Set.Default(banned);
             GenerateAll();
@@ -52,53 +51,42 @@ namespace JabrAPI
 
 
 
-        public string GenerateNoise(Int32 count, List<char> allowed)
+        public List<Byte> GenerateNoise(Byte count, List<Byte> allowed)
         {
-            if (count <= 0) return string.Empty;
-            if (count > allowed.Count) throw new ArgumentOutOfRangeException
-                (
-                    $"Count is greater than max possible length: {allowed.Count}"
-                );
+            List<Byte> result = [];
 
-            StringBuilder result = new(count);
-            Int32 totalCount = allowed.Count;
-
-            for (var lastUsedId = 0; lastUsedId < count; lastUsedId++)
+            for (var noiseByteId = 0; noiseByteId < count; noiseByteId++)
             {
-                Int32 chosenUnused = _random.Next(lastUsedId, totalCount);
-
-                (allowed[lastUsedId], allowed[chosenUnused]) =
-                (allowed[chosenUnused], allowed[lastUsedId]);
-
-                result.Append(allowed[lastUsedId]);
+                Int32 chosenId = _random.Next(result.Count);
+                result.Insert(chosenId, allowed[noiseByteId]);
             }
 
-            return result.ToString();
+            return result;
         }
 
 
 
-        public void GeneratePrimary(List<char> banned, bool banAlreadyUsedInComplex)
+        public void GeneratePrimary(List<Byte> banned, bool banAlreadyUsedInComplex)
         {
             //  Important to get allowed separately from GenerateNoise
             //  because _primaryCount can change here in default fail case
-            _primaryNoise = "";
-            List<char> allowed = GetRemainingAllowed(banned, _primaryCount, banAlreadyUsedInComplex);
+            _primaryNoise.Clear();
+            List<Byte> allowed = GetRemainingAllowed(banned, _primaryCount, banAlreadyUsedInComplex);
 
-            _primaryNoise = GenerateNoise(_primaryCount, allowed);
+            _primaryNoise.AddRange(GenerateNoise(_primaryCount, allowed));
         }
         public void GeneratePrimary(bool banAlreadyUsedInComplex)
              => GeneratePrimary(_banned, banAlreadyUsedInComplex);
 
 
-        public void GenerateComplex(List<char> banned, bool banAlreadyUsedInPrimary)
+        public void GenerateComplex(List<Byte> banned, bool banAlreadyUsedInPrimary)
         {
             //  Important to get allowed separately from GenerateNoise
             //  because _complexCount can change here in default fail case
-            _complexNoise = "";
-            List<char> allowed = GetRemainingAllowed(banned, _complexCount, banAlreadyUsedInPrimary);
+            _complexNoise.Clear();
+            List<Byte> allowed = GetRemainingAllowed(banned, _complexCount, banAlreadyUsedInPrimary);
 
-            _complexNoise = GenerateNoise(_complexCount, allowed);
+            _complexNoise.AddRange(GenerateNoise(_complexCount, allowed));
         }
         public void GenerateComplex(bool banAlreadyUsedInPrimary)
              => GenerateComplex(_banned, banAlreadyUsedInPrimary);

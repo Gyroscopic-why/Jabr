@@ -19,11 +19,7 @@ namespace JabrAPI.Noise
             {
                 try
                 {
-                    reKey.Noisifier.IsComplexNoiseValidForKey(reKey, true);
-                    reKey.Noisifier.IsPrimaryNoiseValidForKey(reKey, true);
-
-                    reKey.Noisifier.IsComplexNoiseValidForMessage(message, true);
-                    reKey.Noisifier.IsPrimaryNoiseValidForMessage(message, true);
+                    reKey.Noisifier.IsValid.ForAdding(reKey, message, true);
 
                     return FastBytes(message, reKey.Noisifier);
                 }
@@ -32,10 +28,10 @@ namespace JabrAPI.Noise
             return [];
         }
         static public List<Byte> Bytes(List<Byte> message, IBinaryKey reKey,
-            bool throwException = false)
+            bool throwExceptions = false)
         {
             List<Byte> result = Bytes(message, reKey, out Exception? exception);
-            if (exception != null && throwException) throw exception;
+            if (exception != null && throwExceptions) throw exception;
             return result;
         }
 
@@ -48,8 +44,7 @@ namespace JabrAPI.Noise
             {
                 try
                 {
-                    noisifier.IsComplexNoiseValidForMessage(message, true);
-                    noisifier.IsPrimaryNoiseValidForMessage(message, true);
+                    noisifier.IsValid.ForAdding(message, true);
 
                     return FastBytes(message, noisifier);
                 }
@@ -58,10 +53,10 @@ namespace JabrAPI.Noise
             return [];
         }
         static public List<Byte> Bytes(List<Byte> message, BinaryNoisifier noisifier,
-            bool throwException = false)
+            bool throwExceptions = false)
         {
             List<Byte> result = Bytes(message, noisifier, out Exception? exception);
-            if (exception != null && throwException) throw exception;
+            if (exception != null && throwExceptions) throw exception;
             return result;
         }
         static public List<Byte> FastBytes(List<Byte> message, BinaryNoisifier noisifier)

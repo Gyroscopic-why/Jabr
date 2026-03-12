@@ -31,11 +31,11 @@ namespace JabrAPI
 
 
 
-        static public string Encrypt(string message, RE4.EncryptionKey reKey, bool throwException = false)
+        static public string Encrypt(string message, RE4.EncryptionKey reKey, bool throwExceptions = false)
         {
             if (message == null || message == "" || message.Length < 1)
             {
-                if (throwException)
+                if (throwExceptions)
                 {
                     throw new ArgumentException
                     (
@@ -46,7 +46,7 @@ namespace JabrAPI
             }
             else if (reKey == null)
             {
-                if (throwException)
+                if (throwExceptions)
                 {
                     throw new ArgumentException
                     (
@@ -55,7 +55,7 @@ namespace JabrAPI
                     );
                 }
             }
-            else if (reKey.IsAlphabetValid(message, throwException))
+            else if (reKey.IsAlphabetValid(message, throwExceptions))
             {
                 try
                 {
@@ -64,7 +64,7 @@ namespace JabrAPI
 
                 catch (Exception)
                 {
-                    if (throwException) throw;
+                    if (throwExceptions) throw;
                 }
             }
 
@@ -125,11 +125,11 @@ namespace JabrAPI
 
 
 
-        static public string Decrypt(string encrypted, EncryptionKey reKey, bool throwException = false)
+        static public string Decrypt(string encrypted, EncryptionKey reKey, bool throwExceptions = false)
         {
             if (encrypted == null || encrypted == "" || encrypted.Length < 1)
             {
-                if (throwException)
+                if (throwExceptions)
                 {
                     throw new ArgumentException
                     (
@@ -140,7 +140,7 @@ namespace JabrAPI
             }
             else if (reKey == null)
             {
-                if (throwException)
+                if (throwExceptions)
                 {
                     throw new ArgumentException
                     (
@@ -149,7 +149,7 @@ namespace JabrAPI
                     );
                 }
             }
-            else if (reKey.IsAlphabetValid(encrypted, throwException))
+            else if (reKey.IsAlphabetValid(encrypted, throwExceptions))
             {
                 try
                 {
@@ -158,7 +158,7 @@ namespace JabrAPI
 
                 catch (Exception)
                 {
-                    if (throwException) throw;
+                    if (throwExceptions) throw;
                 }
             }
 

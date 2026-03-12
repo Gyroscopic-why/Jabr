@@ -12,7 +12,7 @@ namespace JabrAPI.RE5
     {
         public void CopyFrom(BinaryKey otherKey, bool fullCopy = true)
         {
-            _noisifier.Copy(otherKey.Noisifier, fullCopy);
+            _noisifier.CopyFrom(otherKey.Noisifier, fullCopy);
 
             CopyFrom(otherKey.Primary, otherKey.External, otherKey.Shifts);
 

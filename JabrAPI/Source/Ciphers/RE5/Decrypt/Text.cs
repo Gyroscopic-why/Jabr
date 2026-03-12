@@ -10,11 +10,11 @@ namespace JabrAPI.RE5
 {
     static public partial class Decrypt
     {
-        static public string Text(string encrypted, EncryptionKey reKey, bool throwException = false)
+        static public string Text(string encrypted, EncryptionKey reKey, bool throwExceptions = false)
         {
             if (encrypted == null || encrypted == "" || encrypted.Length < 1)
             {
-                if (throwException)
+                if (throwExceptions)
                 {
                     throw new ArgumentException
                     (
@@ -25,7 +25,7 @@ namespace JabrAPI.RE5
             }
             else if (reKey == null)
             {
-                if (throwException)
+                if (throwExceptions)
                 {
                     throw new ArgumentException
                     (
@@ -34,13 +34,13 @@ namespace JabrAPI.RE5
                     );
                 }
             }
-            else if (reKey.IsValid.ForDecryption(encrypted, throwException))
+            else if (reKey.IsValid.ForDecryption(encrypted, throwExceptions))
             {
                 try
                 {
                     return FastText(encrypted, reKey);
                 }
-                catch (Exception) { if (throwException) throw; }
+                catch (Exception) { if (throwExceptions) throw; }
             }
             return "";
         }

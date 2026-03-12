@@ -27,10 +27,10 @@ namespace JabrAPI.Noise
             return "";
         }
         static public string Text(string message, IEncryptionKey reKey,
-            bool throwException = false)
+            bool throwExceptions = false)
         {
             string result  = Text(message, reKey, out Exception? exception);
-            if (exception != null && throwException) throw exception;
+            if (exception != null && throwExceptions) throw exception;
             return result;
         }
 
@@ -52,10 +52,10 @@ namespace JabrAPI.Noise
             return "";
         }
         static public string Text(string message, Noisifier noisifier,
-            bool throwException = false)
+            bool throwExceptions = false)
         {
             string result  = Text(message, noisifier, out Exception? exception);
-            if (exception != null && throwException) throw exception;
+            if (exception != null && throwExceptions) throw exception;
             return result;
         }
         static public string FastText(string message, Noisifier noisifier)

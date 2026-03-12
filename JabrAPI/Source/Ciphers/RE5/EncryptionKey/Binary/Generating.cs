@@ -16,7 +16,7 @@ namespace JabrAPI.RE5
             GenerateRandomExternal();
             GenerateRandomShifts();
 
-            _noisifier.SetDefault(External);
+            _noisifier.Set.Default(External);
             _noisifier.Next(false);
         }
 

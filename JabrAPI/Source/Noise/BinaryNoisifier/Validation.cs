@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 
 using JabrAPI.Template;
@@ -7,36 +8,36 @@ using JabrAPI.Template;
 
 namespace JabrAPI
 {
-    public partial class Noisifier
+    public partial class BinaryNoisifier
     {
         public ValidateHelper IsValid => _validateHelper;
 
 
-        
+
         public class ValidateHelper
         {
-            private readonly Noisifier _noisifier;
+            private readonly BinaryNoisifier _noisifier;
 
 
-            internal ValidateHelper(Noisifier noisifier)
+            internal ValidateHelper(BinaryNoisifier noisifier)
             {
                 _noisifier = noisifier;
             }
 
 
 
-            public bool ForAdding  (string message, bool throwExceptions = false)
+            public bool ForAdding(List<Byte> message, bool throwExceptions = false)
             {
                 return ComplexForMessage(message, throwExceptions) ||
                        PrimaryForMessage(message, throwExceptions);
             }
-            public bool ForAdding  (IEncryptionKey reKey, string message, bool throwExceptions = false)
+            public bool ForAdding(IBinaryKey reKey, List<Byte> message, bool throwExceptions = false)
             {
-                return ForAdding  (message, throwExceptions) ||
+                return ForAdding(message, throwExceptions) ||
                        ComplexForKey(reKey, throwExceptions) ||
                        PrimaryForKey(reKey, throwExceptions);
             }
-            public bool ForRemoving(IEncryptionKey reKey, string message, bool throwExceptions = false)
+            public bool ForRemoving(IBinaryKey reKey, List<Byte> message, bool throwExceptions = false)
             {
                 return ComplexForKey(reKey, throwExceptions) ||
                        PrimaryForKey(reKey, throwExceptions);
@@ -44,9 +45,9 @@ namespace JabrAPI
 
 
 
-            static public bool PrimaryForKey(IEncryptionKey reKey, string primaryNoise, bool throwExceptions = false)
+            static public bool PrimaryForKey(IBinaryKey reKey, List<Byte> primaryNoise, bool throwExceptions = false)
                 => PrimaryForKey(reKey.FinalAlphabet, primaryNoise, throwExceptions);
-            static public bool PrimaryForKey(string  exAlphabet, string primaryNoise,   bool throwExceptions = false)
+            static public bool PrimaryForKey(List<Byte> exAlphabet, List<Byte> primaryNoise, bool throwExceptions = false)
             {
                 return IsNoiseValid
                 (
@@ -60,7 +61,7 @@ namespace JabrAPI
                     throwExceptions
                 );
             }
-            static public bool PrimaryForMessage(string message, string primaryNoise,   bool throwExceptions = false)
+            static public bool PrimaryForMessage(List<Byte> message, List<Byte> primaryNoise, bool throwExceptions = false)
             {
                 return IsNoiseValid
                 (
@@ -75,17 +76,17 @@ namespace JabrAPI
                 );
             }
 
-            public bool PrimaryForKey(IEncryptionKey reKey, bool throwExceptions = false)
+            public bool PrimaryForKey(IBinaryKey reKey, bool throwExceptions = false)
                 => PrimaryForKey(reKey.FinalAlphabet, _noisifier._primaryNoise, throwExceptions);
-            public bool PrimaryForKey(string  exAlphabet, bool throwExceptions = false)
-                => PrimaryForKey(exAlphabet,  _noisifier._primaryNoise, throwExceptions);
-            public bool PrimaryForMessage(string message, bool throwExceptions = false)
+            public bool PrimaryForKey(List<Byte> exAlphabet, bool throwExceptions = false)
+                => PrimaryForKey(exAlphabet, _noisifier._primaryNoise, throwExceptions);
+            public bool PrimaryForMessage(List<Byte> message, bool throwExceptions = false)
                 => PrimaryForMessage(message, _noisifier._primaryNoise, throwExceptions);
 
 
-            static public bool ComplexForKey(IEncryptionKey reKey, string complexNoise, bool throwExceptions = false)
+            static public bool ComplexForKey(IBinaryKey reKey, List<Byte> complexNoise, bool throwExceptions = false)
                 => ComplexForKey(reKey.FinalAlphabet, complexNoise, throwExceptions);
-            static public bool ComplexForKey(string  exAlphabet, string complexNoise,   bool throwExceptions = false)
+            static public bool ComplexForKey(List<Byte> exAlphabet, List<Byte> complexNoise, bool throwExceptions = false)
             {
                 return IsNoiseValid
                 (
@@ -99,7 +100,7 @@ namespace JabrAPI
                     throwExceptions
                 );
             }
-            static public bool ComplexForMessage(string message, string complexNoise,   bool throwExceptions = false)
+            static public bool ComplexForMessage(List<Byte> message, List<Byte> complexNoise, bool throwExceptions = false)
             {
                 return IsNoiseValid
                 (
@@ -114,26 +115,26 @@ namespace JabrAPI
                 );
             }
 
-            public bool ComplexForKey(IEncryptionKey reKey, bool throwExceptions = false)
+            public bool ComplexForKey(IBinaryKey reKey, bool throwExceptions = false)
                 => ComplexForKey(reKey.FinalAlphabet, _noisifier._complexNoise, throwExceptions);
-            public bool ComplexForKey(string  exAlphabet, bool throwExceptions = false)
-                => ComplexForKey(exAlphabet,  _noisifier._complexNoise, throwExceptions);
-            public bool ComplexForMessage(string message, bool throwExceptions = false)
+            public bool ComplexForKey(List<Byte> exAlphabet, bool throwExceptions = false)
+                => ComplexForKey(exAlphabet, _noisifier._complexNoise, throwExceptions);
+            public bool ComplexForMessage(List<Byte> message, bool throwExceptions = false)
                 => ComplexForMessage(message, _noisifier._complexNoise, throwExceptions);
 
 
 
-            static private bool IsNoiseValid(string exAlphabet_or_message, string primaryNoise_or_complexNoise,
+            static private bool IsNoiseValid(List<Byte> exAlphabet_or_message, List<Byte> primaryNoise_or_complexNoise,
                 ArgumentException errorMessage, bool throwExceptions = false)
             {
-                foreach (char noiseChar in primaryNoise_or_complexNoise)
+                foreach (Byte noiseByte in primaryNoise_or_complexNoise)
                 {
-                    if (exAlphabet_or_message.Contains(noiseChar))
+                    if (exAlphabet_or_message.Contains(noiseByte))
                     {
                         if (throwExceptions) throw new ArgumentException
                             (
                                 errorMessage.Message +
-                                $"\nDuplicate char: {noiseChar}",
+                                $"\nDuplicate byte: {noiseByte}",
                                 errorMessage.ParamName
                             );
                         return false;
