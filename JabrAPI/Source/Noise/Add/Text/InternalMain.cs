@@ -215,6 +215,10 @@ namespace JabrAPI.Noise
 
                 Console.Write("\n\t         ");
                 Console.BackgroundColor = ConsoleColor.Blue;
+                Console.Write("".PadRight(almostResult.Count - curLength, ' '));
+                Console.BackgroundColor = ConsoleColor.Black;
+                Console.Write("".PadRight(10 - almostResult.Count + curLength, ' '));
+                Console.BackgroundColor = ConsoleColor.Cyan;
                 Console.Write("".PadRight(chunkSize, ' '));
                 Console.BackgroundColor = ConsoleColor.Black;
             }

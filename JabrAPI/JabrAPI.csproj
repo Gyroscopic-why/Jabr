@@ -40,8 +40,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Source\Ciphers\RE5\Decrypt\WithNoise\" />
-    <Folder Include="Source\Ciphers\RE5\Encrypt\WithNoise\" />
     <Folder Include="Source\Legacy\RE4\" />
     <Folder Include="Source\Legacy\RE3\" />
   </ItemGroup>
