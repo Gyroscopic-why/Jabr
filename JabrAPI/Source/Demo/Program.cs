@@ -162,7 +162,9 @@ namespace JabrAPI
             
             SecureRandom random = new(128);
             RE5.EncryptionKey reKey = new(true);
+            RE5.BinaryKey binKey = new(true);
             string aboba = "aboba baobab";
+            List<Byte> lolinit = [0, 1, 2, 3, 3, 3];
             Int32 EXTEND = 128, attemptCount = 0;
             reKey.Noisifier.settings.OutputLength = EXTEND;
             double valueBias = 1.6, powerBias = 1.5;
@@ -189,7 +191,9 @@ namespace JabrAPI
 
 
 
-                string encrypted = RE5.Encrypt.Text(aboba, reKey);
+                string encrypted  = RE5.Encrypt.Text(aboba, reKey);
+                List<Byte> binenc = RE5.Encrypt.Bytes(lolinit, binKey);
+
                 //EXTEND = random.Next(encrypted.Length + 2, encrypted.Length * 5);
                 reKey.Noisifier.settings.OutputLength = EXTEND;
                 Write($"\n\tReKey: {reKey.ExAlphabet}, PrNoise: {reKey.Noisifier.PrimaryNoise}, CplxNoise: {reKey.Noisifier.ComplexNoise}");

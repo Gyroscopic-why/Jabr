@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 
 using AVcontrol;
+using static JabrAPI.Miscellaneous;
 
 
 
@@ -11,76 +12,31 @@ namespace JabrAPI.RE5
 {
     static public partial class Encrypt
     {
-        static public List<Byte> Bytes(Byte[] message, BinaryKey reKey, bool throwExceptions = false)
+        static public List<Byte> Bytes(List<Byte> message, BinaryKey reKey, out Exception? exception)
         {
-            if (message == null || message.Length < 1)
-            {
-                if (throwExceptions)
-                {
-                    throw new ArgumentException
-                    (
-                        "Message is invalid - cannot be null or empty",
-                        nameof(message)
-                    );
-                }
-            }
-            else if (reKey == null)
-            {
-                if (throwExceptions)
-                {
-                    throw new ArgumentException
-                    (
-                        "Encryption key is undefined (null or empty)",
-                        nameof(reKey)
-                    );
-                }
-            }
-            else if (reKey.IsValid.ForEncryption([.. message], throwExceptions))
-            {
-                try
-                {
-                    return FastBytes(message, reKey);
-                }
-                catch (Exception) { if (throwExceptions) throw; }
-            }
-            return [];
-        }
-        static public List<Byte> Bytes(Byte[] message, BinaryKey reKey, out Exception? exception)
-        {
-            if (message == null || message.Length < 1)
-            {
-                exception = new ArgumentException
-                (
-                    "Message is invalid - cannot be null or empty",
-                    nameof(message)
-                );
-            }
-            else if (reKey == null)
-            {
-                exception = new ArgumentException
-                (
-                    "Encryption key is undefined (null or empty)",
-                    nameof(reKey)
-                );
-            }
-            else
+            if (IsMessageAndReKeyValid(message, reKey, out exception))
             {
                 try
                 {
                     reKey.IsValid.ForEncryption([.. message], true);
 
-                    List<Byte> result = FastBytes(message, reKey);
-                    exception = null;
-
-                    return result;
+                    return FastBytes(message, reKey);
                 }
                 catch (Exception innerException) { exception = innerException; }
             }
             return [];
         }
-        static public List<Byte> FastBytes(Byte[] message, BinaryKey reKey)
+        static public List<Byte> Bytes(List<Byte> message, BinaryKey reKey, bool throwExceptions = false)
         {
-            Int32 exLength = reKey.ExLength, messageLength = message.Length, shCount = reKey.ShCount, buffer;
+            List<Byte> result = Bytes(message, reKey, out Exception? exception);
+            if (exception != null && throwExceptions) throw exception;
+            return result;
+        }
+
+
+        static public List<Byte> FastBytes(List<Byte> message, BinaryKey reKey)
+        {
+            Int32 exLength = reKey.ExLength, messageLength = message.Count, shCount = reKey.ShCount, buffer;
             List<Byte> shifts = reKey.Shifts, prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
 
 

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 
 using JabrAPI.Template;
-using static JabrAPI.Noise.Miscellaneous;
+using static JabrAPI.Miscellaneous;
 
 
 

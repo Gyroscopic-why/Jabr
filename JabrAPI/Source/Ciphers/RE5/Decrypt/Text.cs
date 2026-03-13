@@ -4,79 +4,36 @@ using System.Collections.Generic;
 
 
 using AVcontrol;
+using static JabrAPI.Miscellaneous;
+
 
 
 namespace JabrAPI.RE5
 {
     static public partial class Decrypt
     {
-        static public string Text(string encrypted, EncryptionKey reKey, bool throwExceptions = false)
-        {
-            if (encrypted == null || encrypted == "" || encrypted.Length < 1)
-            {
-                if (throwExceptions)
-                {
-                    throw new ArgumentException
-                    (
-                        "Encrypted message is invalid - cannot be null or empty",
-                        nameof(encrypted)
-                    );
-                }
-            }
-            else if (reKey == null)
-            {
-                if (throwExceptions)
-                {
-                    throw new ArgumentException
-                    (
-                        "Encryption key is undefined (null or empty)",
-                        nameof(reKey)
-                    );
-                }
-            }
-            else if (reKey.IsValid.ForDecryption(encrypted, throwExceptions))
-            {
-                try
-                {
-                    return FastText(encrypted, reKey);
-                }
-                catch (Exception) { if (throwExceptions) throw; }
-            }
-            return "";
-        }
         static public string Text(string encrypted, EncryptionKey reKey, out Exception? exception)
         {
-            if (encrypted == null || encrypted == "" || encrypted.Length < 1)
-            {
-                exception = new ArgumentException
-                (
-                    "Encrypted message is invalid - cannot be null or empty",
-                    nameof(encrypted)
-                );
-            }
-            else if (reKey == null)
-            {
-                exception = new ArgumentException
-                (
-                    "Encryption key is undefined (null or empty)",
-                    nameof(reKey)
-                );
-            }
-            else
+            if (IsMessageAndReKeyAndNoisifierValid(encrypted, reKey, out exception))
             {
                 try
                 {
                     reKey.IsValid.ForDecryption(encrypted, true);
 
-                    string result = FastText(encrypted, reKey);
-                    exception = null;
-
-                    return result;
+                    return FastText(encrypted, reKey);
                 }
                 catch (Exception innerException) { exception = innerException; }
             }
             return "";
         }
+        static public string Text(string encrypted, EncryptionKey reKey, bool throwExceptions = false)
+        {
+            string result = Text(encrypted, reKey, out Exception? exception);
+            if (exception != null && throwExceptions) throw exception;
+            return result;
+        }
+
+
         static public string FastText(string encrypted, EncryptionKey reKey)
         {
             Int32 exLength = reKey.ExLength, shCount = reKey.ShCount, encCurId = 0, buffer;
