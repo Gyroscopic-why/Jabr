@@ -158,7 +158,7 @@ namespace JabrAPI.RE5
                 => Primary(message, _binKey.PrAlphabet, out exception);
             static public bool Primary(List<Byte> message, List<Byte> primary, out Exception? exception)
             {
-                if (PartiallyHelper.Primary(primary, out exception)) return false;
+                if (!PartiallyHelper.Primary(primary, out exception)) return false;
 
                 foreach (Byte b in message)
                 {

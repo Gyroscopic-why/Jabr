@@ -166,7 +166,9 @@ namespace JabrAPI
             string aboba = "aboba baobab";
             List<Byte> lolinit = [0, 1, 2, 3, 3, 3];
             Int32 EXTEND = 128, attemptCount = 0;
-            reKey.Noisifier.settings.OutputLength = EXTEND;
+
+
+
             double valueBias = 1.6, powerBias = 1.5;
 
             Int32 maxNonEntropy = 0;
@@ -191,37 +193,65 @@ namespace JabrAPI
 
 
 
-                string encrypted  = RE5.Encrypt.Text(aboba, reKey);
-                List<Byte> binenc = RE5.Encrypt.Bytes(lolinit, binKey);
+                //string encrypted  = RE5.Encrypt.Text(aboba, reKey, true);
+                List<Byte> bincrypted = RE5.Encrypt.Bytes(lolinit, binKey, true);
 
                 //EXTEND = random.Next(encrypted.Length + 2, encrypted.Length * 5);
                 reKey.Noisifier.settings.OutputLength = EXTEND;
+                binKey.Noisifier.settings.OutputLength = EXTEND;
+
+
                 Write($"\n\tReKey: {reKey.ExAlphabet}, PrNoise: {reKey.Noisifier.PrimaryNoise}, CplxNoise: {reKey.Noisifier.ComplexNoise}");
-                Write("\n\tInitial: " + encrypted);
+                //Write("\n\tInitial: " + encrypted);
+                Write("\n\tInitial: ");
+                for (var j = 0; j < bincrypted.Count; j++)
+                    Write(bincrypted[j] + " ");
 
                 Write("\n\tAdding noise to data..");
 
                 //string noised = AddNoise.Text(encrypted, reKey, false);
                 //string noised = Noise.Internal.AddFastText(encrypted, reKey.Noisifier, ".,");
-                string noised = Noise.Add.Text(encrypted, reKey.Noisifier);
+                //string noised = Noise.Add.Text(encrypted, reKey, true);
+                List<Byte> binoised = Noise.Add.Bytes(bincrypted, binKey, true);
 
-                string denoised = Noise.Remove.Text(noised, reKey.Noisifier);
-
+                //string denoised = Noise.Remove.Text(noised, reKey, true);
+                List<Byte> bindenoised = Noise.Remove.Bytes(binoised, binKey, true);
 
                 Write("\n\tNoised:  ");
                 Int32 count = 0, nonEntropy = 0, thisMaxNonEntropy = 0;
                 bool newWorst = false, noiseAtTheEnd = false;
-                for (var j = 0; j < noised.Length; j++)
+
+
+                //for (var j = 0; j < noised.Length; j++)
+                for (var j = 0; j < binoised.Count; j++)
                 {
-                    if (j % reKey.Noisifier.settings.ChunkSizeForSplitting == 0)
+                    //if (j % reKey.Noisifier.settings.ChunkSizeForSplitting == 0)
+                    if  (j % binKey.Noisifier.settings.ChunkSizeForSplitting == 0)
                         BackgroundColor = ConsoleColor.Blue;
 
-                    if (!noiseAtTheEnd && noised[j] == encrypted[count])
+                    //if (!noiseAtTheEnd && noised[j] == encrypted[count])
+                    //{
+                    //    ForegroundColor = ConsoleColor.Green;
+                    //    count++;
+
+                    //    if (count >= encrypted.Length)
+                    //        noiseAtTheEnd = true;
+
+                    //    nonEntropy++;
+                    //    if (nonEntropy > maxNonEntropy)
+                    //    {
+                    //        maxNonEntropy = nonEntropy;
+                    //        newWorst = true;
+                    //    }
+                    //    if (nonEntropy > thisMaxNonEntropy)
+                    //        thisMaxNonEntropy = nonEntropy;
+                    //}
+                    if (!noiseAtTheEnd && binoised[j] == bincrypted[count])
                     {
                         ForegroundColor = ConsoleColor.Green;
                         count++;
 
-                        if (count >= encrypted.Length)
+                        if (count >= bincrypted.Count)
                             noiseAtTheEnd = true;
 
                         nonEntropy++;
@@ -239,52 +269,115 @@ namespace JabrAPI
                         nonEntropy = 0;
                     }
 
-                    Write(noised[j]);
+                    //Write(noised[j]);
+                    Write(binoised[j] + " ");
                     BackgroundColor = ConsoleColor.Black;
                 }
                 ForegroundColor = ConsoleColor.Gray;
 
 
-                Write("\n\tDnoised: " + denoised);
+                //Write("\n\tDnoised: " + denoised);
+                Write("\n\tDnoised: ");
+                for (var j = 0; j < bindenoised.Count; j++)
+                    Write(bindenoised[j] + " ");
+                
+
+
                 Write("\n\tMatches: ");
-                for (var j = 0; j < Math.Min(denoised.Length, encrypted.Length); j++)
+                //for (var j = 0; j < Math.Min(denoised.Length, encrypted.Length); j++)
+                for (var j = 0; j < Math.Min(bindenoised.Count, bincrypted.Count); j++)
                 {
-                    if (denoised[j] == encrypted[j])
+                    //if (denoised[j] == encrypted[j])
+                    if (bindenoised[j] == bincrypted[j])
                          ForegroundColor = ConsoleColor.Green;
                     else ForegroundColor = ConsoleColor.DarkGray;
 
-                    Write(denoised[j]);
+                    //Write(denoised[j]);
+                    Write(bindenoised[j] + " ");
                 }
                 ForegroundColor = ConsoleColor.Red;
-                Write
-                (
-                    denoised.AsSpan(
-                        Math.Min(denoised.Length, encrypted.Length),
+                //Write
+                //(
+                //    denoised.AsSpan(
+                //        Math.Min(denoised.Length, encrypted.Length),
+                //        Math.Min
+                //        (
+                //            0,
+                //             denoised.Length - Math.Min
+                //            (denoised.Length, encrypted.Length)
+                //        )
+                //    )
+                //);
+                //Write
+                //(
+                //    encrypted.AsSpan(
+                //        Math.Min(denoised.Length, encrypted.Length),
+                //        Math.Min
+                //        (
+                //            0,
+                //             encrypted.Length - Math.Min
+                //            (denoised.Length, encrypted.Length)
+                //        )
+                //    )
+                //);
+
+          
+
+                List<Byte> temp = bindenoised.GetRange(
+                        Math.Min(bindenoised.Count, bincrypted.Count),
                         Math.Min
                         (
                             0,
-                             denoised.Length - Math.Min
-                            (denoised.Length, encrypted.Length)
+                             bindenoised.Count - Math.Min
+                            (bindenoised.Count, bincrypted.Count)
                         )
-                    )
-                );
-                Write
-                (
-                    encrypted.AsSpan(
-                        Math.Min(denoised.Length, encrypted.Length),
+                    );
+                for (var j = 0; j < temp.Count; j++)
+                    Write(temp[j]);
+
+                temp = bincrypted.GetRange(
+                        Math.Min(binoised.Count, bincrypted.Count),
                         Math.Min
                         (
                             0,
-                             encrypted.Length - Math.Min
-                            (denoised.Length, encrypted.Length)
+                             bincrypted.Count - Math.Min
+                            (binoised.Count, bincrypted.Count)
                         )
-                    )
-                );
+                    );
+
+                for (var j = 0; j < temp.Count; j++)
+                    Write(temp[j] + " ");
+
+
+
                 ForegroundColor = ConsoleColor.Gray;
-                Write("\n\tInitial: " + encrypted);
-                Write("\n\tDecrypt: " + RE5.Decrypt.Text(encrypted, reKey, false));
+                //Write("\n\tInitial: " + encrypted);
+                Write("\n\tInitial: ");
+                for (var j = 0; j < bincrypted.Count; j++)
+                    Write(bincrypted[j] + " ");
+                //Write("\n\tDecrypt: " + RE5.Decrypt.Text(encrypted, reKey, false));
 
 
+
+
+
+                //Write($"\n\tNonEntropy: {thisMaxNonEntropy}(" +
+                //    $"{Math.Ceiling
+                //        (
+                //            Math.Pow
+                //            (
+                //                encrypted.Length * valueBias /
+                //                (
+                //                    EXTEND - encrypted.Length + 1
+                //                ),
+                //                powerBias
+                //            )
+                //        )}), MaxNon: {maxNonEntropy}" +
+                //    $"\n\tInitial: {encrypted.Length}, extended: {noised.Length}({EXTEND})" +
+                //    $"\n\tAvgRatio: {(double)EXTEND / encrypted.Length}, " +
+                //    $"value: {(double)encrypted.Length / (EXTEND - encrypted.Length + 1)}" +
+                //    $"\n\tBiased ({valueBias}; {powerBias}) value: {encrypted.Length * powerBias / (EXTEND - encrypted.Length + 1)}" +
+                //    $"\n\n\tEnter new EXTEND length: ");
 
 
 
@@ -293,20 +386,23 @@ namespace JabrAPI
                         (
                             Math.Pow
                             (
-                                encrypted.Length * valueBias /
+                                bincrypted.Count * valueBias /
                                 (
-                                    EXTEND - encrypted.Length + 1
+                                    EXTEND - bincrypted.Count + 1
                                 ),
                                 powerBias
                             )
                         )}), MaxNon: {maxNonEntropy}" +
-                    $"\n\tInitial: {encrypted.Length}, extended: {noised.Length}({EXTEND})" +
-                    $"\n\tAvgRatio: {(double)EXTEND / encrypted.Length}, " +
-                    $"value: {(double)encrypted.Length / (EXTEND - encrypted.Length + 1)}" +
-                    $"\n\tBiased ({valueBias}; {powerBias}) value: {encrypted.Length * powerBias / (EXTEND - encrypted.Length + 1)}" +
+                    $"\n\tInitial: {bincrypted.Count}, extended: {binoised.Count}({EXTEND})" +
+                    $"\n\tAvgRatio: {(double)EXTEND / bincrypted.Count}, " +
+                    $"value: {(double)bincrypted.Count / (EXTEND - bincrypted.Count + 1)}" +
+                    $"\n\tBiased ({valueBias}; {powerBias}) value: {bincrypted.Count * powerBias / (EXTEND - bincrypted.Count + 1)}" +
                     $"\n\n\tEnter new EXTEND length: ");
 
+
+
                 reKey.Next();
+                binKey.Next();
                 //if (
                 //newWorst ||
                 //thisMaxNonEntropy > Math.Ceiling
@@ -323,8 +419,14 @@ namespace JabrAPI
                 //        ) ReadLine();
                 //else ReadKey();
 
+                //if (Int32.TryParse(ReadLine(), out Int32 newExtendBuffer)
+                //    && newExtendBuffer > encrypted.Length)
+                //{
+                //    EXTEND = newExtendBuffer;
+                //    maxNonEntropy = 0;
+                //}
                 if (Int32.TryParse(ReadLine(), out Int32 newExtendBuffer)
-                    && newExtendBuffer > encrypted.Length)
+                    && newExtendBuffer > bincrypted.Count)
                 {
                     EXTEND = newExtendBuffer;
                     maxNonEntropy = 0;
