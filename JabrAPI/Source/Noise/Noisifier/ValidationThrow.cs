@@ -9,44 +9,23 @@ namespace JabrAPI
 {
     public partial class Noisifier
     {
-        public ValidateHelper IsValid => _validateHelper;
-
-
-        
-        public class ValidateHelper
+        public partial class ValidateHelper
         {
-            private readonly Noisifier _noisifier;
-
-
-            internal ValidateHelper(Noisifier noisifier)
-            {
-                _noisifier = noisifier;
-            }
-
-
-
-            public bool ForAdding  (string message, bool throwExceptions = false)
-            {
-                return ComplexForMessage(message, throwExceptions) ||
-                       PrimaryForMessage(message, throwExceptions);
-            }
-            public bool ForAdding  (IEncryptionKey reKey, string message, bool throwExceptions = false)
-            {
-                return ForAdding  (message, throwExceptions) ||
-                       ComplexForKey(reKey, throwExceptions) ||
-                       PrimaryForKey(reKey, throwExceptions);
-            }
-            public bool ForRemoving(IEncryptionKey reKey, string message, bool throwExceptions = false)
-            {
-                return ComplexForKey(reKey, throwExceptions) ||
-                       PrimaryForKey(reKey, throwExceptions);
-            }
+            public bool ForMessage(string message, bool throwExceptions = false)
+                     => ComplexForMessage(message, throwExceptions) &&
+                        PrimaryForMessage(message, throwExceptions);
+            public bool ForReKey(IEncryptionKey reKey, bool throwExceptions = false)
+                     => ComplexForReKey(reKey, throwExceptions) &&
+                        PrimaryForReKey(reKey, throwExceptions);
+            public bool ForMessageAndReKey(IEncryptionKey reKey, string message, bool throwExceptions = false)
+                     => ForMessage(message, throwExceptions) &&
+                        ForReKey(reKey, throwExceptions);
 
 
 
-            static public bool PrimaryForKey(IEncryptionKey reKey, string primaryNoise, bool throwExceptions = false)
-                => PrimaryForKey(reKey.FinalAlphabet, primaryNoise, throwExceptions);
-            static public bool PrimaryForKey(string  exAlphabet, string primaryNoise,   bool throwExceptions = false)
+            static public bool PrimaryForReKey(IEncryptionKey reKey, string primaryNoise, bool throwExceptions = false)
+                => PrimaryForReKey(reKey.FinalAlphabet, primaryNoise, throwExceptions);
+            static public bool PrimaryForReKey(string  exAlphabet, string primaryNoise, bool throwExceptions = false)
             {
                 return IsNoiseValid
                 (
@@ -60,7 +39,7 @@ namespace JabrAPI
                     throwExceptions
                 );
             }
-            static public bool PrimaryForMessage(string message, string primaryNoise,   bool throwExceptions = false)
+            static public bool PrimaryForMessage(string message, string primaryNoise, bool throwExceptions = false)
             {
                 return IsNoiseValid
                 (
@@ -75,17 +54,19 @@ namespace JabrAPI
                 );
             }
 
-            public bool PrimaryForKey(IEncryptionKey reKey, bool throwExceptions = false)
-                => PrimaryForKey(reKey.FinalAlphabet, _noisifier._primaryNoise, throwExceptions);
-            public bool PrimaryForKey(string  exAlphabet, bool throwExceptions = false)
-                => PrimaryForKey(exAlphabet,  _noisifier._primaryNoise, throwExceptions);
+
+            public bool PrimaryForReKey(IEncryptionKey reKey, bool throwExceptions = false)
+                => PrimaryForReKey(reKey.FinalAlphabet, _noisifier._primaryNoise, throwExceptions);
+            public bool PrimaryForReKey(string  exAlphabet, bool throwExceptions = false)
+                => PrimaryForReKey(exAlphabet, _noisifier._primaryNoise, throwExceptions);
             public bool PrimaryForMessage(string message, bool throwExceptions = false)
                 => PrimaryForMessage(message, _noisifier._primaryNoise, throwExceptions);
 
 
-            static public bool ComplexForKey(IEncryptionKey reKey, string complexNoise, bool throwExceptions = false)
-                => ComplexForKey(reKey.FinalAlphabet, complexNoise, throwExceptions);
-            static public bool ComplexForKey(string  exAlphabet, string complexNoise,   bool throwExceptions = false)
+
+            static public bool ComplexForReKey(IEncryptionKey reKey, string complexNoise, bool throwExceptions = false)
+                => ComplexForReKey(reKey.FinalAlphabet, complexNoise, throwExceptions);
+            static public bool ComplexForReKey(string  exAlphabet, string complexNoise, bool throwExceptions = false)
             {
                 return IsNoiseValid
                 (
@@ -99,7 +80,7 @@ namespace JabrAPI
                     throwExceptions
                 );
             }
-            static public bool ComplexForMessage(string message, string complexNoise,   bool throwExceptions = false)
+            static public bool ComplexForMessage(string message, string complexNoise, bool throwExceptions = false)
             {
                 return IsNoiseValid
                 (
@@ -114,10 +95,10 @@ namespace JabrAPI
                 );
             }
 
-            public bool ComplexForKey(IEncryptionKey reKey, bool throwExceptions = false)
-                => ComplexForKey(reKey.FinalAlphabet, _noisifier._complexNoise, throwExceptions);
-            public bool ComplexForKey(string  exAlphabet, bool throwExceptions = false)
-                => ComplexForKey(exAlphabet,  _noisifier._complexNoise, throwExceptions);
+            public bool ComplexForReKey(IEncryptionKey reKey, bool throwExceptions = false)
+                => ComplexForReKey(reKey.FinalAlphabet, _noisifier._complexNoise, throwExceptions);
+            public bool ComplexForReKey(string  exAlphabet, bool throwExceptions = false)
+                => ComplexForReKey(exAlphabet, _noisifier._complexNoise, throwExceptions);
             public bool ComplexForMessage(string message, bool throwExceptions = false)
                 => ComplexForMessage(message, _noisifier._complexNoise, throwExceptions);
 

@@ -15,12 +15,11 @@ namespace JabrAPI.Noise
         static public List<Byte> Bytes(List<Byte> message, IBinaryKey reKey,
             out Exception? exception)
         {
-            if (IsMessageAndReKeyAndNoisifierValid(message, reKey, out exception))
+            if (IsMessageAndReKeyAndNoisifierValid(message, reKey, out exception) &&
+                reKey.Noisifier.IsValid.ForMessageAndReKey(reKey, message, out exception))
             {
                 try
                 {
-                    reKey.Noisifier.IsValid.ForAdding(reKey, message, true);
-
                     return FastBytes(message, reKey.Noisifier);
                 }
                 catch (Exception innerException) { exception = innerException; }
@@ -40,12 +39,11 @@ namespace JabrAPI.Noise
         static public List<Byte> Bytes(List<Byte> message, BinaryNoisifier noisifier,
             out Exception? exception)
         {
-            if (IsMessageAndNoisifierValid(message, noisifier, out exception))
+            if (IsMessageAndNoisifierValid(message, noisifier, out exception) &&
+                    noisifier.IsValid.ForMessage(message, out exception))
             {
                 try
                 {
-                    noisifier.IsValid.ForAdding(message, true);
-
                     return FastBytes(message, noisifier);
                 }
                 catch (Exception innerException) { exception = innerException; }

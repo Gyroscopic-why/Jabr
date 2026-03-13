@@ -14,12 +14,11 @@ namespace JabrAPI.RE5
     {
         static public List<Byte> Bytes(List<Byte> message, BinaryKey reKey, out Exception? exception)
         {
-            if (IsMessageAndReKeyValid(message, reKey, out exception))
+            if (IsMessageAndReKeyValid(message, reKey, out exception) &&
+                reKey.IsValid.ForEncryption(message, out exception))
             {
                 try
                 {
-                    reKey.IsValid.ForEncryption([.. message], true);
-
                     return FastBytes(message, reKey);
                 }
                 catch (Exception innerException) { exception = innerException; }

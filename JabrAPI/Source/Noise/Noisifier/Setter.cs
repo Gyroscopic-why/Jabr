@@ -39,38 +39,30 @@ namespace JabrAPI
 
 
 
-                public void PrNoise     (string prNoise)
-                        => _noisifier._primaryNoise = prNoise;
+                public void PrNoise(string prNoise)
+                         => PrimaryNoise(prNoise);
                 public void PrimaryNoise(string primaryNoise)
-                        => _noisifier._primaryNoise = primaryNoise;
-                public bool SafePrNoise     (IEncryptionKey reKey, string prNoise)
-                {
-                    if (!ValidateHelper.PrimaryForKey(reKey, prNoise)) return false;
-                    _noisifier._primaryNoise = prNoise;
-                    return true;
-                }
+                         => _noisifier._primaryNoise = primaryNoise;
+                public bool SafePrNoise(IEncryptionKey reKey, string prNoise)
+                         => SafePrimaryNoise(reKey, prNoise);
                 public bool SafePrimaryNoise(IEncryptionKey reKey, string primaryNoise)
                 {
-                    if (!ValidateHelper.PrimaryForKey(reKey, primaryNoise)) return false;
+                    if (!ValidateHelper.PrimaryForReKey(reKey, primaryNoise)) return false;
                     _noisifier._primaryNoise = primaryNoise;
                     return true;
                 }
 
 
 
-                public void CplxNoise   (string cplxNoise)
-                        => _noisifier._complexNoise = cplxNoise;
+                public void CplxNoise(string cplxNoise)
+                         => ComplexNoise(cplxNoise);
                 public void ComplexNoise(string complexNoise)
-                        => _noisifier._complexNoise = complexNoise;
-                public bool SafeCplxNoise   (IEncryptionKey reKey, string cplxNoise)
-                {
-                    if (!ValidateHelper.ComplexForKey(reKey, cplxNoise)) return false;
-                    _noisifier._complexNoise = cplxNoise;
-                    return true;
-                }
+                         => _noisifier._complexNoise = complexNoise;
+                public bool SafeCplxNoise(IEncryptionKey reKey, string cplxNoise)
+                         => SafeComplexNoise(reKey, cplxNoise);
                 public bool SafeComplexNoise(IEncryptionKey reKey, string complexNoise)
                 {
-                    if (!ValidateHelper.ComplexForKey(reKey, complexNoise)) return false;
+                    if (!ValidateHelper.ComplexForReKey(reKey, complexNoise)) return false;
                     _noisifier._complexNoise = complexNoise;
                     return true;
                 }
@@ -78,31 +70,33 @@ namespace JabrAPI
 
 
 
-            public void Default(Int32 primaryCount = 8, Int32 complexCount = 16)
-            {
-                _noisifier._primaryCount = primaryCount;
-                _noisifier._complexCount = complexCount;
-            }
-            
-
-            public void DefaultOnlyPr  (Int32 primaryCount = 8)
-                => _noisifier._primaryCount = primaryCount;
-            public void DefaultOnlyCplx(Int32 complexCount = 16)
-                => _noisifier._complexCount = complexCount;
-
-
-            public void Default(List<char> banned, Int32 primaryCount, Int32 complexCount)
-            {
-                _noisifier._banned.Clear();
-                _noisifier._banned.AddRange(banned);
-
-                Default(primaryCount, complexCount);
-            }
             public void Default(List<char> banned)
             {
                 _noisifier._banned.Clear();
                 _noisifier._banned.AddRange(banned);
             }
+            public void Default(Int32 primaryCount = 8, Int32 complexCount = 16)
+            {
+                DefaultOnlyPr(primaryCount);
+                DefaultOnlyCplx(complexCount);
+                _noisifier._complexCount = complexCount;
+            }
+            public void Default(List<char> banned, Int32 primaryCount, Int32 complexCount)
+            {
+                Default(banned);
+                Default(primaryCount, complexCount);
+            }
+
+
+            public void DefaultOnlyPr(Int32 prCount = 8)
+                => DefaultOnlyPrimary(prCount);
+            public void DefaultOnlyCplx(Int32 cplxCount = 16)
+                => DefaultOnlyComplex(cplxCount);
+
+            public void DefaultOnlyPrimary(Int32 primaryCount = 8)
+                => _noisifier._primaryCount = primaryCount;
+            public void DefaultOnlyComplex(Int32 complexCount = 16)
+                => _noisifier._complexCount = complexCount;
         }
     }
 }

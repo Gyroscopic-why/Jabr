@@ -14,12 +14,11 @@ namespace JabrAPI.Noise
         static public string Text(string message, IEncryptionKey reKey,
                 out Exception? exception)
         {
-            if (IsMessageAndReKeyAndNoisifierValid(message, reKey, out exception))
+            if (IsMessageAndReKeyAndNoisifierValid(message, reKey, out exception) &&
+                reKey.Noisifier.IsValid.ForMessageAndReKey(reKey, message, out exception))
             {
                 try
                 {
-                    reKey.Noisifier.IsValid.ForAdding(reKey, message, true);
-
                     return FastText(message, reKey.Noisifier);
                 }
                 catch (Exception innerException) { exception = innerException; }
@@ -39,12 +38,11 @@ namespace JabrAPI.Noise
         static public string Text(string message, Noisifier noisifier,
             out Exception? exception)
         {
-            if (IsMessageAndNoisifierValid(message, noisifier, out exception))
+            if (IsMessageAndNoisifierValid(message, noisifier, out exception) &&
+                noisifier.IsValid.ForMessage(message, out exception))
             {
                 try
                 {
-                    noisifier.IsValid.ForAdding(message, true);
-
                     return FastText(message, noisifier);
                 }
                 catch (Exception innerException) { exception = innerException; }

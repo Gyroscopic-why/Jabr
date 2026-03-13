@@ -14,12 +14,11 @@ namespace JabrAPI.RE5
     {
         static public string Text(string message, EncryptionKey reKey, out Exception? exception)
         {
-            if (IsMessageAndReKeyAndNoisifierValid(message, reKey, out exception))
+            if (IsMessageAndReKeyAndNoisifierValid(message, reKey, out exception) &&
+                reKey.IsValid.ForEncryption(message, out exception))
             {
                 try
                 {
-                    reKey.IsValid.ForEncryption(message, true);
-
                     return FastText(message, reKey);
                 }
                 catch (Exception innerException) { exception = innerException; }

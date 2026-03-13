@@ -14,12 +14,11 @@ namespace JabrAPI.Noise
         static public List<Byte> Bytes(List<Byte> noised, IBinaryKey reKey,
             out Exception? exception)
         {
-            if(IsMessageAndReKeyAndNoisifierValid(noised, reKey, out exception))
+            if(IsMessageAndReKeyAndNoisifierValid(noised, reKey, out exception) &&
+               reKey.Noisifier.IsValid.ForReKey(reKey, out exception))
             {
                 try
                 {
-                    reKey.Noisifier.IsValid.ForRemoving(reKey, noised, true);
-
                     return FastBytes(noised, reKey.Noisifier);
                 }
                 catch (Exception innerException) { exception = innerException; }

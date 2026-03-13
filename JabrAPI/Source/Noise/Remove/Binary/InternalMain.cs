@@ -43,7 +43,7 @@ namespace JabrAPI.Noise
                         complex
                     );
 
-                Console.Write($"\n\t{chunk})       ");
+                Console.Write($"\n\t{chunk + 1})       ");
                 Console.BackgroundColor = ConsoleColor.Magenta;
                 Console.Write("".PadRight(finalisedChunks[chunk].Length, ' '));
                 Console.BackgroundColor = ConsoleColor.Black;
