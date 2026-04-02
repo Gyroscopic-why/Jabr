@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -36,7 +37,9 @@ namespace JabrAPI.RE5
         static public string FastText(string encrypted, EncryptionKey reKey)
         {
             Int32 exLength = reKey.ExLength, shCount = reKey.ShCount, encCurId = 0, buffer;
-            List<Int16> shifts = reKey.Shifts; string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
+            List<Int16> shifts = reKey.Shifts;
+            string  prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
+
 
             Int32 helper = (Int32)Math.Ceiling
                 (
@@ -67,16 +70,18 @@ namespace JabrAPI.RE5
                 exAlphabet
             );
 
-            Int32[] decodedIds = new Int32[realMessageLength];
+            Int32[] decodedIds = new Int32[2];  //  Holding only the current and last ids for memory optimisation
             decodedIds[0] = exAlphabet.IndexOf(encrypted[0]) - shifts[0] + parsedEncoding * exLength;
-            string decrypted = prAlphabet[decodedIds[0]].ToString();
+
+            StringBuilder decrypted = new(realMessageLength);
+            decrypted.Append(prAlphabet[decodedIds[0]]);
 
 
             for (var curId = 1; curId < realMessageLength; curId++)
             {
                 encCurId += maxEncodingLength + 1;
                 buffer = exAlphabet.IndexOf(encrypted[encCurId])
-                    - decodedIds[curId - 1]
+                    - decodedIds[0]
                     - shifts[curId % shCount];
 
                 parsedEncoding = (Int32)Numsys.ToDecimalFromCustom
@@ -91,11 +96,13 @@ namespace JabrAPI.RE5
                     exAlphabet
                 );
 
-                decodedIds[curId] = buffer + parsedEncoding * exLength;
-                decrypted += prAlphabet[decodedIds[curId]];
+                decodedIds[1] = buffer + parsedEncoding * exLength;
+                decrypted.Append(prAlphabet[decodedIds[1]]);
+
+                decodedIds[0] = decodedIds[1];
             }
 
-            return decrypted;
+            return decrypted.ToString();
         }
     }
 }

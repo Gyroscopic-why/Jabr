@@ -201,7 +201,7 @@ namespace JabrAPI
                 binKey.Noisifier.settings.OutputLength = EXTEND;
 
 
-                Write($"\n\tReKey: {reKey.ExAlphabet}, PrNoise: {reKey.Noisifier.PrimaryNoise}, CplxNoise: {reKey.Noisifier.ComplexNoise}");
+                //Write($"\n\tReKey: {reKey.ExAlphabet}, PrNoise: {reKey.Noisifier.PrimaryNoise}, CplxNoise: {reKey.Noisifier.ComplexNoise}");
                 //Write("\n\tInitial: " + encrypted);
                 Write("\n\tInitial: ");
                 for (var j = 0; j < bincrypted.Count; j++)
@@ -209,11 +209,9 @@ namespace JabrAPI
 
                 Write("\n\tAdding noise to data..");
 
-                //string noised = AddNoise.Text(encrypted, reKey, false);
-                //string noised = Noise.Internal.AddFastText(encrypted, reKey.Noisifier, ".,");
                 //string noised = Noise.Add.Text(encrypted, reKey, true);
-                //List<Byte> binoised = Noise.Add.Bytes(bincrypted, binKey, true);
-                List<Byte> binoised = RE5.Encrypt.WithNoise.Bytes(lolinit, binKey, true);
+                List<Byte> binoised = Noise.Add.Bytes(bincrypted, binKey, true);
+                //List<Byte> binoised = RE5.Encrypt.WithNoise.Bytes(lolinit, binKey, true);
 
                 //string denoised = Noise.Remove.Text(noised, reKey, true);
                 List<Byte> bindenoised = Noise.Remove.Bytes(binoised, binKey, true);
@@ -322,7 +320,7 @@ namespace JabrAPI
                 //    )
                 //);
 
-          
+
 
                 List<Byte> temp = bindenoised.GetRange(
                         Math.Min(bindenoised.Count, bincrypted.Count),
@@ -356,7 +354,13 @@ namespace JabrAPI
                 Write("\n\tInitial: ");
                 for (var j = 0; j < bincrypted.Count; j++)
                     Write(bincrypted[j] + " ");
+
                 //Write("\n\tDecrypt: " + RE5.Decrypt.Text(encrypted, reKey, false));
+
+                List<Byte> bindec = RE5.Decrypt.Bytes(bincrypted, binKey, false);
+                Write("\n\tDecrypted: ");
+                for (var j = 0; j < bindec.Count; j++)
+                    Write(bindec[j] + " ");
 
 
 

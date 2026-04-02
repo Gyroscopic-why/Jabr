@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -36,8 +37,9 @@ namespace JabrAPI.RE5
         static public string FastText(string message, EncryptionKey reKey)
         {
             Int32 exLength = reKey.ExLength, messageLength = message.Length, shCount = reKey.ShCount, buffer;
-            List<Int16> shifts = reKey.Shifts; string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
-
+            List<Int16> shifts = reKey.Shifts;
+            string  prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
+            
 
             Int32 helper = (Int32)Math.Ceiling
                 (
@@ -55,7 +57,7 @@ namespace JabrAPI.RE5
                     exLength
                 ).Count;
 
-            Int32[] ids = new Int32[messageLength];
+            Int32[] ids = new Int32[2];  //  Holding only the current and last ids for memory optimisation
             ids[0] = prAlphabet.IndexOf(message[0]);
             buffer = ids[0] + shifts[0];
 
@@ -67,13 +69,16 @@ namespace JabrAPI.RE5
                 exAlphabet,
                 maxEncodingLength
             );
-            string encrypted = exAlphabet[buffer % exLength] + encoding;
+
+            StringBuilder encrypted = new(messageLength * (maxEncodingLength + 1));
+            encrypted.Append(exAlphabet[buffer % exLength] + encoding);
 
 
             for (var curId = 1; curId < messageLength; curId++)
             {
-                ids[curId] = prAlphabet.IndexOf(message[curId]);
-                buffer = ids[curId] + shifts[curId % shCount] + ids[curId - 1];
+                ids[1] = prAlphabet.IndexOf(message[curId]);
+                buffer = ids[1] + ids[0] + shifts[curId % shCount];
+                ids[0] = ids[1];
 
                 encoding = Numsys.ToCustomAsString
                 (
@@ -84,10 +89,10 @@ namespace JabrAPI.RE5
                     maxEncodingLength
                 );
 
-                encrypted += exAlphabet[buffer % exLength] + encoding;
+                encrypted.Append(exAlphabet[buffer % exLength] + encoding);
             }
 
-            return encrypted;
+            return encrypted.ToString();
         }
     }
 }

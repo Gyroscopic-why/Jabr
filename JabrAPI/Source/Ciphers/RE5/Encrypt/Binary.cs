@@ -55,7 +55,7 @@ namespace JabrAPI.RE5
                     exLength
                 ).Count;
 
-            Int32[] ids = new Int32[messageLength];
+            Int32[] ids = new Int32[2];  //  Holding only the current and last ids for memory optimisation
             ids[0] = prAlphabet.IndexOf(message[0]);
             buffer = ids[0] + shifts[0];
 
@@ -67,13 +67,18 @@ namespace JabrAPI.RE5
                 exAlphabet,
                 maxEncodingLength
             );
-            List<Byte> encrypted = [exAlphabet[buffer % exLength], .. encoding];
+            
+            #pragma warning disable IDE0028
+            List<Byte> encrypted = new (messageLength * (maxEncodingLength + 1));
+            encrypted.AddRange([exAlphabet[buffer % exLength], ..encoding]);
+            #pragma warning restore IDE0028
 
 
             for (var curId = 1; curId < messageLength; curId++)
             {
-                ids[curId] = prAlphabet.IndexOf(message[curId]);
-                buffer = ids[curId] + shifts[curId % shCount] + ids[curId - 1];
+                ids[1] = prAlphabet.IndexOf(message[curId]);
+                buffer = ids[1] + shifts[curId % shCount] + ids[0];
+                ids[0] = ids[1];
 
                 encoding = Numsys.ToCustomAsBinary
                 (

@@ -36,7 +36,8 @@ namespace JabrAPI.RE5
         static public List<Byte> FastBytes(List<Byte> encrypted, BinaryKey reKey)
         {
             Int32 exLength = reKey.ExLength, shCount = reKey.ShCount, encCurId = 0, buffer;
-            List<Byte> shifts = reKey.Shifts; List<Byte> prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
+            List<Byte> shifts = reKey.Shifts;
+            List<Byte> prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
 
             Int32 helper = (Int32)Math.Ceiling
                 (
@@ -67,16 +68,20 @@ namespace JabrAPI.RE5
                 exAlphabet
             );
 
-            Int32[] decodedIds = new Int32[realMessageLength];
+            Int32[] decodedIds = new Int32[2];  //  Holding only the current and last ids for memory optimisation
             decodedIds[0] = exAlphabet.IndexOf(encrypted[0]) - shifts[0] + parsedEncoding * exLength;
-            List<Byte> decrypted = [prAlphabet[decodedIds[0]]];
+
+            #pragma warning disable IDE0028
+            List<Byte> decrypted = new (realMessageLength);
+            decrypted.Add(prAlphabet[decodedIds[0]]);
+            #pragma warning restore IDE0028
 
 
             for (var curId = 1; curId < realMessageLength; curId++)
             {
                 encCurId += maxEncodingLength + 1;
                 buffer = exAlphabet.IndexOf(encrypted[encCurId])
-                    - decodedIds[curId - 1]
+                    - decodedIds[0]
                     - shifts[curId % shCount];
 
                 parsedEncoding = (Int32)Numsys.ToDecimalFromCustom
@@ -91,8 +96,10 @@ namespace JabrAPI.RE5
                     exAlphabet
                 );
 
-                decodedIds[curId] = buffer + parsedEncoding * exLength;
-                decrypted.Add(prAlphabet[decodedIds[curId]]);
+                decodedIds[1] = buffer + parsedEncoding * exLength;
+                decrypted.Add(prAlphabet[decodedIds[1]]);
+
+                decodedIds[0] = decodedIds[1];
             }
 
             return decrypted;

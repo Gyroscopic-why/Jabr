@@ -15,8 +15,8 @@
     <RepositoryUrl>https://github.com/Gyroscopic-why/Jabr</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>cryptography;ciphers;encryptor;encryption;decryption;re;re5;re4;noise;noisification;noisify;denoisify;noised</PackageTags>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <DelaySign>False</DelaySign>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <ItemGroup>
