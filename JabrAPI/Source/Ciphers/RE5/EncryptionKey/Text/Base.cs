@@ -20,6 +20,8 @@ namespace JabrAPI.RE5
         private List<char> _externalNecessary = [], _externalAllowed = [], _externalBanned = [];
         private Int32 _primaryMaxLength = -1, _externalMaxLength = -1;
 
+        public TextRoundLength RoundLength { get; set; } = TextRoundLength.c65536;
+
 
 
         public EncryptionKey(string primaryAlphabet, string externalAlphabet, List<Int16> shifts)
