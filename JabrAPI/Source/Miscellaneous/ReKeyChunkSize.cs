@@ -3,11 +3,8 @@
 
 namespace JabrAPI
 {
-    public enum BinaryRoundLength
+    public enum BinaryChunkSize
     {
-        Byte32   = 32,
-        Byte64   = 64,
-        Byte128  = 128,
         Byte256  = 256,
         Byte512  = 512,
         
@@ -26,11 +23,10 @@ namespace JabrAPI
         MByte1   = 1_048_576
     }
 
-    public enum TextRoundLength
+
+    public enum TextChunkSize
     {
-        c32  = 32,
-        c64  = 64,
-        c128 = 128,
+        cTEST = 11,
         c256 = 256,
         c512 = 512,
 

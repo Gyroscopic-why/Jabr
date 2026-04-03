@@ -17,7 +17,7 @@ namespace JabrAPI.RE5
 
         private Byte _compactedPrMaxLength = 255, _compactedExMaxLength = 7;
 
-        public BinaryRoundLength RoundLength { get; set; } = BinaryRoundLength.KByte128;
+        public BinaryChunkSize ChunkSize { get; set; } = BinaryChunkSize.KByte128;
         
 
 
