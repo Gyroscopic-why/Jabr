@@ -5,69 +5,72 @@ using JabrAPI.Template;
 
 
 
-namespace JabrAPI.RE5
+namespace JabrAPI
 {
-    public partial class BinaryKey : IBinaryKey
+    static public partial class RE5
     {
-        private readonly SetHelper _setHelper;
-        private readonly ValidateHelper _validationHelper;
-
-        private readonly List<Byte> _primaryAlphabet = [];
-        private readonly List<Byte> _externalAlphabet = [];
-
-        private Byte _compactedPrMaxLength = 255, _compactedExMaxLength = 7;
-
-        public BinaryChunkSize ChunkSize { get; set; } = BinaryChunkSize.KByte128;
-        
-
-
-        public BinaryKey(List<Byte> primary, List<Byte> external, List<Byte> shifts)
+        public partial class BinaryKey : IBinaryKey
         {
-            _setHelper = new(this);
-            _validationHelper = new(this);
+            private readonly SetHelper _setHelper;
+            private readonly ValidateHelper _validationHelper;
 
-            Set.Sensitive.PrAlphabet(primary);
-            Set.Sensitive.ExAlphabet(external);
-            Set.Sensitive.Shifts(shifts);
-        }
-        public BinaryKey(List<Byte> primary, List<Byte> external, Byte shift)
-        {
-            _setHelper = new(this);
-            _validationHelper = new(this);
+            private readonly List<Byte> _primaryAlphabet = [];
+            private readonly List<Byte> _externalAlphabet = [];
 
-            Set.Sensitive.PrAlphabet(primary);
-            Set.Sensitive.ExAlphabet(external);
-            Set.Sensitive.Shift(shift);
-        }
-        public BinaryKey(Int32 shiftCount)
-        {
-            _setHelper = new(this);
-            _validationHelper = new(this);
+            private Byte _compactedPrMaxLength = 255, _compactedExMaxLength = 7;
 
-            Set.ShiftCount(shiftCount);
-        }
-        public BinaryKey(BinaryKey otherKey, bool fullCopy = true)
-        {
-            _setHelper = new(this);
-            _validationHelper = new(this);
+            public BinaryChunkSize ChunkSize { get; set; } = BinaryChunkSize.KByte128;
 
-            CopyFrom(otherKey, fullCopy);
-        }
-        public BinaryKey(bool autoGenerate = true)
-        {
-            _setHelper = new(this);
-            _validationHelper = new(this);
 
-            if (autoGenerate) DefaultGenerate();
-            else Set.Default();
-        }
 
-        public BinaryKey(List<Byte> exportData)
-        {
-            _setHelper = new(this);
-            _validationHelper = new(this);
+            public BinaryKey(List<Byte> primary, List<Byte> external, List<Byte> shifts)
+            {
+                _setHelper = new(this);
+                _validationHelper = new(this);
 
-            ImportFromBinary(exportData);
+                Set.Sensitive.PrAlphabet(primary);
+                Set.Sensitive.ExAlphabet(external);
+                Set.Sensitive.Shifts(shifts);
+            }
+            public BinaryKey(List<Byte> primary, List<Byte> external, Byte shift)
+            {
+                _setHelper = new(this);
+                _validationHelper = new(this);
+
+                Set.Sensitive.PrAlphabet(primary);
+                Set.Sensitive.ExAlphabet(external);
+                Set.Sensitive.Shift(shift);
+            }
+            public BinaryKey(Int32 shiftCount)
+            {
+                _setHelper = new(this);
+                _validationHelper = new(this);
+
+                Set.ShiftCount(shiftCount);
+            }
+            public BinaryKey(BinaryKey otherKey, bool fullCopy = true)
+            {
+                _setHelper = new(this);
+                _validationHelper = new(this);
+
+                CopyFrom(otherKey, fullCopy);
+            }
+            public BinaryKey(bool autoGenerate = true)
+            {
+                _setHelper = new(this);
+                _validationHelper = new(this);
+
+                if (autoGenerate) DefaultGenerate();
+                else Set.Default();
+            }
+
+            public BinaryKey(List<Byte> exportData)
+            {
+                _setHelper = new(this);
+                _validationHelper = new(this);
+
+                ImportFromBinary(exportData);
+            }
         }
     }
 }

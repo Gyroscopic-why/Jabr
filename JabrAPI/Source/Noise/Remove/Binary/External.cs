@@ -7,65 +7,68 @@ using static JabrAPI.Miscellaneous;
 
 
 
-namespace JabrAPI.Noise
+namespace JabrAPI
 {
-    static public partial class Remove
+    static public partial class Noise
     {
-        static public List<Byte> Bytes(List<Byte> noised, IBinaryKey reKey,
-            out Exception? exception)
+        static public partial class Remove
         {
-            if(IsMessageAndReKeyAndNoisifierValid(noised, reKey, out exception) &&
-               reKey.Noisifier.IsValid.ForReKey(reKey, out exception))
+            static public List<Byte> Bytes(List<Byte> noised, IBinaryKey reKey,
+                out Exception? exception)
             {
-                try
+                if (IsMessageAndReKeyAndNoisifierValid(noised, reKey, out exception) &&
+                   reKey.Noisifier.IsValid.ForReKey(reKey, out exception))
                 {
-                    return FastBytes(noised, reKey.Noisifier);
+                    try
+                    {
+                        return FastBytes(noised, reKey.Noisifier);
+                    }
+                    catch (Exception innerException) { exception = innerException; }
                 }
-                catch (Exception innerException) { exception = innerException; }
+                return [];
             }
-            return [];
-        }
-        static public List<Byte> Bytes(List<Byte> noised, IBinaryKey reKey,
-            bool throwExceptions = false)
-        {
-            List<Byte> result = Bytes(noised, reKey, out Exception? exception);
-            if (exception != null && throwExceptions) throw exception;
-            return result;
-        }
-
-
-        static public List<Byte> Bytes(List<Byte> noised, BinaryNoisifier noisifier,
-            out Exception? exception)
-        {
-            if (IsMessageAndNoisifierValid(noised, noisifier, out exception))
+            static public List<Byte> Bytes(List<Byte> noised, IBinaryKey reKey,
+                bool throwExceptions = false)
             {
-                try
-                {
-                    return FastBytes(noised, noisifier);
-                }
-                catch (Exception innerException) { exception = innerException; }
+                List<Byte> result = Bytes(noised, reKey, out Exception? exception);
+                if (exception != null && throwExceptions) throw exception;
+                return result;
             }
-            return [];
-        }
-        static public List<Byte> Bytes(List<Byte> noised, BinaryNoisifier noisifier,
-            bool throwExceptions = false)
-        {
-            List<Byte> result = Bytes(noised, noisifier, out Exception? exception);
-            if (exception != null && throwExceptions) throw exception;
-            return result;
-        }
+
+
+            static public List<Byte> Bytes(List<Byte> noised, BinaryNoisifier noisifier,
+                out Exception? exception)
+            {
+                if (IsMessageAndNoisifierValid(noised, noisifier, out exception))
+                {
+                    try
+                    {
+                        return FastBytes(noised, noisifier);
+                    }
+                    catch (Exception innerException) { exception = innerException; }
+                }
+                return [];
+            }
+            static public List<Byte> Bytes(List<Byte> noised, BinaryNoisifier noisifier,
+                bool throwExceptions = false)
+            {
+                List<Byte> result = Bytes(noised, noisifier, out Exception? exception);
+                if (exception != null && throwExceptions) throw exception;
+                return result;
+            }
 
 
 
-        static public List<Byte> FastBytes(List<Byte> noised, BinaryNoisifier noisifier)
-        {
-            return
-            [.. Internal.RemoveFastBytes
+            static public List<Byte> FastBytes(List<Byte> noised, BinaryNoisifier noisifier)
+            {
+                return
+                [.. Internal.RemoveFastBytes
                 (
                     noised,
                     noisifier
                 )
-            ];
+                ];
+            }
         }
     }
 }

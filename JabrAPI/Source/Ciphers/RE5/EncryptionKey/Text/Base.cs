@@ -6,86 +6,89 @@ using JabrAPI.Template;
 
 
 
-namespace JabrAPI.RE5
+namespace JabrAPI
 {
-    public partial class EncryptionKey : IEncryptionKey
+    static public partial class RE5
     {
-        private readonly SetHelper _setHelper;
-        private readonly ValidateHelper _validateHelper;
-
-        private string _primaryAlphabet  = "";
-        private string _externalAlphabet = "";
-
-        private List<char> _primaryNecessary  = [], _primaryAllowed  = [], _primaryBanned  = [];
-        private List<char> _externalNecessary = [], _externalAllowed = [], _externalBanned = [];
-        private Int32 _primaryMaxLength = -1, _externalMaxLength = -1;
-
-        public TextChunkSize ChunkSize { get; set; } = TextChunkSize.c65536;
-
-
-
-        public EncryptionKey(string primaryAlphabet, string externalAlphabet, List<Int16> shifts)
+        public partial class EncryptionKey : IEncryptionKey
         {
-            _setHelper      = new(this);
-            _validateHelper = new(this);
+            private readonly SetHelper _setHelper;
+            private readonly ValidateHelper _validateHelper;
 
-            Set.Sensitive.PrAlphabet(primaryAlphabet);
-            Set.Sensitive.PrAlphabet(externalAlphabet);
-            Set.Sensitive.Shifts(shifts);
-        }
-        public EncryptionKey(string primaryAlphabet, string externalAlphabet, Int16 shift)
-        {
-            _setHelper      = new(this);
-            _validateHelper = new(this);
+            private string _primaryAlphabet = "";
+            private string _externalAlphabet = "";
 
-            Set.Sensitive.PrAlphabet(primaryAlphabet);
-            Set.Sensitive.PrAlphabet(externalAlphabet);
-            Set.Sensitive.Shift(shift);
-        }
-        public EncryptionKey(string primaryAlphabet, string externalAlphabet)
-        {
-            _setHelper      = new(this);
-            _validateHelper = new(this);
+            private List<char> _primaryNecessary = [], _primaryAllowed = [], _primaryBanned = [];
+            private List<char> _externalNecessary = [], _externalAllowed = [], _externalBanned = [];
+            private Int32 _primaryMaxLength = -1, _externalMaxLength = -1;
 
-            Set.Sensitive.PrAlphabet(primaryAlphabet);
-            Set.Sensitive.ExAlphabet(externalAlphabet);
-        }
-        public EncryptionKey(Int32 shiftCount)
-        {
-            _setHelper      = new(this);
-            _validateHelper = new(this);
+            public TextChunkSize ChunkSize { get; set; } = TextChunkSize.c65536;
 
-            Set.ShiftCount(shiftCount);
-        }
-        public EncryptionKey(EncryptionKey otherKey, bool fullCopy = true)
-        {
-            _setHelper      = new(this);
-            _validateHelper = new(this);
 
-            CopyFrom(otherKey, fullCopy);
-        }
-        public EncryptionKey(bool autoGenerate = true)
-        {
-            _setHelper      = new(this);
-            _validateHelper = new(this);
 
-            if (autoGenerate) DefaultGenerate();
-            else Set.Default();
-        }
+            public EncryptionKey(string primaryAlphabet, string externalAlphabet, List<Int16> shifts)
+            {
+                _setHelper = new(this);
+                _validateHelper = new(this);
 
-        public EncryptionKey(List<Byte> binaryExportData, bool throwExceptions = false)
-        {
-            _setHelper      = new(this);
-            _validateHelper = new(this);
+                Set.Sensitive.PrAlphabet(primaryAlphabet);
+                Set.Sensitive.PrAlphabet(externalAlphabet);
+                Set.Sensitive.Shifts(shifts);
+            }
+            public EncryptionKey(string primaryAlphabet, string externalAlphabet, Int16 shift)
+            {
+                _setHelper = new(this);
+                _validateHelper = new(this);
 
-            ImportFromBinary(binaryExportData, throwExceptions);
-        }
-        public EncryptionKey(string stringExportData, bool throwExceptions = false)
-        {
-            _setHelper      = new(this);
-            _validateHelper = new(this);
+                Set.Sensitive.PrAlphabet(primaryAlphabet);
+                Set.Sensitive.PrAlphabet(externalAlphabet);
+                Set.Sensitive.Shift(shift);
+            }
+            public EncryptionKey(string primaryAlphabet, string externalAlphabet)
+            {
+                _setHelper = new(this);
+                _validateHelper = new(this);
 
-            ImportFromString(stringExportData, throwExceptions);
+                Set.Sensitive.PrAlphabet(primaryAlphabet);
+                Set.Sensitive.ExAlphabet(externalAlphabet);
+            }
+            public EncryptionKey(Int32 shiftCount)
+            {
+                _setHelper = new(this);
+                _validateHelper = new(this);
+
+                Set.ShiftCount(shiftCount);
+            }
+            public EncryptionKey(EncryptionKey otherKey, bool fullCopy = true)
+            {
+                _setHelper = new(this);
+                _validateHelper = new(this);
+
+                CopyFrom(otherKey, fullCopy);
+            }
+            public EncryptionKey(bool autoGenerate = true)
+            {
+                _setHelper = new(this);
+                _validateHelper = new(this);
+
+                if (autoGenerate) DefaultGenerate();
+                else Set.Default();
+            }
+
+            public EncryptionKey(List<Byte> binaryExportData, bool throwExceptions = false)
+            {
+                _setHelper = new(this);
+                _validateHelper = new(this);
+
+                ImportFromBinary(binaryExportData, throwExceptions);
+            }
+            public EncryptionKey(string stringExportData, bool throwExceptions = false)
+            {
+                _setHelper = new(this);
+                _validateHelper = new(this);
+
+                ImportFromString(stringExportData, throwExceptions);
+            }
         }
     }
 }

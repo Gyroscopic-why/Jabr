@@ -6,47 +6,50 @@ using AVcontrol;
 
 
 
-namespace JabrAPI.Noise
+namespace JabrAPI
 {
-    static internal partial class Internal
+    static public partial class Noise
     {
-        static private Byte[] RemovalRound(
-            List<Byte> noised, ref bool ignoringIsActive,
-            List<Byte> primaryNoise, List<Byte> complexNoise)
+        static internal partial class Internal
         {
-            Int32 dataStartId = 0;
-            List<Byte> dynamicResult = new(noised.Count);
-
-            for (var i = 0; i < noised.Count; i++)
+            static private Byte[] RemovalRound(
+                List<Byte> noised, ref bool ignoringIsActive,
+                List<Byte> primaryNoise, List<Byte> complexNoise)
             {
-                var curChar = noised[i];
+                Int32 dataStartId = 0;
+                List<Byte> dynamicResult = new(noised.Count);
 
-                if (complexNoise.Contains(curChar))
+                for (var i = 0; i < noised.Count; i++)
                 {
-                    if (!ignoringIsActive)
-                        dynamicResult.AddRange(
-                            Utils.Interval(noised, dataStartId, i));
+                    var curChar = noised[i];
 
-                    ignoringIsActive = !ignoringIsActive;
-                    dataStartId = i + 1;
-                    continue;
-                }
-                else if (primaryNoise.Contains(curChar))
-                {
-                    if (!ignoringIsActive)
-                        dynamicResult.AddRange(
-                            Utils.Interval(noised, dataStartId, i));
+                    if (complexNoise.Contains(curChar))
+                    {
+                        if (!ignoringIsActive)
+                            dynamicResult.AddRange(
+                                Utils.Interval(noised, dataStartId, i));
 
-                    dataStartId = i + 1;
-                    continue;
+                        ignoringIsActive = !ignoringIsActive;
+                        dataStartId = i + 1;
+                        continue;
+                    }
+                    else if (primaryNoise.Contains(curChar))
+                    {
+                        if (!ignoringIsActive)
+                            dynamicResult.AddRange(
+                                Utils.Interval(noised, dataStartId, i));
+
+                        dataStartId = i + 1;
+                        continue;
+                    }
                 }
+
+                if (!ignoringIsActive)
+                    dynamicResult.AddRange(
+                        Utils.Interval(noised, dataStartId, noised.Count));
+
+                return [.. dynamicResult];
             }
-
-            if (!ignoringIsActive)
-                dynamicResult.AddRange(
-                    Utils.Interval(noised, dataStartId, noised.Count));
-
-            return [.. dynamicResult];
         }
     }
 }

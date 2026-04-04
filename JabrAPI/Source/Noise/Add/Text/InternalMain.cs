@@ -6,89 +6,91 @@ using AVcontrol;
 
 
 
-namespace JabrAPI.Noise
+namespace JabrAPI
 {
-    static internal partial class Internal
+    static public partial class Noise
     {
-        static public string AddFastText(string message, Noisifier noisifier, string fakeSelection)
+        static internal partial class Internal
         {
-            Int32 chunkSize = noisifier.settings.ChunkSizeForSplitting;
-
-            if (chunkSize < 1)
-                throw new ArgumentException
-                (
-                    $"Impossible to split data into chunks of size: {chunkSize}",
-                    nameof(noisifier.settings)
-                );
-
-
-            Int32 outputLength = noisifier.settings.OutputLength,
-                  curLength = message.Length;
-
-            if (outputLength == 0)
+            static public string AddFastText(string message, Noisifier noisifier, string fakeSelection)
             {
-                outputLength = (Int32)Math.Pow
-                (
-                    2,
-                    Math.Min
+                Int32 chunkSize = noisifier.settings.ChunkSizeForSplitting;
+
+                if (chunkSize < 1)
+                    throw new ArgumentException
                     (
-                        (Int32)noisifier.settings.BoundaryAlignment,
-                        Math.Ceiling
+                        $"Impossible to split data into chunks of size: {chunkSize}",
+                        nameof(noisifier.settings)
+                    );
+
+
+                Int32 outputLength = noisifier.settings.OutputLength,
+                      curLength = message.Length;
+
+                if (outputLength == 0)
+                {
+                    outputLength = (Int32)Math.Pow
+                    (
+                        2,
+                        Math.Min
                         (
-                            Math.Log2(curLength)
+                            (Int32)noisifier.settings.BoundaryAlignment,
+                            Math.Ceiling
+                            (
+                                Math.Log2(curLength)
+                            )
                         )
-                    )
-                );
-                if (curLength > outputLength &&
-                    noisifier.settings.UseDynamicOutputAlignment)
-                    outputLength *= (1 + curLength / outputLength);
-            }
-            if (message.Length >= outputLength) return message;
+                    );
+                    if (curLength > outputLength &&
+                        noisifier.settings.UseDynamicOutputAlignment)
+                        outputLength *= (1 + curLength / outputLength);
+                }
+                if (message.Length >= outputLength) return message;
 
 
-            Int32 maxAvgNoiseCount =
-                Math.Max
-                (
-                    1,
-                    (outputLength - curLength)
-                    / (curLength + 1)
-                ) * 2 + 1;
-            Int32 maxSyntropy = Miscellaneous.CalculateMaxNonEntropy
-                (
-                    noisifier.settings.ExpectedEntropy,
-                    curLength,
-                    outputLength
-                );
-
-            SecureRandom random = new(128);
-
-            #pragma warning disable IDE0028
-            List<char> almostResult = new(outputLength);
-            #pragma warning restore IDE0028
-
-            fakeSelection = fakeSelection == "" ? noisifier.PrimaryNoise : fakeSelection;
-            Int32 prevFinalUnnoised = 0;
-
-
-            for (var chunk = 0; chunk <= curLength; chunk += chunkSize)
-            {
-                random.Reseed();
-
-                Int32 maxRoundLength =
-                    Math.Min
+                Int32 maxAvgNoiseCount =
+                    Math.Max
                     (
-                        chunkSize + chunk,
-                        curLength
-                    )
-                        * outputLength
-                        / curLength
-                        - almostResult.Count;
-
-                almostResult.AddRange
-                (
-                    AdditionRound
+                        1,
+                        (outputLength - curLength)
+                        / (curLength + 1)
+                    ) * 2 + 1;
+                Int32 maxSyntropy = Miscellaneous.CalculateMaxNonEntropy
                     (
-                        [.. message.Substring
+                        noisifier.settings.ExpectedEntropy,
+                        curLength,
+                        outputLength
+                    );
+
+                SecureRandom random = new(128);
+
+                #pragma warning disable IDE0028
+                List<char> almostResult = new(outputLength);
+                #pragma warning restore IDE0028
+
+                fakeSelection = fakeSelection == "" ? noisifier.PrimaryNoise : fakeSelection;
+                Int32 prevFinalUnnoised = 0;
+
+
+                for (var chunk = 0; chunk <= curLength; chunk += chunkSize)
+                {
+                    random.Reseed();
+
+                    Int32 maxRoundLength =
+                        Math.Min
+                        (
+                            chunkSize + chunk,
+                            curLength
+                        )
+                            * outputLength
+                            / curLength
+                            - almostResult.Count;
+
+                    almostResult.AddRange
+                    (
+                        AdditionRound
+                        (
+                            [.. message.Substring
                         (
                             chunk,
                             Math.Min
@@ -97,62 +99,63 @@ namespace JabrAPI.Noise
                                 chunkSize
                             )
                         )],
-                        fakeSelection,
-                        noisifier,
-                        random,
-                        maxRoundLength,
-                        maxSyntropy,
-                        0,  //  minAvgNoiseCount
-                        maxAvgNoiseCount,
-                        ref prevFinalUnnoised
-                    )
-                );
+                            fakeSelection,
+                            noisifier,
+                            random,
+                            maxRoundLength,
+                            maxSyntropy,
+                            0,  //  minAvgNoiseCount
+                            maxAvgNoiseCount,
+                            ref prevFinalUnnoised
+                        )
+                    );
 
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write($"\n\t{chunk / chunkSize + 1})       ");
-                Console.BackgroundColor = ConsoleColor.Red;
-                Console.Write("".PadRight(almostResult.Count, ' '));
-                Console.ForegroundColor = ConsoleColor.Gray;
-                Console.BackgroundColor = ConsoleColor.Black;
-            }
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write($"\n\t{chunk / chunkSize + 1})       ");
+                    Console.BackgroundColor = ConsoleColor.Red;
+                    Console.Write("".PadRight(almostResult.Count, ' '));
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.BackgroundColor = ConsoleColor.Black;
+                }
 
 
-            fakeSelection = noisifier.PrimaryNoise;
-            while (almostResult.Count < outputLength)
-            {
-                random.Reseed();
-                curLength = almostResult.Count;
-                chunkSize = random.Next(1, outputLength - curLength);
-                Int32 randPosition = random.Next(0, curLength - chunkSize - 1);
+                fakeSelection = noisifier.PrimaryNoise;
+                while (almostResult.Count < outputLength)
+                {
+                    random.Reseed();
+                    curLength = almostResult.Count;
+                    chunkSize = random.Next(1, outputLength - curLength);
+                    Int32 randPosition = random.Next(0, curLength - chunkSize - 1);
 
-                almostResult.InsertRange
-                (
-                    randPosition,
-                    AdditionRound
+                    almostResult.InsertRange
                     (
-                        [],
-                        fakeSelection,
-                        noisifier,
-                        random,
-                        chunkSize,
-                        maxSyntropy,
-                        0,  //  minAvgNoiseCount
-                        maxAvgNoiseCount,
-                        ref prevFinalUnnoised
-                    )
-                );
+                        randPosition,
+                        AdditionRound
+                        (
+                            [],
+                            fakeSelection,
+                            noisifier,
+                            random,
+                            chunkSize,
+                            maxSyntropy,
+                            0,  //  minAvgNoiseCount
+                            maxAvgNoiseCount,
+                            ref prevFinalUnnoised
+                        )
+                    );
 
-                Console.Write("\n\t         ");
-                Console.BackgroundColor = ConsoleColor.Blue;
-                Console.Write("".PadRight(almostResult.Count - curLength, ' '));
-                Console.BackgroundColor = ConsoleColor.Black;
-                Console.Write("".PadRight(10 - almostResult.Count + curLength, ' '));
-                Console.BackgroundColor = ConsoleColor.Cyan;
-                Console.Write("".PadRight(chunkSize, ' '));
-                Console.BackgroundColor = ConsoleColor.Black;
+                    Console.Write("\n\t         ");
+                    Console.BackgroundColor = ConsoleColor.Blue;
+                    Console.Write("".PadRight(almostResult.Count - curLength, ' '));
+                    Console.BackgroundColor = ConsoleColor.Black;
+                    Console.Write("".PadRight(10 - almostResult.Count + curLength, ' '));
+                    Console.BackgroundColor = ConsoleColor.Cyan;
+                    Console.Write("".PadRight(chunkSize, ' '));
+                    Console.BackgroundColor = ConsoleColor.Black;
+                }
+
+                return new string([.. almostResult]);
             }
-
-            return new string([.. almostResult]);
         }
     }
 }

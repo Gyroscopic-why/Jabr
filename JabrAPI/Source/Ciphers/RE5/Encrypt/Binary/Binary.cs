@@ -8,79 +8,60 @@ using static JabrAPI.Miscellaneous;
 
 
 
-namespace JabrAPI.RE5
+namespace JabrAPI
 {
-    static public partial class Encrypt
+    static public partial class RE5
     {
-        static public List<Byte> Bytes(List<Byte> message, BinaryKey reKey, out Exception? exception)
+        static public partial class Encrypt
         {
-            if (IsMessageAndReKeyValid(message, reKey, out exception) &&
-                reKey.IsValid.ForEncryption(message, out exception))
+            static public List<Byte> Bytes(List<Byte> message, BinaryKey reKey, out Exception? exception)
             {
-                try
+                if (IsMessageAndReKeyValid(message, reKey, out exception) &&
+                    reKey.IsValid.ForEncryption(message, out exception))
                 {
-                    return FastBytes(message, reKey);
+                    try
+                    {
+                        return FastBytes(message, reKey);
+                    }
+                    catch (Exception innerException) { exception = innerException; }
                 }
-                catch (Exception innerException) { exception = innerException; }
+                return [];
             }
-            return [];
-        }
-        static public List<Byte> Bytes(List<Byte> message, BinaryKey reKey, bool throwExceptions = false)
-        {
-            List<Byte> result = Bytes(message, reKey, out Exception? exception);
-            if (exception != null && throwExceptions) throw exception;
-            return result;
-        }
-
-
-        static public List<Byte> FastBytes(List<Byte> message, BinaryKey reKey)
-        {
-            Int32 exLength = reKey.ExLength, messageLength = message.Count, shCount = reKey.ShCount, buffer;
-            List<Byte> shifts = reKey.Shifts, prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
-
-
-            Int32 helper = (Int32)Math.Ceiling
-                (
-                    (double)
-                    (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
-                        reKey.PrLength * 2 + shifts.Max() - 4
-                    ) / exLength
-                );
-            Int32 maxEncodingLength = exLength == 10 ?
-                Utils.DigitCount(helper)  //  Optimisation for base 10 encoding
-              : Numsys.AsList
-                (
-                    helper.ToString(),
-                    10,
-                    exLength
-                ).Count;
-
-            Int32[] ids = new Int32[2];  //  Holding only the current and last ids for memory optimisation
-            ids[0] = prAlphabet.IndexOf(message[0]);
-            buffer = ids[0] + shifts[0];
-
-            List<Byte> encoding = Numsys.ToCustomAsBinary
-            (
-                Split.BigEndian<Int32, Byte>(buffer / exLength, 10),
-                10,
-                exLength,
-                exAlphabet,
-                maxEncodingLength
-            );
-            
-            #pragma warning disable IDE0028
-            List<Byte> encrypted = new (messageLength * (maxEncodingLength + 1));
-            encrypted.AddRange([exAlphabet[buffer % exLength], ..encoding]);
-            #pragma warning restore IDE0028
-
-
-            for (var curId = 1; curId < messageLength; curId++)
+            static public List<Byte> Bytes(List<Byte> message, BinaryKey reKey, bool throwExceptions = false)
             {
-                ids[1] = prAlphabet.IndexOf(message[curId]);
-                buffer = ids[1] + shifts[curId % shCount] + ids[0];
-                ids[0] = ids[1];
+                List<Byte> result = Bytes(message, reKey, out Exception? exception);
+                if (exception != null && throwExceptions) throw exception;
+                return result;
+            }
 
-                encoding = Numsys.ToCustomAsBinary
+
+            static public List<Byte> FastBytes(List<Byte> message, BinaryKey reKey)
+            {
+                Int32 exLength = reKey.ExLength, messageLength = message.Count, shCount = reKey.ShCount, buffer;
+                List<Byte> shifts = reKey.Shifts, prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
+
+
+                Int32 helper = (Int32)Math.Ceiling
+                    (
+                        (double)
+                        (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                            reKey.PrLength * 2 + shifts.Max() - 4
+                        ) / exLength
+                    );
+                Int32 maxEncodingLength = exLength == 10 ?
+                    Utils.DigitCount(helper)  //  Optimisation for base 10 encoding
+                  : Numsys.AsList
+                    (
+                        helper.ToString(),
+                        10,
+                        exLength
+                    ).Count;
+
+                Int32[] ids = new Int32[2];  //  Holding only the current and last ids for memory optimisation
+                ids[0] = prAlphabet.IndexOf(message[0]);
+                buffer = ids[0] + shifts[0];
+
+                List<Byte> encoding = Numsys.ToCustomAsBinary
                 (
                     Split.BigEndian<Int32, Byte>(buffer / exLength, 10),
                     10,
@@ -89,10 +70,32 @@ namespace JabrAPI.RE5
                     maxEncodingLength
                 );
 
+#pragma warning disable IDE0028
+                List<Byte> encrypted = new(messageLength * (maxEncodingLength + 1));
                 encrypted.AddRange([exAlphabet[buffer % exLength], .. encoding]);
-            }
+#pragma warning restore IDE0028
 
-            return encrypted;
+
+                for (var curId = 1; curId < messageLength; curId++)
+                {
+                    ids[1] = prAlphabet.IndexOf(message[curId]);
+                    buffer = ids[1] + shifts[curId % shCount] + ids[0];
+                    ids[0] = ids[1];
+
+                    encoding = Numsys.ToCustomAsBinary
+                    (
+                        Split.BigEndian<Int32, Byte>(buffer / exLength, 10),
+                        10,
+                        exLength,
+                        exAlphabet,
+                        maxEncodingLength
+                    );
+
+                    encrypted.AddRange([exAlphabet[buffer % exLength], .. encoding]);
+                }
+
+                return encrypted;
+            }
         }
     }
 }

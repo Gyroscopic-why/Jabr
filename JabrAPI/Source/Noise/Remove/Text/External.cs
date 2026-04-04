@@ -6,64 +6,67 @@ using static JabrAPI.Miscellaneous;
 
 
 
-namespace JabrAPI.Noise
+namespace JabrAPI
 {
-    static public partial class Remove
+    static public partial class Noise
     {
-        static public string Text(string noised, IEncryptionKey reKey,
-            out Exception? exception)
+        static public partial class Remove
         {
-            if (IsMessageAndReKeyAndNoisifierValid(noised, reKey, out exception) &&
-                reKey.Noisifier.IsValid.ForReKey(reKey, out exception))
+            static public string Text(string noised, IEncryptionKey reKey,
+                out Exception? exception)
             {
-                try
+                if (IsMessageAndReKeyAndNoisifierValid(noised, reKey, out exception) &&
+                    reKey.Noisifier.IsValid.ForReKey(reKey, out exception))
                 {
-                    return FastText(noised, reKey.Noisifier);
+                    try
+                    {
+                        return FastText(noised, reKey.Noisifier);
+                    }
+                    catch (Exception innerException) { exception = innerException; }
                 }
-                catch (Exception innerException) { exception = innerException; }
+                return "";
             }
-            return "";
-        }
-        static public string Text(string noised, IEncryptionKey reKey,
-            bool throwExceptions = false)
-        {
-            string result  = Text(noised, reKey, out Exception? exception);
-            if (exception != null && throwExceptions) throw exception;
-            return result;
-        }
-        
-
-
-        static public string Text(string noised, Noisifier noisifier,
-            out Exception? exception)
-        {
-            if (IsMessageAndNoisifierValid(noised, noisifier, out exception))
+            static public string Text(string noised, IEncryptionKey reKey,
+                bool throwExceptions = false)
             {
-                try
-                {
-                    return FastText(noised, noisifier);
-                }
-                catch (Exception innerException) { exception = innerException; }
+                string result = Text(noised, reKey, out Exception? exception);
+                if (exception != null && throwExceptions) throw exception;
+                return result;
             }
-            return "";
-        }
-        static public string Text(string noised, Noisifier noisifier,
-            bool throwExceptions = false)
-        {
-            string result = Text(noised, noisifier, out Exception? exception);
-            if (exception != null && throwExceptions) throw exception;
-            return result;
-        }
 
 
 
-        static public string FastText(string noised, Noisifier noisifier)
-        {
-            return Internal.RemoveFastText
-            (
-                noised,
-                noisifier
-            );
+            static public string Text(string noised, Noisifier noisifier,
+                out Exception? exception)
+            {
+                if (IsMessageAndNoisifierValid(noised, noisifier, out exception))
+                {
+                    try
+                    {
+                        return FastText(noised, noisifier);
+                    }
+                    catch (Exception innerException) { exception = innerException; }
+                }
+                return "";
+            }
+            static public string Text(string noised, Noisifier noisifier,
+                bool throwExceptions = false)
+            {
+                string result = Text(noised, noisifier, out Exception? exception);
+                if (exception != null && throwExceptions) throw exception;
+                return result;
+            }
+
+
+
+            static public string FastText(string noised, Noisifier noisifier)
+            {
+                return Internal.RemoveFastText
+                (
+                    noised,
+                    noisifier
+                );
+            }
         }
     }
 }

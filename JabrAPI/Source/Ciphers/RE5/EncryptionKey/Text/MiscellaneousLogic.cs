@@ -6,43 +6,46 @@ using JabrAPI.Template;
 
 
 
-namespace JabrAPI.RE5
+namespace JabrAPI
 {
-    public partial class EncryptionKey : IEncryptionKey
+    static public partial class RE5
     {
-        public void CopyFrom(EncryptionKey otherKey, bool fullCopy = true)
+        public partial class EncryptionKey : IEncryptionKey
         {
-            _noisifier.CopyFrom(otherKey.Noisifier, fullCopy);
+            public void CopyFrom(EncryptionKey otherKey, bool fullCopy = true)
+            {
+                _noisifier.CopyFrom(otherKey.Noisifier, fullCopy);
 
-            CopyFrom(otherKey.Primary, otherKey.External, otherKey.Shifts);
+                CopyFrom(otherKey.Primary, otherKey.External, otherKey.Shifts);
 
-            if (fullCopy)
-                Set.Default
-                (
-                    otherKey._primaryNecessary,
-                    otherKey._primaryAllowed,
-                    otherKey._primaryBanned,
-                    otherKey._primaryMaxLength,
-                    otherKey._externalNecessary,
-                    otherKey._externalAllowed,
-                    otherKey._externalBanned,
-                    otherKey._externalMaxLength
-                );
-        }
+                if (fullCopy)
+                    Set.Default
+                    (
+                        otherKey._primaryNecessary,
+                        otherKey._primaryAllowed,
+                        otherKey._primaryBanned,
+                        otherKey._primaryMaxLength,
+                        otherKey._externalNecessary,
+                        otherKey._externalAllowed,
+                        otherKey._externalBanned,
+                        otherKey._externalMaxLength
+                    );
+            }
 
 
-        private void CopyFrom(string primary, string external, List<Int16> shifts)
-        {
-            _primaryAlphabet = primary;
-            _externalAlphabet = external;
+            private void CopyFrom(string primary, string external, List<Int16> shifts)
+            {
+                _primaryAlphabet = primary;
+                _externalAlphabet = external;
 
-            _shifts.Clear();
-            if (shifts == null || shifts.Count == 0) _shifts.Add(0);
-            else _shifts.AddRange
-                (
-                    shifts.GetRange
-                    (0, Math.Max(shifts.Count, 255))
-                );
+                _shifts.Clear();
+                if (shifts == null || shifts.Count == 0) _shifts.Add(0);
+                else _shifts.AddRange
+                    (
+                        shifts.GetRange
+                        (0, Math.Max(shifts.Count, 255))
+                    );
+            }
         }
     }
 }

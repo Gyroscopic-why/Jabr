@@ -7,39 +7,22 @@ using AVcontrol;
 
 
 
-namespace JabrAPI.RE5
+namespace JabrAPI
 {
-    static internal partial class Internal
+    static public partial class RE5
     {
-        static public string EncryptionRound(
-            string messageChunk,
-            string prAlphabet, string exAlphabet,
-            List<Int16> shifts,
-            Int32 exLength, Int32 maxEncodingLength,
-            ref Int32[] ids)
+        static internal partial class Internal
         {
-            Int32 messageLength = messageChunk.Length, shCount = shifts.Count, buffer = ids[1] + ids[0] + shifts[0];
-
-            string encoding = Numsys.ToCustomAsString
-            (
-                (buffer / exLength).ToString(),
-                10,
-                exLength,
-                exAlphabet,
-                maxEncodingLength
-            );
-
-            StringBuilder encrypted = new(messageLength * (maxEncodingLength + 1));
-            encrypted.Append(exAlphabet[buffer % exLength] + encoding);
-
-
-            for (var curId = 1; curId < messageLength; curId++)
+            static public string EncryptionRound(
+                string messageChunk,
+                string prAlphabet, string exAlphabet,
+                List<Int16> shifts,
+                Int32 exLength, Int32 maxEncodingLength,
+                ref Int32[] ids)
             {
-                ids[1] = prAlphabet.IndexOf(messageChunk[curId]);
-                buffer = ids[1] + ids[0] + shifts[curId % shCount];
-                ids[0] = ids[1];
+                Int32 messageLength = messageChunk.Length, shCount = shifts.Count, buffer = ids[1] + ids[0] + shifts[0];
 
-                encoding = Numsys.ToCustomAsString
+                string encoding = Numsys.ToCustomAsString
                 (
                     (buffer / exLength).ToString(),
                     10,
@@ -48,10 +31,30 @@ namespace JabrAPI.RE5
                     maxEncodingLength
                 );
 
+                StringBuilder encrypted = new(messageLength * (maxEncodingLength + 1));
                 encrypted.Append(exAlphabet[buffer % exLength] + encoding);
-            }
 
-            return encrypted.ToString();
+
+                for (var curId = 1; curId < messageLength; curId++)
+                {
+                    ids[1] = prAlphabet.IndexOf(messageChunk[curId]);
+                    buffer = ids[1] + ids[0] + shifts[curId % shCount];
+                    ids[0] = ids[1];
+
+                    encoding = Numsys.ToCustomAsString
+                    (
+                        (buffer / exLength).ToString(),
+                        10,
+                        exLength,
+                        exAlphabet,
+                        maxEncodingLength
+                    );
+
+                    encrypted.Append(exAlphabet[buffer % exLength] + encoding);
+                }
+
+                return encrypted.ToString();
+            }
         }
     }
 }

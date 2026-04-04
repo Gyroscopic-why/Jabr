@@ -4,65 +4,68 @@ using System.Collections.Generic;
 
 
 
-namespace JabrAPI.Noise
+namespace JabrAPI
 {
-    static internal partial class Internal
+    static public partial class Noise
     {
-        static public Byte[] RemoveFastBytes(List<Byte> message, BinaryNoisifier noisifier)
+        static internal partial class Internal
         {
-            Int32 chunkSize = noisifier.settings.ChunkSizeForSplitting,
-                  chunkCount = (Int32)Math.Ceiling((double)message.Count / chunkSize);
-
-            if (chunkSize < 1)
-                throw new ArgumentException
-                (
-                    $"Impossible to split data into chunks of size: {chunkSize}",
-                    nameof(noisifier.settings)
-                );
-
-            Byte[][] finalisedChunks = new Byte[chunkCount][];
-            bool ignoringIsActive = false;
-            List<Byte> primary = noisifier.PrimaryNoise, complex = noisifier.ComplexNoise;
-
-            for (var chunk = 0; chunk < chunkCount; chunk++)
+            static public Byte[] RemoveFastBytes(List<Byte> message, BinaryNoisifier noisifier)
             {
-                finalisedChunks[chunk] =
-                    RemovalRound
+                Int32 chunkSize = noisifier.settings.ChunkSizeForSplitting,
+                      chunkCount = (Int32)Math.Ceiling((double)message.Count / chunkSize);
+
+                if (chunkSize < 1)
+                    throw new ArgumentException
                     (
-                        message.GetRange
-                        (
-                            chunk * chunkSize,
-                            Math.Min
-                            (
-                                chunkSize,
-                                message.Count - chunk * chunkSize
-                            )
-                        ),
-                        ref ignoringIsActive,
-                        primary,
-                        complex
+                        $"Impossible to split data into chunks of size: {chunkSize}",
+                        nameof(noisifier.settings)
                     );
 
-                Console.ForegroundColor = ConsoleColor.Magenta;
-                Console.Write($"\n\t{chunk + 1})       ");
-                Console.BackgroundColor = ConsoleColor.Magenta;
-                Console.Write("".PadRight(finalisedChunks[chunk].Length, ' '));
-                Console.ForegroundColor = ConsoleColor.Gray;
-                Console.BackgroundColor = ConsoleColor.Black;
+                Byte[][] finalisedChunks = new Byte[chunkCount][];
+                bool ignoringIsActive = false;
+                List<Byte> primary = noisifier.PrimaryNoise, complex = noisifier.ComplexNoise;
+
+                for (var chunk = 0; chunk < chunkCount; chunk++)
+                {
+                    finalisedChunks[chunk] =
+                        RemovalRound
+                        (
+                            message.GetRange
+                            (
+                                chunk * chunkSize,
+                                Math.Min
+                                (
+                                    chunkSize,
+                                    message.Count - chunk * chunkSize
+                                )
+                            ),
+                            ref ignoringIsActive,
+                            primary,
+                            complex
+                        );
+
+                    Console.ForegroundColor = ConsoleColor.Magenta;
+                    Console.Write($"\n\t{chunk + 1})       ");
+                    Console.BackgroundColor = ConsoleColor.Magenta;
+                    Console.Write("".PadRight(finalisedChunks[chunk].Length, ' '));
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.BackgroundColor = ConsoleColor.Black;
+                }
+
+
+                Byte[] result = new byte[finalisedChunks.Sum(c => c.Length)];
+                Int32 offset = 0;
+                var span = result.AsSpan();
+
+                foreach (var chunk in finalisedChunks)
+                {
+                    chunk.CopyTo(span[offset..]);
+                    offset += chunk.Length;
+                }
+
+                return result;
             }
-
-
-            Byte[] result = new byte[finalisedChunks.Sum(c => c.Length)];
-            Int32 offset = 0;
-            var span = result.AsSpan();
-
-            foreach (var chunk in finalisedChunks)
-            {
-                chunk.CopyTo(span[offset..]);
-                offset += chunk.Length;
-            }
-
-            return result;
         }
     }
 }
