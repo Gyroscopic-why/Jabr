@@ -61,7 +61,11 @@ namespace JabrAPI.Noise
                 );
 
             SecureRandom random = new(128);
+
+            #pragma warning disable IDE0028
             List<char> almostResult = new(outputLength);
+            #pragma warning restore IDE0028
+
             fakeSelection = fakeSelection == "" ? noisifier.PrimaryNoise : fakeSelection;
             Int32 prevFinalUnnoised = 0;
 
@@ -104,9 +108,11 @@ namespace JabrAPI.Noise
                     )
                 );
 
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.Write($"\n\t{chunk / chunkSize + 1})       ");
                 Console.BackgroundColor = ConsoleColor.Red;
                 Console.Write("".PadRight(almostResult.Count, ' '));
+                Console.ForegroundColor = ConsoleColor.Gray;
                 Console.BackgroundColor = ConsoleColor.Black;
             }
 

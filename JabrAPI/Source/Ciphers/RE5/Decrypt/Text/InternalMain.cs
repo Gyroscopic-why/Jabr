@@ -13,10 +13,10 @@ namespace JabrAPI.RE5
 {
     static internal partial class Internal
     {
-        static public string EncryptFastText(string message, EncryptionKey reKey)
+        static public string DecryptFastText(string encrypted, EncryptionKey reKey)
         {
+            Int32 exLength = reKey.ExLength, shCount = reKey.ShCount, encLength = encrypted.Length;
             string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
-            Int32  exLength = reKey.ExLength,  messageLength = message.Length, shCount = reKey.ShCount;
             List<Int16> allShifts = reKey.Shifts;
 
 
@@ -28,46 +28,46 @@ namespace JabrAPI.RE5
                     ) / exLength
                 );
             Int32 maxEncodingLength = exLength == 10 ?
-                Utils.DigitCount(helper)  //  Optimisation for base 10 encoding
-              : Numsys.AsList
+                Utils.DigitCount(helper) + 1  // Optimisation for base 10 encoding
+                : Numsys.AsList
                 (
                     helper.ToString(),
                     10,
                     exLength
-                ).Count;
-
-            Int32[] ids = [0, 0];   //  Holding only the current and last ids for memory optimisation
-
-            Int32 chunkSize  = (Int32)reKey.ChunkSize / (maxEncodingLength + 1);
-            if (chunkSize <= maxEncodingLength) chunkSize = maxEncodingLength + 1;
-            Int32 chunkCount = (Int32)Math.Ceiling((double)messageLength / chunkSize);
+                ).Count + 1;  //  + 1 is to account for EncodingLength and the character it belongs to
 
 
-            StringBuilder result = new(messageLength * (maxEncodingLength + 1));
+            Int32 chunkSize = (Int32)reKey.ChunkSize, decodedIds = 0;
+            chunkSize -= chunkSize % maxEncodingLength;
+
+            if (chunkSize < maxEncodingLength) chunkSize = maxEncodingLength;
+            Int32 chunkCount = (Int32)Math.Ceiling((double)encLength / chunkSize);
+            Int32 shPerChunk = chunkSize / maxEncodingLength;
+
+
+            StringBuilder result = new(encrypted.Length / maxEncodingLength);  //  Real message length
 
             for (var chunk = 0; chunk < chunkCount; chunk++)
             {
                 Int32 thisRoundLength =
                     Math.Min
                     (
-                        messageLength - chunk * chunkSize,
+                        encLength - chunk * chunkSize,
                         chunkSize
                     );
 
-                var shiftStartId = (chunk * chunkSize) % shCount;
+                var shiftStartId = (chunk * shPerChunk) % shCount;
                 List<Int16> shifts = shiftStartId + thisRoundLength > shCount ?
                     [.. allShifts.GetRange(shiftStartId, shCount - shiftStartId),
                      .. allShifts.GetRange(0, shiftStartId)]
                       : allShifts.GetRange(shiftStartId, thisRoundLength);
 
 
-                ids[0] = prAlphabet.IndexOf(message[chunk * chunkSize]);
-
                 result.Append
                 (
-                    EncryptionRound
+                    DecryptionRound
                     (
-                        message.Substring
+                        encrypted.Substring
                         (
                             chunk * chunkSize,
                             thisRoundLength
@@ -77,14 +77,15 @@ namespace JabrAPI.RE5
                         shifts,
                         exLength,
                         maxEncodingLength,
-                        ref ids
+                        thisRoundLength / maxEncodingLength,
+                        ref decodedIds
                     )
                 );
 
 
-                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.Write($"\n\t{chunk + 1})       ");
-                Console.BackgroundColor = ConsoleColor.DarkYellow;
+                Console.BackgroundColor = ConsoleColor.Yellow;
                 Console.Write("".PadRight(result.Length, ' '));
                 Console.ForegroundColor = ConsoleColor.Gray;
                 Console.BackgroundColor = ConsoleColor.Black;
@@ -94,31 +95,34 @@ namespace JabrAPI.RE5
         }
 
 
-        static public void EncryptFastTextFile(string inputPath, string outputPath, EncryptionKey reKey)
+        static public void DecryptFastTextFile(string inputPath, string outputPath, EncryptionKey reKey)
         {
-            string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
             Int32 exLength = reKey.ExLength, shCount = reKey.ShCount;
+            string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
+            List<Int16> allShifts = reKey.Shifts;
 
 
             Int32 helper = (Int32)Math.Ceiling
                 (
                     (double)
                     (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
-                        reKey.PrLength * 2 + reKey.Shifts.Max() - 4
+                        reKey.PrLength * 2 + allShifts.Max() - 4
                     ) / exLength
                 );
             Int32 maxEncodingLength = exLength == 10 ?
-                Utils.DigitCount(helper)  //  Optimisation for base 10 encoding
-              : Numsys.AsList
+                Utils.DigitCount(helper) + 1  // Optimisation for base 10 encoding
+                : Numsys.AsList
                 (
                     helper.ToString(),
                     10,
                     exLength
-                ).Count;
+                ).Count + 1;  //  + 1 is to account for EncodingLength and the character it belongs to
 
-            Int32[] ids = new Int32[2];   //  Holding only the current and last ids for memory optimisation
-            Int32 chunkSize = (Int32)reKey.ChunkSize / maxEncodingLength;
-            if (chunkSize <= maxEncodingLength) chunkSize = maxEncodingLength + 1;
+
+            Int32 chunkSize = (Int32)reKey.ChunkSize, decodedIds = 0;
+            chunkSize -= chunkSize % maxEncodingLength;
+            if (chunkSize < maxEncodingLength) chunkSize = maxEncodingLength;
+
 
 
             using StreamReader reader = new(inputPath);
@@ -126,19 +130,18 @@ namespace JabrAPI.RE5
 
             char[] messageChunk = new char[chunkSize];
             Int32 offset = 0, thisRoundLength = reader.ReadBlock(messageChunk, offset, chunkSize);
-            if (thisRoundLength > 0)   ids[0] = prAlphabet.IndexOf(messageChunk[0]);
-            
+
             while (thisRoundLength > 0)
             {
-                var shiftStartId = offset % shCount;
+                var shiftStartId = (offset / maxEncodingLength) % shCount;
                 List<Int16> shifts = shiftStartId + thisRoundLength > shCount ?
-                    [.. reKey.Shifts.GetRange(shiftStartId, shCount - shiftStartId),
-                     .. reKey.Shifts.GetRange(0, shiftStartId)]
-                      : reKey.Shifts.GetRange(shiftStartId, thisRoundLength);
+                    [.. allShifts.GetRange(shiftStartId, shCount - shiftStartId),
+                     .. allShifts.GetRange(0, shiftStartId)]
+                      : allShifts.GetRange(shiftStartId, thisRoundLength);
 
                 writer.Write
                 (
-                    EncryptionRound
+                    DecryptionRound
                     (
                         messageChunk.ToList().GetRange
                         (
@@ -150,7 +153,8 @@ namespace JabrAPI.RE5
                         shifts,
                         exLength,
                         maxEncodingLength,
-                        ref ids
+                        thisRoundLength / maxEncodingLength,
+                        ref decodedIds
                     )
                 );
 

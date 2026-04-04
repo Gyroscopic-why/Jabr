@@ -104,9 +104,11 @@ namespace JabrAPI.Noise
                     )
                 );
 
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.Write($"\n\t{chunk / chunkSize + 1})       ");
                 Console.BackgroundColor = ConsoleColor.Red;
                 Console.Write("".PadRight(almostResult.Count, ' '));
+                Console.ForegroundColor = ConsoleColor.Gray;
                 Console.BackgroundColor = ConsoleColor.Black;
             }
 

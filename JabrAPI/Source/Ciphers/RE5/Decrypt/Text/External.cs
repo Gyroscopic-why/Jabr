@@ -1,28 +1,29 @@
 ﻿using System;
+
 using static JabrAPI.Miscellaneous;
 
 
 
 namespace JabrAPI.RE5
 {
-    static public partial class Encrypt
+    static public partial class Decrypt
     {
-        static public string Text(string message, EncryptionKey reKey, out Exception? exception)
+        static public string Text(string encrypted, EncryptionKey reKey, out Exception? exception)
         {
-            if (IsMessageAndReKeyAndNoisifierValid(message, reKey, out exception) &&
-                reKey.IsValid.ForEncryption(message, out exception))
+            if (IsMessageAndReKeyAndNoisifierValid(encrypted, reKey, out exception) &&
+                reKey.IsValid.ForDecryption(encrypted, out exception))
             {
                 try
                 {
-                    return FastText(message, reKey);
+                    return FastText(encrypted, reKey);
                 }
                 catch (Exception innerException) { exception = innerException; }
             }
             return "";
         }
-        static public string Text(string message, EncryptionKey reKey, bool throwExceptions = false)
+        static public string Text(string encrypted, EncryptionKey reKey, bool throwExceptions = false)
         {
-            string result = Text(message, reKey, out Exception? exception);
+            string result  = Text(encrypted, reKey, out Exception? exception);
             if (exception != null && throwExceptions) throw exception;
             return result;
         }
@@ -54,8 +55,8 @@ namespace JabrAPI.RE5
 
 
         static public string FastText(string message, EncryptionKey reKey)
-            => Internal.EncryptFastText(message, reKey);
+            => Internal.DecryptFastText(message, reKey);
         static public void FastTextFile(string inputPath, string outputPath, EncryptionKey reKey)
-            => Internal.EncryptFastTextFile(inputPath, outputPath, reKey);
+            => Internal.DecryptFastTextFile(inputPath, outputPath, reKey);
     }
 }
