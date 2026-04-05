@@ -61,7 +61,7 @@ namespace JabrAPI
                     var shiftStartId = (chunk * shPerChunk) % shCount;
                     List<Int16> shifts = shiftStartId + thisRoundLength > shCount ?
                         [.. allShifts.GetRange(shiftStartId, shCount - shiftStartId),
-                     .. allShifts.GetRange(0, shiftStartId)]
+                         .. allShifts.GetRange(0, shiftStartId)]
                           : allShifts.GetRange(shiftStartId, thisRoundLength);
 
 
@@ -138,7 +138,7 @@ namespace JabrAPI
                     var shiftStartId = (offset / maxEncodingLength) % shCount;
                     List<Int16> shifts = shiftStartId + thisRoundLength > shCount ?
                         [.. allShifts.GetRange(shiftStartId, shCount - shiftStartId),
-                     .. allShifts.GetRange(0, shiftStartId)]
+                         .. allShifts.GetRange(0, shiftStartId)]
                           : allShifts.GetRange(shiftStartId, thisRoundLength);
 
                     writer.Write

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -15,11 +14,10 @@ namespace JabrAPI
     {
         static internal partial class Internal
         {
-            static public string EncryptFastText(string message, EncryptionKey reKey)
+            static public List<Byte> EncryptFastBytes(List<Byte> message, BinaryKey reKey)
             {
-                string prAlphabet = reKey.PrAlphabet,  exAlphabet = reKey.ExAlphabet;
-                Int32  exLength   = reKey.ExLength, messageLength = message.Length, shCount = reKey.ShCount;
-                List<Int16> allShifts = reKey.Shifts;
+                List<Byte> prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet, allShifts = reKey.Shifts;
+                Int32 exLength = reKey.ExLength, messageLength = message.Count, shCount = reKey.ShCount;
 
 
                 Int32 helper = (Int32)Math.Ceiling
@@ -38,12 +36,15 @@ namespace JabrAPI
                         exLength
                     ).Count;
 
-                Int32 chunkSize  = (Int32)reKey.ChunkSize / (maxEncodingLength + 1), prevId = 0;
-                if   (chunkSize <= maxEncodingLength) chunkSize = maxEncodingLength + 1;
+                Int32 chunkSize = (Int32)reKey.ChunkSize / (maxEncodingLength + 1), prevId = 0;
+                if (chunkSize <= maxEncodingLength) chunkSize = maxEncodingLength + 1;
                 Int32 chunkCount = (Int32)Math.Ceiling((double)messageLength / chunkSize);
 
 
-                StringBuilder result = new(messageLength * (maxEncodingLength + 1));
+                #pragma warning disable IDE0028
+                List<Byte> result = new(messageLength * (maxEncodingLength + 1));
+                #pragma warning restore IDE0028
+
 
                 for (var chunk = 0; chunk < chunkCount; chunk++)
                 {
@@ -55,17 +56,17 @@ namespace JabrAPI
                         );
 
                     var shiftStartId = (chunk * chunkSize) % shCount;
-                    List<Int16> shifts = shiftStartId + thisRoundLength > shCount ?
+                    List<Byte> shifts = shiftStartId + thisRoundLength > shCount ?
                         [.. allShifts.GetRange(shiftStartId, shCount - shiftStartId),
                          .. allShifts.GetRange(0, shiftStartId)]
                           : allShifts.GetRange(shiftStartId, thisRoundLength);
 
 
-                    result.Append
+                    result.AddRange
                     (
                         EncryptionRound
                         (
-                            message.Substring
+                            message.GetRange
                             (
                                 chunk * chunkSize,
                                 thisRoundLength
@@ -83,18 +84,18 @@ namespace JabrAPI
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
                     Console.Write($"\n\t{chunk + 1})       ");
                     Console.BackgroundColor = ConsoleColor.DarkYellow;
-                    Console.Write("".PadRight(result.Length, ' '));
+                    Console.Write("".PadRight(result.Count, ' '));
                     Console.ForegroundColor = ConsoleColor.Gray;
                     Console.BackgroundColor = ConsoleColor.Black;
                 }
 
-                return result.ToString();
+                return result;
             }
 
 
-            static public void EncryptFastTextFile(string inputPath, string outputPath, EncryptionKey reKey)
+            static public void EncryptFastBytesFile(string inputPath, string outputPath, BinaryKey reKey)
             {
-                string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
+                List<Byte> prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
                 Int32 exLength = reKey.ExLength, shCount = reKey.ShCount;
 
 
@@ -114,45 +115,45 @@ namespace JabrAPI
                         exLength
                     ).Count;
 
-                Int32 chunkSize  = (Int32)reKey.ChunkSize / maxEncodingLength, prevId = 0;
-                if   (chunkSize <= maxEncodingLength) chunkSize = maxEncodingLength + 1;
+                Int32 chunkSize = (Int32)reKey.ChunkSize / maxEncodingLength, prevId = 0;
+                if (chunkSize <= maxEncodingLength) chunkSize = maxEncodingLength + 1;
 
 
-                using StreamReader reader = new(inputPath);
-                using StreamWriter writer = new(outputPath);
+                //using BinaryReader reader = new(inputPath);
+                //using BinaryWriter writer = new(outputPath);
 
-                char[] messageChunk = new char[chunkSize];
-                Int32 offset = 0, thisRoundLength = reader.ReadBlock(messageChunk, offset, chunkSize);
+                //Byte[] messageChunk = new Byte[chunkSize];
+                //Int32 offset = 0, thisRoundLength = reader.ReadBlock(messageChunk, offset, chunkSize);
 
-                while (thisRoundLength > 0)
-                {
-                    var shiftStartId = offset % shCount;
-                    List<Int16> shifts = shiftStartId + thisRoundLength > shCount ?
-                        [.. reKey.Shifts.GetRange(shiftStartId, shCount - shiftStartId),
-                         .. reKey.Shifts.GetRange(0, shiftStartId)]
-                          : reKey.Shifts.GetRange(shiftStartId, thisRoundLength);
+                //while (thisRoundLength > 0)
+                //{
+                //    var shiftStartId = offset % shCount;
+                //    List<Byte> shifts = shiftStartId + thisRoundLength > shCount ?
+                //        [.. reKey.Shifts.GetRange(shiftStartId, shCount - shiftStartId),
+                //         .. reKey.Shifts.GetRange(0, shiftStartId)]
+                //          : reKey.Shifts.GetRange(shiftStartId, thisRoundLength);
 
-                    writer.Write
-                    (
-                        EncryptionRound
-                        (
-                            messageChunk.ToList().GetRange
-                            (
-                                offset,
-                                thisRoundLength
-                            ).ToString()!,
-                            prAlphabet,
-                            exAlphabet,
-                            shifts,
-                            exLength,
-                            maxEncodingLength,
-                            ref prevId
-                        )
-                    );
+                //    writer.Write
+                //    (
+                //        EncryptionRound
+                //        (
+                //            messageChunk.GetRange
+                //            (
+                //                offset,
+                //                thisRoundLength
+                //            ),
+                //            prAlphabet,
+                //            exAlphabet,
+                //            shifts,
+                //            exLength,
+                //            maxEncodingLength,
+                //            ref prevId
+                //        )
+                //    );
 
-                    offset += thisRoundLength;
-                    thisRoundLength = reader.ReadBlock(messageChunk, offset, chunkSize);
-                }
+                //    offset += thisRoundLength;
+                //    thisRoundLength = reader.ReadBlock(messageChunk, offset, chunkSize);
+                //}
             }
         }
     }
