@@ -2,7 +2,6 @@
 using System.Text;
 using System.Collections.Generic;
 
-
 using AVcontrol;
 
 
@@ -18,13 +17,15 @@ namespace JabrAPI
                 string prAlphabet, string exAlphabet,
                 List<Int16> shifts,
                 Int32 exLength, Int32 maxEncodingLength,
-                ref Int32[] ids)
+                ref Int32 prevId)
             {
-                Int32 messageLength = messageChunk.Length, shCount = shifts.Count, buffer = ids[1] + ids[0] + shifts[0];
+                Int32 messageLength = messageChunk.Length, shCount = shifts.Count;
+                Int32 buffer = prAlphabet.IndexOf(messageChunk[0]), curFinal = prevId + buffer + shifts[0];
+                prevId = buffer;
 
                 string encoding = Numsys.ToCustomAsString
                 (
-                    (buffer / exLength).ToString(),
+                    (curFinal / exLength).ToString(),
                     10,
                     exLength,
                     exAlphabet,
@@ -32,25 +33,25 @@ namespace JabrAPI
                 );
 
                 StringBuilder encrypted = new(messageLength * (maxEncodingLength + 1));
-                encrypted.Append(exAlphabet[buffer % exLength] + encoding);
+                encrypted.Append(exAlphabet[curFinal % exLength] + encoding);
 
 
                 for (var curId = 1; curId < messageLength; curId++)
                 {
-                    ids[1] = prAlphabet.IndexOf(messageChunk[curId]);
-                    buffer = ids[1] + ids[0] + shifts[curId % shCount];
-                    ids[0] = ids[1];
+                    buffer = prAlphabet.IndexOf(messageChunk[curId]);
+                    curFinal = buffer + prevId + shifts[curId % shCount];
+                    prevId = buffer;
 
                     encoding = Numsys.ToCustomAsString
                     (
-                        (buffer / exLength).ToString(),
+                        (curFinal / exLength).ToString(),
                         10,
                         exLength,
                         exAlphabet,
                         maxEncodingLength
                     );
 
-                    encrypted.Append(exAlphabet[buffer % exLength] + encoding);
+                    encrypted.Append(exAlphabet[curFinal % exLength] + encoding);
                 }
 
                 return encrypted.ToString();

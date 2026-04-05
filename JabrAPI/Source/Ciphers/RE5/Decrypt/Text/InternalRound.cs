@@ -20,7 +20,7 @@ namespace JabrAPI
                 Int32 exLength,
                 Int32 maxEncodingLength,
                 Int32 realMessageLength,
-                ref Int32 decodedIds)
+                ref Int32 decodedId)
             {
                 Int32 shCount = shifts.Count, encCurId = 0;
                 Int32 parsedEncoding = (Int32)Numsys.ToDecimalFromCustom
@@ -36,21 +36,21 @@ namespace JabrAPI
                 );
 
 
-                decodedIds = exAlphabet.IndexOf(encryptedChunk[0])
-                    - decodedIds
+                decodedId = exAlphabet.IndexOf(encryptedChunk[0])
+                    - decodedId
                     - shifts[0]
                     + parsedEncoding * exLength;
 
 
                 StringBuilder decrypted = new(realMessageLength);
-                decrypted.Append(prAlphabet[decodedIds]);
+                decrypted.Append(prAlphabet[decodedId]);
 
 
                 for (var curId = 1; curId < realMessageLength; curId++)
                 {
                     encCurId += maxEncodingLength;
-                    decodedIds = exAlphabet.IndexOf(encryptedChunk[encCurId])
-                        - decodedIds
+                    decodedId = exAlphabet.IndexOf(encryptedChunk[encCurId])
+                        - decodedId
                         - shifts[curId % shCount];
 
                     parsedEncoding = (Int32)Numsys.ToDecimalFromCustom
@@ -65,8 +65,8 @@ namespace JabrAPI
                         exAlphabet
                     );
 
-                    decodedIds += parsedEncoding * exLength;
-                    decrypted.Append(prAlphabet[decodedIds]);
+                    decodedId += parsedEncoding * exLength;
+                    decrypted.Append(prAlphabet[decodedId]);
                 }
 
                 return decrypted.ToString();

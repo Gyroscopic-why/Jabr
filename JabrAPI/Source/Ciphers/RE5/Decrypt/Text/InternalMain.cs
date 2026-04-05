@@ -39,7 +39,7 @@ namespace JabrAPI
                     ).Count + 1;  //  + 1 is to account for EncodingLength and the character it belongs to
 
 
-                Int32 chunkSize = (Int32)reKey.ChunkSize, decodedIds = 0;
+                Int32 chunkSize = (Int32)reKey.ChunkSize, decodedId = 0;
                 chunkSize -= chunkSize % maxEncodingLength;
 
                 if (chunkSize < maxEncodingLength) chunkSize = maxEncodingLength;
@@ -80,7 +80,7 @@ namespace JabrAPI
                             exLength,
                             maxEncodingLength,
                             thisRoundLength / maxEncodingLength,
-                            ref decodedIds
+                            ref decodedId
                         )
                     );
 
@@ -121,7 +121,7 @@ namespace JabrAPI
                     ).Count + 1;  //  + 1 is to account for EncodingLength and the character it belongs to
 
 
-                Int32 chunkSize = (Int32)reKey.ChunkSize, decodedIds = 0;
+                Int32 chunkSize = (Int32)reKey.ChunkSize, decodedId = 0;
                 chunkSize -= chunkSize % maxEncodingLength;
                 if (chunkSize < maxEncodingLength) chunkSize = maxEncodingLength;
 
@@ -156,7 +156,7 @@ namespace JabrAPI
                             exLength,
                             maxEncodingLength,
                             thisRoundLength / maxEncodingLength,
-                            ref decodedIds
+                            ref decodedId
                         )
                     );
 

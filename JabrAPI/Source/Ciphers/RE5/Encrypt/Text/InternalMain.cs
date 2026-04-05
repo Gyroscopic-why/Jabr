@@ -38,10 +38,8 @@ namespace JabrAPI
                         exLength
                     ).Count;
 
-                Int32[] ids = [0, 0];   //  Holding only the current and last ids for memory optimisation
-
-                Int32 chunkSize = (Int32)reKey.ChunkSize / (maxEncodingLength + 1);
-                if (chunkSize <= maxEncodingLength) chunkSize = maxEncodingLength + 1;
+                Int32 chunkSize  = (Int32)reKey.ChunkSize / (maxEncodingLength + 1), prevId = 0;
+                if   (chunkSize <= maxEncodingLength) chunkSize = maxEncodingLength + 1;
                 Int32 chunkCount = (Int32)Math.Ceiling((double)messageLength / chunkSize);
 
 
@@ -63,8 +61,6 @@ namespace JabrAPI
                           : allShifts.GetRange(shiftStartId, thisRoundLength);
 
 
-                    ids[0] = prAlphabet.IndexOf(message[chunk * chunkSize]);
-
                     result.Append
                     (
                         EncryptionRound
@@ -79,7 +75,7 @@ namespace JabrAPI
                             shifts,
                             exLength,
                             maxEncodingLength,
-                            ref ids
+                            ref prevId
                         )
                     );
 
@@ -118,9 +114,8 @@ namespace JabrAPI
                         exLength
                     ).Count;
 
-                Int32[] ids = new Int32[2];   //  Holding only the current and last ids for memory optimisation
-                Int32 chunkSize = (Int32)reKey.ChunkSize / maxEncodingLength;
-                if (chunkSize <= maxEncodingLength) chunkSize = maxEncodingLength + 1;
+                Int32 chunkSize  = (Int32)reKey.ChunkSize / maxEncodingLength, prevId = 0;
+                if   (chunkSize <= maxEncodingLength) chunkSize = maxEncodingLength + 1;
 
 
                 using StreamReader reader = new(inputPath);
@@ -128,7 +123,6 @@ namespace JabrAPI
 
                 char[] messageChunk = new char[chunkSize];
                 Int32 offset = 0, thisRoundLength = reader.ReadBlock(messageChunk, offset, chunkSize);
-                if (thisRoundLength > 0) ids[0] = prAlphabet.IndexOf(messageChunk[0]);
 
                 while (thisRoundLength > 0)
                 {
@@ -152,7 +146,7 @@ namespace JabrAPI
                             shifts,
                             exLength,
                             maxEncodingLength,
-                            ref ids
+                            ref prevId
                         )
                     );
 
