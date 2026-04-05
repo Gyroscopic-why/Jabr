@@ -360,9 +360,9 @@ namespace JabrAPI
                 //Write("\n\tSAFEDEC: " + RE5.Decrypt.Text(RE5.Encrypt.Text(aboba, reKey, true), reKey, true));
                 List<Byte> safeBytes = RE5.Encrypt.Bytes(lolinit, binKey, true);
                 Write("\n\tSAFEENC: ");
-                for (var ij = 0; ij < safeBytes.Count; ij++) Write(safeBytes[ij] + " "); 
-                Write("\n\tSAFEDEC: ");
+                for (var ij = 0; ij < safeBytes.Count; ij++) Write(safeBytes[ij] + " ");
                 List<Byte> safeByteDec = RE5.Decrypt.Bytes(safeBytes, binKey, true);
+                Write("\n\tSAFEDEC: ");
                 for (var ij = 0; ij < safeByteDec.Count; ij++) Write(safeByteDec[ij] + " ");
 
                 binKey.ChunkSize = BinaryChunkSize.bTEST;

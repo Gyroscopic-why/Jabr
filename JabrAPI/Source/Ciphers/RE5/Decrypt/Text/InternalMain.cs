@@ -47,7 +47,7 @@ namespace JabrAPI
                 Int32 shPerChunk = chunkSize / maxEncodingLength;
 
 
-                StringBuilder result = new(encrypted.Length / maxEncodingLength);  //  Real message length
+                StringBuilder result = new(encLength / maxEncodingLength);  //  Real message length
 
                 for (var chunk = 0; chunk < chunkCount; chunk++)
                 {
