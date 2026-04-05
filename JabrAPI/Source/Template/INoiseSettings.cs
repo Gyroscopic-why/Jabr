@@ -7,6 +7,7 @@ namespace JabrAPI.Template
     public abstract class INoiseSettings(
         Int32 outputLength = 0,
         bool  useDynamicOutputAlignment = true,
+        bool  minimizeOutputLengthIfDynamic = true,
 
         bool  forceOptimalEntropy = true,
         Noise.ExpectedEntropy expectedEntropy = Noise.ExpectedEntropy.C1_Medium,
@@ -17,8 +18,9 @@ namespace JabrAPI.Template
 
         Int32  chunkSizeForSplitting = 256)
     {
-        public Int32 OutputLength              { get; set; } = outputLength;
-        public bool  UseDynamicOutputAlignment { get; set; } = useDynamicOutputAlignment;
+        public Int32 OutputLength                  { get; set; } = outputLength;
+        public bool  UseDynamicOutputAlignment     { get; set; } = useDynamicOutputAlignment;
+        public bool  MinimizeOutputLengthIfDynamic { get; set; } = minimizeOutputLengthIfDynamic;
 
 
         public bool  ForceOptimalEntropy             { get; set; } = forceOptimalEntropy;

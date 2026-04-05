@@ -25,27 +25,27 @@ namespace JabrAPI
 
 
                 Int32 outputLength = noisifier.settings.OutputLength,
-                      curLength = message.Length;
+                      curLength    = message.Length;
 
-                if (outputLength == 0)
-                {
-                    outputLength = (Int32)Math.Pow
+                if (outputLength  == 0)
+                    outputLength  = (Int32)Math.Pow
                     (
                         2,
-                        Math.Min
-                        (
-                            (Int32)noisifier.settings.BoundaryAlignment,
-                            Math.Ceiling
+                        noisifier.settings.MinimizeOutputLengthIfDynamic ?
+                            Math.Min
                             (
-                                Math.Log2(curLength)
+                                (Int32)noisifier.settings.BoundaryAlignment,
+                                (Int32)Math.Ceiling(Math.Log2(curLength))
                             )
-                        )
+                        : (Int32)noisifier.settings.BoundaryAlignment
                     );
-                    if (curLength > outputLength &&
-                        noisifier.settings.UseDynamicOutputAlignment)
-                        outputLength *= (1 + curLength / outputLength);
+                
+                if (curLength > outputLength)
+                {
+                    if (noisifier.settings.UseDynamicOutputAlignment)
+                        outputLength *= 1 + curLength / outputLength;
+                    else return message;
                 }
-                if (message.Length >= outputLength) return message;
 
 
                 Int32 maxAvgNoiseCount =

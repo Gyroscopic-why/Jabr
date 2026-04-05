@@ -12,6 +12,7 @@ namespace JabrAPI
         public class Settings(
             Int32 outputLength = 0,
             bool useDynamicOutputAlignment = true,
+            bool minimizeOutputLengthIfDynamic = true,
 
             bool forceOptimalEntropy = true,
             ExpectedEntropy expectedEntropy = ExpectedEntropy.C1_Medium,
@@ -23,19 +24,20 @@ namespace JabrAPI
             Int32 chunkSizeForSplitting = 64,
             TextOutputBoundaryAlignment boundaryAlignment
                 = TextOutputBoundaryAlignment.c256
-        ) : INoiseSettings(
-            outputLength,
-            useDynamicOutputAlignment,
+            ) : INoiseSettings(
+                outputLength,
+                useDynamicOutputAlignment,
+                minimizeOutputLengthIfDynamic,
 
-            forceOptimalEntropy,
-            expectedEntropy,
+                forceOptimalEntropy,
+                expectedEntropy,
 
-            primaryNoiseBiasPercents,
-            complexNoisePairBiasPercents,
-            complexNoiseIntervalBiasPercents,
+                primaryNoiseBiasPercents,
+                complexNoisePairBiasPercents,
+                complexNoiseIntervalBiasPercents,
 
-            chunkSizeForSplitting
-    )
+                chunkSizeForSplitting
+            )
         {
             public TextOutputBoundaryAlignment BoundaryAlignment
             { get; set; } = boundaryAlignment;
@@ -45,6 +47,7 @@ namespace JabrAPI
         public class BinarySettings(
             Int32 outputLength = 0,
             bool useDynamicOutputAlignment = true,
+            bool minimizeOutputLengthIfDynamic = true,
 
             bool forceOptimalEntropy = true,
             ExpectedEntropy expectedEntropy = ExpectedEntropy.C1_Medium,
@@ -59,6 +62,7 @@ namespace JabrAPI
             ) : INoiseSettings(
                 outputLength,
                 useDynamicOutputAlignment,
+                minimizeOutputLengthIfDynamic,
 
                 forceOptimalEntropy,
                 expectedEntropy,
@@ -68,7 +72,7 @@ namespace JabrAPI
                 complexNoiseIntervalBiasPercents,
 
                 chunkSizeForSplitting
-        )
+            )
         {
             public BinaryOutputBoundaryAlignment BoundaryAlignment
             { get; set; } = boundaryAlignment;
