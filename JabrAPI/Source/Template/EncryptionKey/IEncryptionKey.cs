@@ -18,6 +18,8 @@ namespace JabrAPI.Template
 
 
 
+        public TextChunkSize ChunkSize { get; set; } = TextChunkSize.c65536;
+
         public Noisifier Noisifier => _noisifier;
 
         virtual public ISetHelper? Set => null;

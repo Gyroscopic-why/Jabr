@@ -14,9 +14,7 @@ namespace JabrAPI.Template
 
         double primaryNoiseBiasPercents         = 50.0,
         double complexNoisePairBiasPercents     = 25.0,
-        double complexNoiseIntervalBiasPercents = 66.6,
-
-        Int32  chunkSizeForSplitting = 256)
+        double complexNoiseIntervalBiasPercents = 66.6)
     {
         public Int32 OutputLength                  { get; set; } = outputLength;
         public bool  UseDynamicOutputAlignment     { get; set; } = useDynamicOutputAlignment;
@@ -30,8 +28,5 @@ namespace JabrAPI.Template
         public double PrimaryNoiseBiasPercents         { get; set; } = primaryNoiseBiasPercents;
         public double ComplexNoisePairBiasPercents     { get; set; } = complexNoisePairBiasPercents;
         public double ComplexNoiseIntervalBiasPercents { get; set; } = complexNoiseIntervalBiasPercents;
-
-
-        public Int32  ChunkSizeForSplitting { get; set; } = chunkSizeForSplitting;
     }
 }

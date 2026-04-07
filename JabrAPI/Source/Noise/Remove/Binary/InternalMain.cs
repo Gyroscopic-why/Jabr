@@ -12,7 +12,7 @@ namespace JabrAPI
         {
             static public Byte[] RemoveFastBytes(List<Byte> message, BinaryNoisifier noisifier)
             {
-                Int32 chunkSize = noisifier.settings.ChunkSizeForSplitting,
+                Int32 chunkSize  = (Int32)noisifier.settings.ChunkSize,
                       chunkCount = (Int32)Math.Ceiling((double)message.Count / chunkSize);
 
                 if (chunkSize < 1)

@@ -21,7 +21,7 @@ namespace JabrAPI
             double complexNoisePairBiasPercents = 25.0,
             double complexNoiseIntervalBiasPercents = 66.6,
 
-            Int32 chunkSizeForSplitting = 64,
+            TextChunkSize chunkSize = TextChunkSize.c4096,
             TextOutputBoundaryAlignment boundaryAlignment
                 = TextOutputBoundaryAlignment.c256
             ) : INoiseSettings(
@@ -34,13 +34,13 @@ namespace JabrAPI
 
                 primaryNoiseBiasPercents,
                 complexNoisePairBiasPercents,
-                complexNoiseIntervalBiasPercents,
-
-                chunkSizeForSplitting
+                complexNoiseIntervalBiasPercents
             )
         {
             public TextOutputBoundaryAlignment BoundaryAlignment
             { get; set; } = boundaryAlignment;
+
+            public TextChunkSize ChunkSize { get; set; } = chunkSize;
         }
 
 
@@ -56,7 +56,7 @@ namespace JabrAPI
             double complexNoisePairBiasPercents = 25.0,
             double complexNoiseIntervalBiasPercents = 66.6,
 
-            Int32 chunkSizeForSplitting = 256,
+            BinaryChunkSize chunkSize = BinaryChunkSize.KByte8,
             BinaryOutputBoundaryAlignment boundaryAlignment
                 = BinaryOutputBoundaryAlignment.KByte1
             ) : INoiseSettings(
@@ -69,13 +69,13 @@ namespace JabrAPI
 
                 primaryNoiseBiasPercents,
                 complexNoisePairBiasPercents,
-                complexNoiseIntervalBiasPercents,
-
-                chunkSizeForSplitting
+                complexNoiseIntervalBiasPercents
             )
         {
             public BinaryOutputBoundaryAlignment BoundaryAlignment
             { get; set; } = boundaryAlignment;
+
+            public BinaryChunkSize ChunkSize { get; set; } = chunkSize;
         }
 
 

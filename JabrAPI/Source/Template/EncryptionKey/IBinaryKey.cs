@@ -18,6 +18,8 @@ namespace JabrAPI.Template
 
 
 
+        public BinaryChunkSize ChunkSize { get; set; } = BinaryChunkSize.KByte128;
+
         public BinaryNoisifier Noisifier => _noisifier;
 
         virtual public ISetHelper? Set => null;

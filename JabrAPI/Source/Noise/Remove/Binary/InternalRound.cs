@@ -17,7 +17,10 @@ namespace JabrAPI
                 List<Byte> primaryNoise, List<Byte> complexNoise)
             {
                 Int32 dataStartId = 0;
+
+                #pragma warning disable IDE0028
                 List<Byte> dynamicResult = new(noised.Count);
+                #pragma warning restore IDE0028
 
                 for (var i = 0; i < noised.Count; i++)
                 {

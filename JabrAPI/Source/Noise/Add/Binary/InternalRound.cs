@@ -16,7 +16,7 @@ namespace JabrAPI
                 List<Byte> message, List<Byte> fakeSelection,
                 BinaryNoisifier noisifier, SecureRandom random,
                 Int32 maxRoundLength, Int32 maxSyntropy,
-                Int32 minAvgNoiseCount, Int32 maxAvgNoiseCount,
+                Int32 maxAvgNoiseCount,
                 ref Int32 prevFinalUnnoised)
             {
                 Int32 initialLength = message.Count, chosenOffset;
@@ -30,9 +30,7 @@ namespace JabrAPI
                 chosenOffset = random.Next
                 (
                     noisifier.settings.ForceOptimalEntropy
-                        && prevFinalUnnoised >= maxSyntropy
-                        && minAvgNoiseCount <= 0 ?
-                           minAvgNoiseCount + 1 : minAvgNoiseCount,
+                        && prevFinalUnnoised >= maxSyntropy ? 1 : 0,
                     Math.Min
                     (
                         maxAvgNoiseCount,
@@ -112,9 +110,7 @@ namespace JabrAPI
                     (
                         noisifier.settings.ForceOptimalEntropy
                             && prevFinalUnnoised >= maxSyntropy
-                            && i < initialLength
-                            && minAvgNoiseCount <= 0 ?
-                               minAvgNoiseCount + 1 : minAvgNoiseCount,
+                            && i < initialLength ? 1 : 0,
                         Math.Min
                         (
                             maxAvgNoiseCount,

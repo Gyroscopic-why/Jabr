@@ -19,8 +19,6 @@ namespace JabrAPI
 
             private Byte _compactedPrMaxLength = 255, _compactedExMaxLength = 7;
 
-            public BinaryChunkSize ChunkSize { get; set; } = BinaryChunkSize.KByte128;
-
 
 
             public BinaryKey(List<Byte> primary, List<Byte> external, List<Byte> shifts)

@@ -14,14 +14,9 @@ namespace JabrAPI
         {
             static public string AddFastText(string message, Noisifier noisifier, string fakeSelection)
             {
-                Int32 chunkSize = noisifier.settings.ChunkSizeForSplitting;
+                Int32 chunkSize = (Int32)noisifier.settings.ChunkSize;
 
-                if (chunkSize < 1)
-                    throw new ArgumentException
-                    (
-                        $"Impossible to split data into chunks of size: {chunkSize}",
-                        nameof(noisifier.settings)
-                    );
+                if (chunkSize < 2) chunkSize = 2;
 
 
                 Int32 outputLength = noisifier.settings.OutputLength,
@@ -62,9 +57,8 @@ namespace JabrAPI
                         outputLength
                     );
 
-                SecureRandom random = new(128);
-
                 #pragma warning disable IDE0028
+                SecureRandom random = new(128);
                 List<char> almostResult = new(outputLength);
                 #pragma warning restore IDE0028
 
@@ -104,7 +98,6 @@ namespace JabrAPI
                             random,
                             maxRoundLength,
                             maxSyntropy,
-                            0,  //  minAvgNoiseCount
                             maxAvgNoiseCount,
                             ref prevFinalUnnoised
                         )
@@ -138,7 +131,6 @@ namespace JabrAPI
                             random,
                             chunkSize,
                             maxSyntropy,
-                            0,  //  minAvgNoiseCount
                             maxAvgNoiseCount,
                             ref prevFinalUnnoised
                         )
@@ -156,6 +148,7 @@ namespace JabrAPI
 
                 return new string([.. almostResult]);
             }
+
         }
     }
 }

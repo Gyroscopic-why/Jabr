@@ -10,7 +10,7 @@ namespace JabrAPI
         {
             static public string RemoveFastText(string message, Noisifier noisifier)
             {
-                Int32 chunkSize = noisifier.settings.ChunkSizeForSplitting,
+                Int32 chunkSize  = (Int32)noisifier.settings.ChunkSize,
                       chunkCount = (Int32)Math.Ceiling((double)message.Length / chunkSize);
 
                 if (chunkSize < 1)

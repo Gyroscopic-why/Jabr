@@ -14,7 +14,7 @@ namespace JabrAPI
         {
             static public List<Byte> AddFastBytes(List<Byte> message, BinaryNoisifier noisifier, List<Byte> fakeSelection)
             {
-                Int32 chunkSize = noisifier.settings.ChunkSizeForSplitting;
+                Int32 chunkSize = (Int32)noisifier.settings.ChunkSize;
 
                 if (chunkSize < 1)
                     throw new ArgumentException
@@ -62,8 +62,11 @@ namespace JabrAPI
                         outputLength
                     );
 
+                #pragma warning disable IDE0028
                 SecureRandom random = new(128);
                 List<Byte> almostResult = new(outputLength);
+                #pragma warning restore IDE0028
+
                 fakeSelection = fakeSelection.Count < 1 ? noisifier.PrimaryNoise : fakeSelection;
                 Int32 prevFinalUnnoised = 0;
 
@@ -100,7 +103,6 @@ namespace JabrAPI
                             random,
                             maxRoundLength,
                             maxSyntropy,
-                            0,  //  minAvgNoiseCount
                             maxAvgNoiseCount,
                             ref prevFinalUnnoised
                         )
@@ -134,7 +136,6 @@ namespace JabrAPI
                             random,
                             chunkSize,
                             maxSyntropy,
-                            0,  //  minAvgNoiseCount
                             maxAvgNoiseCount,
                             ref prevFinalUnnoised
                         )

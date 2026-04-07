@@ -22,8 +22,6 @@ namespace JabrAPI
             private List<char> _externalNecessary = [], _externalAllowed = [], _externalBanned = [];
             private Int32 _primaryMaxLength = -1, _externalMaxLength = -1;
 
-            public TextChunkSize ChunkSize { get; set; } = TextChunkSize.c65536;
-
 
 
             public EncryptionKey(string primaryAlphabet, string externalAlphabet, List<Int16> shifts)
