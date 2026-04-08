@@ -31,11 +31,15 @@ namespace JabrAPI
                 (
                     noisifier.settings.ForceOptimalEntropy
                         && prevFinalUnnoised >= maxSyntropy ? 1 : 0,
-                    Math.Min
+                    Math.Max
                     (
-                        maxAvgNoiseCount,
-                        maxRoundLength - message.Count + 1
-                            - initialLength / maxSyntropy
+                        Math.Min
+                        (
+                            maxAvgNoiseCount,
+                            maxRoundLength - message.Count + 1
+                                - initialLength / maxSyntropy
+                        ),
+                        1
                     )
                 );
 
@@ -111,11 +115,15 @@ namespace JabrAPI
                         noisifier.settings.ForceOptimalEntropy
                             && prevFinalUnnoised >= maxSyntropy
                             && i < initialLength ? 1 : 0,
-                        Math.Min
+                        Math.Max
                         (
-                            maxAvgNoiseCount,
-                            maxRoundLength - message.Count + 1
-                                - (initialLength - i) / maxSyntropy
+                            Math.Min
+                            (
+                                maxAvgNoiseCount,
+                                maxRoundLength - message.Count + 1
+                                    - (initialLength - i) / maxSyntropy
+                            ),
+                            1
                         )
                     );
 

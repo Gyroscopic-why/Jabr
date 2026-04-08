@@ -21,6 +21,7 @@ namespace JabrAPI
             double complexNoisePairBiasPercents = 25.0,
             double complexNoiseIntervalBiasPercents = 66.6,
 
+            double hardChunkSizeToSoftCoefficient = 4.0,
             TextChunkSize chunkSize = TextChunkSize.c4096,
             TextOutputBoundaryAlignment boundaryAlignment
                 = TextOutputBoundaryAlignment.c256
@@ -34,7 +35,9 @@ namespace JabrAPI
 
                 primaryNoiseBiasPercents,
                 complexNoisePairBiasPercents,
-                complexNoiseIntervalBiasPercents
+                complexNoiseIntervalBiasPercents,
+
+                hardChunkSizeToSoftCoefficient
             )
         {
             public TextOutputBoundaryAlignment BoundaryAlignment
@@ -56,6 +59,7 @@ namespace JabrAPI
             double complexNoisePairBiasPercents = 25.0,
             double complexNoiseIntervalBiasPercents = 66.6,
 
+            double hardChunkSizeToSoftCoefficient = 4.0,
             BinaryChunkSize chunkSize = BinaryChunkSize.KByte8,
             BinaryOutputBoundaryAlignment boundaryAlignment
                 = BinaryOutputBoundaryAlignment.KByte1
@@ -69,7 +73,9 @@ namespace JabrAPI
 
                 primaryNoiseBiasPercents,
                 complexNoisePairBiasPercents,
-                complexNoiseIntervalBiasPercents
+                complexNoiseIntervalBiasPercents,
+
+                hardChunkSizeToSoftCoefficient
             )
         {
             public BinaryOutputBoundaryAlignment BoundaryAlignment

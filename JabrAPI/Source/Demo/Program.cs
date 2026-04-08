@@ -215,7 +215,8 @@ namespace JabrAPI
 
                 Write("\n\tAdding noise to data..");
 
-                string noised = Noise.Add.Text(encrypted, reKey, true);
+                //string noised = Noise.Add.Text(encrypted, reKey, true);
+                string noised = Noise.Internal.AddFastText(encrypted, reKey.Noisifier, "");
                 //List<Byte> binoised = Noise.Add.Bytes(bincrypted, binKey, true);
                 //List<Byte> binoised = RE5.Encrypt.WithNoise.Bytes(lolinit, binKey, true);
                 //List<Byte> binoised = RE5.Encrypt.WithNoise.TextToBinary_Utf16(aboba, reKey, true);

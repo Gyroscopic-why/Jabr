@@ -27,7 +27,7 @@ namespace JabrAPI
 
     public enum TextChunkSize
     {
-        cTEST = 10,
+        cTEST = 30,
         c256 = 256,
         c512 = 512,
 
