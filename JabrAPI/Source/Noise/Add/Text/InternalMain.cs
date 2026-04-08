@@ -17,9 +17,10 @@ namespace JabrAPI
                 Int32 chunkSize   = (Int32)noisifier.settings.ChunkSize,
                     hardChunkSize = (Int32)(chunkSize * noisifier.settings.HardChunkSizeToSoftCoefficient);
                 if (chunkSize < 2) chunkSize = 2;
+                if (hardChunkSize < 2) hardChunkSize = 2;
 
 
-                Int32 outputLength = noisifier.settings.OutputLength, curLength = message.Length;
+                Int32 outputLength = noisifier.settings.OutputLength, initialLength = message.Length;
 
                 if (outputLength == 0)
                     outputLength = (Int32)Math.Pow
@@ -29,15 +30,15 @@ namespace JabrAPI
                             Math.Min
                             (
                                 (Int32)noisifier.settings.BoundaryAlignment,
-                                (Int32)Math.Ceiling(Math.Log2(curLength))
+                                (Int32)Math.Ceiling(Math.Log2(initialLength))
                             )
                         : (Int32)noisifier.settings.BoundaryAlignment
                     );
 
-                if (curLength > outputLength)
+                if (initialLength > outputLength)
                 {
                     if (noisifier.settings.UseDynamicOutputAlignment)
-                        outputLength *= 1 + curLength / outputLength;
+                        outputLength *= 1 + initialLength / outputLength;
                     else return message;
                 }
 
@@ -45,17 +46,17 @@ namespace JabrAPI
                 Int32 maxSyntropy = Miscellaneous.CalculateMaxNonEntropy
                     (
                         noisifier.settings.ExpectedEntropy,
-                        curLength,
+                        initialLength,
                         outputLength
                     );
                 Int32 maxAvgNoiseCount =
                     Math.Max
                     (
                         1,
-                        (outputLength - curLength)
-                        / (curLength + 1)
+                        (outputLength - initialLength)
+                        / (initialLength + 1)
                     ) * 2 + 1;
-                double avgNoisePerCharInRound = (double)curLength / outputLength;
+                double avgNoisePerCharInRound = (double)initialLength / outputLength;
 
                 #pragma warning disable IDE0028
                 SecureRandom random = new(128);
@@ -67,7 +68,7 @@ namespace JabrAPI
 
                 Int32 REMOVE_AFTER_TESTING;
 
-                for (var chunk = 1; result.Count + curLength - offset < outputLength; chunk++)
+                for (var chunk = 1; result.Count + initialLength - offset < outputLength; chunk++)
                 {
                     random.Reseed();
 
@@ -82,10 +83,10 @@ namespace JabrAPI
                         );
 
                     messageChunk = result.Count - outputLength + maxRoundLength >= 0
-                        ? curLength - offset
+                        ? initialLength - offset
                         : Math.Min
                         (
-                            curLength - offset,
+                            initialLength - offset,
                             Math.Max
                             (
                                 (Int32)(maxRoundLength * avgNoisePerCharInRound),
