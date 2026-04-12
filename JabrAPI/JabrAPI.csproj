@@ -1,28 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PublishAot>True</PublishAot>
     <SignAssembly>True</SignAssembly>
     <Title>JabrAPI</Title>
-    <Version>5.0.0</Version>
+    <Version>5.0.0-beta</Version>
     <Authors>Gyroscopic</Authors>
     <Description>Cryptography API for RE ciphers from the Jabr family</Description>
     <PackageProjectUrl>https://github.com/Gyroscopic-why/Jabr</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Gyroscopic-why/Jabr</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>cryptography;ciphers;encryptor;encryption;decryption;re;re5;re4;noise;noisification;noisify;denoisify;noised</PackageTags>
+    <PackageTags>jabr;jabrapi;cryptography;ciphers;encryptor;encryption;decryption;re;re5;re4;noise;noisification;noisify;denoisify;noised</PackageTags>
     <DelaySign>False</DelaySign>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Source\Ciphers\RE3\RE3.cs" />
     <Compile Remove="Source\Ciphers\RE4\RE4.cs" />
     <Compile Remove="Source\Demo\Demo.cs" />
+    <Compile Remove="Source\Demo\Program.cs" />
     <Compile Remove="Source\Demo\Test_Benchmarker.cs" />
   </ItemGroup>
 
@@ -30,6 +30,7 @@
     <None Include="Source\Ciphers\RE3\RE3.cs" />
     <None Include="Source\Ciphers\RE4\RE4.cs" />
     <None Include="Source\Demo\Demo.cs" />
+    <None Include="Source\Demo\Program.cs" />
     <None Include="Source\Demo\Test_Benchmarker.cs" />
   </ItemGroup>
 

@@ -87,12 +87,12 @@ namespace JabrAPI
                     );
 
 
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.Write($"\n\t{chunk + 1})       ");
-                    Console.BackgroundColor = ConsoleColor.Yellow;
-                    Console.Write("".PadRight(result.Count, ' '));
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    Console.BackgroundColor = ConsoleColor.Black;
+                    //Console.ForegroundColor = ConsoleColor.Yellow;
+                    //Console.Write($"\n\t{chunk + 1})       ");
+                    //Console.BackgroundColor = ConsoleColor.Yellow;
+                    //Console.Write("".PadRight(result.Count, ' '));
+                    //Console.ForegroundColor = ConsoleColor.Gray;
+                    //Console.BackgroundColor = ConsoleColor.Black;
                 }
 
                 return result;

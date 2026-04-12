@@ -167,17 +167,17 @@ namespace JabrAPI
             List<Byte> lolinit = [0, 1, 2, 3, 3, 3, 2, 1, 0,];
             Int32 EXTEND = 128, attemptCount = 0;
 
-            reKey.ChunkSize = TextChunkSize.cTEST;
-            reKey.Noisifier.settings.ChunkSize = TextChunkSize.cTEST;
+            //reKey.ChunkSize = TextChunkSize.cTEST;
+            //reKey.Noisifier.settings.ChunkSize = TextChunkSize.cTEST;
 
-            binKey.ChunkSize = BinaryChunkSize.bTEST;
-            binKey.Noisifier.settings.ChunkSize = BinaryChunkSize.bTEST;
+            //binKey.ChunkSize = BinaryChunkSize.bTEST;
+            //binKey.Noisifier.settings.ChunkSize = BinaryChunkSize.bTEST;
 
 
             double valueBias = 1.6, powerBias = 1.5;
 
             Int32 maxNonEntropy = 0;
-            for (var i = 0; i < 10000; i++)
+            for (var i = 0; i < 10; i++)
             {
                 Write("\n\tAttempt: " + ++attemptCount);
                 //reKey.Set.Sensitive.ExAlphabet("Xv+");
@@ -377,8 +377,8 @@ namespace JabrAPI
                 for (var ij = 0; ij < safeByteDec.Count; ij++) Write(safeByteDec[ij] + " ");
                 //Write("\n\tSAFEDEC: " + RE5.Decrypt.TextFromBinary_Utf16(safeBytes, reKey, true));
 
-                reKey.ChunkSize = TextChunkSize.cTEST;
-                binKey.ChunkSize = BinaryChunkSize.bTEST;
+                //reKey.ChunkSize = TextChunkSize.cTEST;
+                //binKey.ChunkSize = BinaryChunkSize.bTEST;
                 //Write("\n\tDecrypt: " + RE5.Decrypt.Text(encrypted, reKey, true));
                 //Write("\n\tDecrypt: " + RE5.Decrypt.TextFromBinary_Utf16(bincrypted, reKey, true));
 

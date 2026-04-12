@@ -4,9 +4,9 @@
 
 namespace JabrAPI.Template
 {
-    public abstract class INoiseSettings(
+    abstract public class INoiseSettings(
         Int32 outputLength = 0,
-        bool  useDynamicOutputAlignment = true,
+        bool  useDynamicOutputAlignment     = true,
         bool  minimizeOutputLengthIfDynamic = true,
 
         bool  forceOptimalEntropy = true,
@@ -15,7 +15,7 @@ namespace JabrAPI.Template
         double primaryNoiseBiasPercents         = 50.0,
         double complexNoisePairBiasPercents     = 25.0,
         double complexNoiseIntervalBiasPercents = 66.6,
-        
+
         double hardChunkSizeToSoftCoefficient = 4.0)
     {
         public Int32 OutputLength                  { get; set; } = outputLength;

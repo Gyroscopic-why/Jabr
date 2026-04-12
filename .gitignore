@@ -298,3 +298,4 @@ __pycache__/
 *.targets
 *.props
 Jabr/Properties/
+JabrAPI_Android/

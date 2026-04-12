@@ -68,7 +68,7 @@ namespace JabrAPI
 
                 Int32 REMOVE_AFTER_TESTING;
 
-                for (var chunk = 1; result.Count + initialLength - offset < outputLength; chunk++)
+                for (var curOptimalSize = chunkSize; result.Count + initialLength - offset < outputLength; curOptimalSize += chunkSize)
                 {
                     random.Reseed();
 
@@ -78,7 +78,7 @@ namespace JabrAPI
                             Math.Min
                             (
                                 outputLength,
-                                chunkSize * chunk
+                                curOptimalSize
                             ) - result.Count
                         );
 
@@ -120,16 +120,16 @@ namespace JabrAPI
 
                     offset += messageChunk;
 
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Write($"\n\t{chunk})       ");
-                    Console.BackgroundColor = ConsoleColor.Red;
-                    Console.Write("".PadRight(result.Count - REMOVE_AFTER_TESTING, ' '));
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.BackgroundColor = ConsoleColor.Black;
-                    Console.Write(" " + "(" + messageChunk + ") "
-                        + (result.Count - REMOVE_AFTER_TESTING)
-                        + "/" + maxRoundLength + ": " + result.Count);
-                    Console.ForegroundColor = ConsoleColor.Gray;
+                    //Console.ForegroundColor = ConsoleColor.Red;
+                    //Console.Write($"\n\t{curOptimalSize / chunkSize})       ");
+                    //Console.BackgroundColor = ConsoleColor.Red;
+                    //Console.Write("".PadRight(result.Count - REMOVE_AFTER_TESTING, ' '));
+                    //Console.ForegroundColor = ConsoleColor.White;
+                    //Console.BackgroundColor = ConsoleColor.Black;
+                    //Console.Write(" " + "(" + messageChunk + ") "
+                    //    + (result.Count - REMOVE_AFTER_TESTING)
+                    //    + "/" + maxRoundLength + ": " + result.Count);
+                    //Console.ForegroundColor = ConsoleColor.Gray;
                 }
 
                 return new string([.. result]);
