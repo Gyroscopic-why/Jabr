@@ -111,11 +111,16 @@ namespace JabrAPI
                 if   (chunkSize <= maxEncodingLength) chunkSize = maxEncodingLength + 1;
 
 
-                string finalFileName = Path.ChangeExtension(fileName, "enc-re5");
-                for (var i = 1; File.Exists(Path.Combine(absoluteOutputDirectory, finalFileName)); i++)
-                    finalFileName = Path.ChangeExtension(fileName, $"enc{i}-re5");
+                string finalFileName;
+                if (!reKey.KeepOriginalFileExtension)
+                {
+                    finalFileName = Path.ChangeExtension(fileName, "enc-re5");
+                    for (var i = 1; File.Exists(Path.Combine(absoluteOutputDirectory, finalFileName)); i++)
+                        finalFileName = Path.ChangeExtension(fileName, $"enc{i}-re5");
+                }
+                else finalFileName = fileName + ".re5";
 
-                using StreamReader reader = new(Path.Combine(absoluteInputDirectory, fileName));
+                using StreamReader reader = new(Path.Combine(absoluteInputDirectory,  fileName));
                 using StreamWriter writer = new(Path.Combine(absoluteOutputDirectory, finalFileName));
                 
                 

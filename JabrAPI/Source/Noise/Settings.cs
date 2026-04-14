@@ -14,6 +14,8 @@ namespace JabrAPI
             bool useDynamicOutputAlignment = true,
             bool minimizeOutputLengthIfDynamic = true,
 
+            bool keepOriginalFileExtension = true,
+
             bool forceOptimalEntropy = true,
             ExpectedEntropy expectedEntropy = ExpectedEntropy.C1_Medium,
 
@@ -29,6 +31,8 @@ namespace JabrAPI
                 outputLength,
                 useDynamicOutputAlignment,
                 minimizeOutputLengthIfDynamic,
+
+                keepOriginalFileExtension,
 
                 forceOptimalEntropy,
                 expectedEntropy,
@@ -52,6 +56,8 @@ namespace JabrAPI
             bool useDynamicOutputAlignment = true,
             bool minimizeOutputLengthIfDynamic = true,
 
+            bool keepOriginalFileExtension = true,
+
             bool forceOptimalEntropy = true,
             ExpectedEntropy expectedEntropy = ExpectedEntropy.C1_Medium,
 
@@ -67,6 +73,8 @@ namespace JabrAPI
                 outputLength,
                 useDynamicOutputAlignment,
                 minimizeOutputLengthIfDynamic,
+
+                keepOriginalFileExtension,
 
                 forceOptimalEntropy,
                 expectedEntropy,

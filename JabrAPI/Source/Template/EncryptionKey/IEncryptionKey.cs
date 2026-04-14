@@ -19,6 +19,7 @@ namespace JabrAPI.Template
 
 
         public TextChunkSize ChunkSize { get; set; } = TextChunkSize.c65536;
+        public bool KeepOriginalFileExtension = true;
 
         public Noisifier Noisifier => _noisifier;
 

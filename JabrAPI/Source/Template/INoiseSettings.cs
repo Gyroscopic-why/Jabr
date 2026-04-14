@@ -9,6 +9,8 @@ namespace JabrAPI.Template
         bool  useDynamicOutputAlignment     = true,
         bool  minimizeOutputLengthIfDynamic = true,
 
+        bool  keepOriginalFileExtension = true,
+
         bool  forceOptimalEntropy = true,
         Noise.ExpectedEntropy expectedEntropy = Noise.ExpectedEntropy.C1_Medium,
 
@@ -21,6 +23,9 @@ namespace JabrAPI.Template
         public Int32 OutputLength                  { get; set; } = outputLength;
         public bool  UseDynamicOutputAlignment     { get; set; } = useDynamicOutputAlignment;
         public bool  MinimizeOutputLengthIfDynamic { get; set; } = minimizeOutputLengthIfDynamic;
+
+        
+        public bool  KeepOriginalFileExtension { get; set; } = keepOriginalFileExtension;
 
 
         public bool  ForceOptimalEntropy             { get; set; } = forceOptimalEntropy;

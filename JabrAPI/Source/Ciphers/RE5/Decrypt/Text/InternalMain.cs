@@ -118,12 +118,19 @@ namespace JabrAPI
                 chunkSize -= chunkSize % maxEncodingLength;
                 if (chunkSize < maxEncodingLength) chunkSize = maxEncodingLength;
 
-                string finalFileName = Path.ChangeExtension(fileName, "dec-re5");
-                for (var i = 1; File.Exists(Path.Combine(absoluteOutputDirectory, finalFileName)); i++)
-                    finalFileName = Path.ChangeExtension(fileName, $"dec{i}-re5");
 
-                using StreamReader reader = new(Path.Combine(absoluteInputDirectory, fileName));
+                string finalFileName;
+                if (!reKey.KeepOriginalFileExtension)
+                {
+                    finalFileName = Path.ChangeExtension(fileName, "dec-re5");
+                    for (var i = 1; File.Exists(Path.Combine(absoluteOutputDirectory, finalFileName)); i++)
+                        finalFileName = Path.ChangeExtension(fileName, $"dec{i}-re5");
+                }
+                else finalFileName = Path.ChangeExtension(fileName, null);
+
+                using StreamReader reader = new(Path.Combine(absoluteInputDirectory,  fileName));
                 using StreamWriter writer = new(Path.Combine(absoluteOutputDirectory, finalFileName));
+
 
                 char[] messageChunk = new char[chunkSize];
                 Int32 offset = 0, bytesRead;

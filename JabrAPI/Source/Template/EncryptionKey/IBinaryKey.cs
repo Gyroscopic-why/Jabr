@@ -19,6 +19,7 @@ namespace JabrAPI.Template
 
 
         public BinaryChunkSize ChunkSize { get; set; } = BinaryChunkSize.KByte128;
+        public bool KeepOriginalFileExtension = true;
 
         public BinaryNoisifier Noisifier => _noisifier;
 

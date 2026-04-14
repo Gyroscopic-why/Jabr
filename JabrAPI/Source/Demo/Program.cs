@@ -23,27 +23,27 @@ namespace JabrAPI
 
 
             string fileContent = "Aboba\r\nhello world\r\n228 baobab ,.!?";
-            string testFilePath = ;
+            string txtFilePath = ;
             string fileName = "Test1.txt";
-            string encFileName = "Test1.enc-re5";
+            string encFileName = "Test1.txt.re5";
             string decFileName = "Test1.dec-re5";
 
-            Write("\n\tDeleting old Test.enc-re5 & Test1.dec-re5 file\n");
-            if (File.Exists(Path.Combine(testFilePath, encFileName)))
-                File.Delete(Path.Combine(testFilePath, encFileName));
-            if (File.Exists(Path.Combine(testFilePath, decFileName)))
-                File.Delete(Path.Combine(testFilePath, decFileName));
+            Write("\n\tDeleting old Test.txt.re5 & Test1.dec-re5 file\n");
+            if (File.Exists(Path.Combine(txtFilePath, encFileName)))
+                File.Delete(Path.Combine(txtFilePath, encFileName));
+            if (File.Exists(Path.Combine(txtFilePath, decFileName)))
+                File.Delete(Path.Combine(txtFilePath, decFileName));
 
             ReadKey();
 
             fileContent = RE5.Encrypt.Text(fileContent, reKey, true);
             Write("\n\tExpected behaviour: " + fileContent);
-            Write("\n\tEncrypting file in process: " + RE5.Encrypt.TextFile(testFilePath, fileName, reKey, true));
+            Write("\n\tEncrypting file in process: " + RE5.Encrypt.TextFile(txtFilePath, fileName, reKey, true));
 
             ReadKey();
 
             Write("\n\tExpected behaviour: " + RE5.Decrypt.Text(fileContent, reKey, true));
-            Write("\n\tEncrypting file in process: " + RE5.Decrypt.TextFile(testFilePath, encFileName, reKey, true));
+            Write("\n\tEncrypting file in process: " + RE5.Decrypt.TextFile(txtFilePath, encFileName, reKey, true));
 
             ReadKey();
 
