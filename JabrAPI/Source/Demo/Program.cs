@@ -25,15 +25,28 @@ namespace JabrAPI
             string fileContent = "Aboba\r\nhello world\r\n228 baobab ,.!?";
             string testFilePath = ;
             string fileName = "Test1.txt";
-            
-            Write("\n\tDeleting old Text.re5 file\n");
-            if (File.Exists(Path.Combine(testFilePath, fileName)))
-                File.Delete(Path.ChangeExtension(testFilePath, "re5"));
+            string encFileName = "Test1.enc-re5";
+            string decFileName = "Test1.dec-re5";
 
-            Write("\n\tExpected behaviour: " + RE5.Encrypt.Text(fileContent, reKey, true));
+            Write("\n\tDeleting old Test.enc-re5 & Test1.dec-re5 file\n");
+            if (File.Exists(Path.Combine(testFilePath, encFileName)))
+                File.Delete(Path.Combine(testFilePath, encFileName));
+            if (File.Exists(Path.Combine(testFilePath, decFileName)))
+                File.Delete(Path.Combine(testFilePath, decFileName));
+
+            ReadKey();
+
+            fileContent = RE5.Encrypt.Text(fileContent, reKey, true);
+            Write("\n\tExpected behaviour: " + fileContent);
             Write("\n\tEncrypting file in process: " + RE5.Encrypt.TextFile(testFilePath, fileName, reKey, true));
 
             ReadKey();
+
+            Write("\n\tExpected behaviour: " + RE5.Decrypt.Text(fileContent, reKey, true));
+            Write("\n\tEncrypting file in process: " + RE5.Decrypt.TextFile(testFilePath, encFileName, reKey, true));
+
+            ReadKey();
+
 
             //reKey.ChunkSize = TextChunkSize.cTEST;
             //reKey.Noisifier.settings.ChunkSize = TextChunkSize.cTEST;
@@ -67,7 +80,7 @@ namespace JabrAPI
                 //reKey.Set.Sensitive.Shifts([0]);
 
                 //string encrypted = RE5.Encrypt.Text(aboba, reKey, true);
-                List<Byte> bincrypted = RE5.Encrypt.Bytes(lolinit, binKey, true);
+                List<Byte> bincrypted = RE5.Encrypt.Binary(lolinit, binKey, true);
                 //List<Byte> bincrypted = RE5.Encrypt.TextToBinary_Utf16(aboba, reKey, true);
 
                 //EXTEND = random.Next(encrypted.Length + 2, encrypted.Length * 5);
@@ -85,13 +98,13 @@ namespace JabrAPI
 
                 //string noised = Noise.Add.Text(encrypted, reKey, true);
                 //string noised = Noise.Internal.AddFastText(encrypted, reKey.Noisifier, "");
-                //List<Byte> binoised = Noise.Add.Bytes(bincrypted, binKey, true);
-                //List<Byte> binoised = RE5.Encrypt.WithNoise.Bytes(lolinit, binKey, true);
+                //List<Byte> binoised = Noise.Add.Binary(bincrypted, binKey, true);
+                //List<Byte> binoised = RE5.Encrypt.WithNoise.Binary(lolinit, binKey, true);
                 //List<Byte> binoised = RE5.Encrypt.WithNoise.TextToBinary_Utf16(aboba, reKey, true);
-                List<Byte> binoised = Noise.Internal.AddFastBytes(bincrypted, binKey.Noisifier, []);
+                List<Byte> binoised = Noise.Internal.AddFastBinary(bincrypted, binKey.Noisifier, []);
 
                 //string denoised = Noise.Remove.Text(noised, reKey, true);
-                List<Byte> bindenoised = Noise.Remove.Bytes(binoised, binKey, true);
+                List<Byte> bindenoised = Noise.Remove.Binary(binoised, binKey, true);
 
                 Write("\n\tNoised:  ");
                 Int32 count = 0, nonEntropy = 0, thisMaxNonEntropy = 0;
@@ -236,11 +249,11 @@ namespace JabrAPI
                 binKey.ChunkSize = BinaryChunkSize.Byte512;
                 //Write("\n\tSAFEENC: " + RE5.Encrypt.Text(aboba, reKey, true));
                 //Write("\n\tSAFEDEC: " + RE5.Decrypt.Text(RE5.Encrypt.Text(aboba, reKey, true), reKey, true));
-                List<Byte> safeBytes = RE5.Encrypt.Bytes(lolinit, binKey, true);
+                List<Byte> safeBytes = RE5.Encrypt.Binary(lolinit, binKey, true);
                 //List<Byte> safeBytes = RE5.Encrypt.TextToBinary_Utf16(aboba, reKey, true);
                 Write("\n\tSAFEENC: ");
                 for (var ij = 0; ij < safeBytes.Count; ij++) Write(safeBytes[ij] + " ");
-                List<Byte> safeByteDec = RE5.Decrypt.Bytes(safeBytes, binKey, true);
+                List<Byte> safeByteDec = RE5.Decrypt.Binary(safeBytes, binKey, true);
                 Write("\n\tSAFEDEC: ");
                 for (var ij = 0; ij < safeByteDec.Count; ij++) Write(safeByteDec[ij] + " ");
                 //Write("\n\tSAFEDEC: " + RE5.Decrypt.TextFromBinary_Utf16(safeBytes, reKey, true));
@@ -250,7 +263,7 @@ namespace JabrAPI
                 //Write("\n\tDecrypt: " + RE5.Decrypt.Text(encrypted, reKey, true));
                 //Write("\n\tDecrypt: " + RE5.Decrypt.TextFromBinary_Utf16(bincrypted, reKey, true));
 
-                List<Byte> bindec = RE5.Decrypt.Bytes(bincrypted, binKey, false);
+                List<Byte> bindec = RE5.Decrypt.Binary(bincrypted, binKey, false);
                 Write("\n\tDecrypt: ");
                 for (var j = 0; j < bindec.Count; j++)
                     Write(bindec[j] + " ");

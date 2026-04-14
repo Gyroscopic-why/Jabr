@@ -115,7 +115,7 @@ namespace JabrAPI
 
 
                 //    using StreamReader reader = new(Path.Combine(absoluteInputDirectory, fileName));
-                //    using StreamWriter writer = new(Path.Combine(absoluteOutputDirectory, Path.ChangeExtension(fileName, "re5")));
+                //    using StreamWriter writer = new(Path.Combine(absoluteOutputDirectory, Path.ChangeExtension(fileName, "enc-re5")));
 
                 //    char[] messageChunk = new char[chunkSize];
                 //    Int32 offset = 0, bytesRead;

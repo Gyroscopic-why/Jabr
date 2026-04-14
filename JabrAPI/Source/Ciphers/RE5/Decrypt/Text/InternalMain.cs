@@ -89,7 +89,8 @@ namespace JabrAPI
             }
 
 
-            static public void DecryptFastTextFile(string inputPath, string outputPath, EncryptionKey reKey)
+            static public void DecryptFastTextFile(string absoluteInputDirectory, string fileName,
+                string absoluteOutputDirectory, EncryptionKey reKey)
             {
                 Int32 exLength = reKey.ExLength, shCount = reKey.ShCount;
                 string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
@@ -117,43 +118,40 @@ namespace JabrAPI
                 chunkSize -= chunkSize % maxEncodingLength;
                 if (chunkSize < maxEncodingLength) chunkSize = maxEncodingLength;
 
+                string finalFileName = Path.ChangeExtension(fileName, "dec-re5");
+                for (var i = 1; File.Exists(Path.Combine(absoluteOutputDirectory, finalFileName)); i++)
+                    finalFileName = Path.ChangeExtension(fileName, $"dec{i}-re5");
 
-
-                using StreamReader reader = new(inputPath);
-                using StreamWriter writer = new(outputPath);
+                using StreamReader reader = new(Path.Combine(absoluteInputDirectory, fileName));
+                using StreamWriter writer = new(Path.Combine(absoluteOutputDirectory, finalFileName));
 
                 char[] messageChunk = new char[chunkSize];
-                Int32 offset = 0, thisRoundLength = reader.ReadBlock(messageChunk, offset, chunkSize);
+                Int32 offset = 0, bytesRead;
 
-                while (thisRoundLength > 0)
+                while ((bytesRead = reader.ReadBlock(messageChunk, 0, chunkSize)) > 0)
                 {
                     var shiftStartId = (offset / maxEncodingLength) % shCount;
-                    List<Int16> shifts = shiftStartId + thisRoundLength > shCount ?
+                    List<Int16> shifts = shiftStartId + bytesRead > shCount ?
                         [.. allShifts.GetRange(shiftStartId, shCount - shiftStartId),
                          .. allShifts.GetRange(0, shiftStartId)]
-                          : allShifts.GetRange(shiftStartId, thisRoundLength);
+                          : allShifts.GetRange(shiftStartId, bytesRead);
 
                     writer.Write
                     (
                         DecryptionRound
                         (
-                            messageChunk.ToList().GetRange
-                            (
-                                offset,
-                                thisRoundLength
-                            ).ToString()!,
+                            new string(messageChunk, 0, bytesRead),
                             prAlphabet,
                             exAlphabet,
                             shifts,
                             exLength,
                             maxEncodingLength,
-                            thisRoundLength / maxEncodingLength,
+                            bytesRead / maxEncodingLength,
                             ref decodedId
                         )
                     );
 
-                    offset += thisRoundLength;
-                    thisRoundLength = reader.ReadBlock(messageChunk, offset, chunkSize);
+                    offset += bytesRead;
                 }
             }
         }
