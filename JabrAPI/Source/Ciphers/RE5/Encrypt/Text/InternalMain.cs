@@ -78,21 +78,14 @@ namespace JabrAPI
                             ref prevId
                         )
                     );
-
-
-                    //Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    //Console.Write($"\n\t{chunk + 1})       ");
-                    //Console.BackgroundColor = ConsoleColor.DarkYellow;
-                    //Console.Write("".PadRight(result.Length, ' '));
-                    //Console.ForegroundColor = ConsoleColor.Gray;
-                    //Console.BackgroundColor = ConsoleColor.Black;
                 }
 
                 return result.ToString();
             }
 
 
-            static public void EncryptFastTextFile(string inputPath, string outputPath, EncryptionKey reKey)
+            static public void EncryptFastTextFile(string absoluteInputDirectory, string fileName,
+                string absoluteOutputDirectory, EncryptionKey reKey)
             {
                 string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
                 Int32 exLength = reKey.ExLength, shCount = reKey.ShCount;
@@ -118,29 +111,25 @@ namespace JabrAPI
                 if   (chunkSize <= maxEncodingLength) chunkSize = maxEncodingLength + 1;
 
 
-                using StreamReader reader = new(inputPath);
-                using StreamWriter writer = new(outputPath);
+                using StreamReader reader = new(Path.Combine(absoluteInputDirectory, fileName));
+                using StreamWriter writer = new(Path.Combine(absoluteOutputDirectory, Path.ChangeExtension(fileName, "re5")));
 
                 char[] messageChunk = new char[chunkSize];
-                Int32 offset = 0, thisRoundLength = reader.ReadBlock(messageChunk, offset, chunkSize);
+                Int32 offset = 0, bytesRead;
 
-                while (thisRoundLength > 0)
+                while ((bytesRead = reader.ReadBlock(messageChunk, 0, chunkSize)) > 0)
                 {
                     var shiftStartId = offset % shCount;
-                    List<Int16> shifts = shiftStartId + thisRoundLength > shCount ?
-                        [.. reKey.Shifts.GetRange(shiftStartId, shCount - shiftStartId),
-                         .. reKey.Shifts.GetRange(0, shiftStartId)]
-                          : reKey.Shifts.GetRange(shiftStartId, thisRoundLength);
+                    List<Int16> shifts = shiftStartId + bytesRead > shCount
+                        ? [.. reKey.Shifts.GetRange(shiftStartId, shCount - shiftStartId),
+                           .. reKey.Shifts.GetRange(0, (shiftStartId + bytesRead) % shCount)]
+                            : reKey.Shifts.GetRange(shiftStartId, bytesRead);
 
                     writer.Write
                     (
                         EncryptionRound
                         (
-                            messageChunk.ToList().GetRange
-                            (
-                                offset,
-                                thisRoundLength
-                            ).ToString()!,
+                            new string(messageChunk, 0, bytesRead),
                             prAlphabet,
                             exAlphabet,
                             shifts,
@@ -150,8 +139,7 @@ namespace JabrAPI
                         )
                     );
 
-                    offset += thisRoundLength;
-                    thisRoundLength = reader.ReadBlock(messageChunk, offset, chunkSize);
+                    offset += bytesRead;
                 }
             }
         }

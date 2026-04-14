@@ -109,10 +109,10 @@ namespace JabrAPI
 
                 override public void Default()
                 {
-                    _reKey._primaryNecessary = [.. DEFAULT.CHARACTERS.WITH_SPACE];
-                    _reKey._externalAllowed = [.. DEFAULT.CHARACTERS.WITHOUT_SPACE];
+                    _reKey._primaryNecessary = [.. DEFAULT.CHARACTERS.WITH_WSPACE];
+                    _reKey._externalAllowed  = [.. DEFAULT.CHARACTERS.WITHOUT_WSPACE];
 
-                    _reKey._primaryMaxLength = _reKey._primaryNecessary.Count;
+                    _reKey._primaryMaxLength  = _reKey._primaryNecessary.Count;
                     _reKey._externalMaxLength = 8;
                 }
                 public override void ShiftCount(Int32 count) => _reKey._shCount = count;

@@ -42,13 +42,6 @@ namespace JabrAPI
                             primary,
                             complex
                         );
-
-                    //Console.ForegroundColor = ConsoleColor.Magenta;
-                    //Console.Write($"\n\t{chunk + 1})       ");
-                    //Console.BackgroundColor = ConsoleColor.Magenta;
-                    //Console.Write("".PadRight(finalisedChunks[chunk].Length, ' '));
-                    //Console.ForegroundColor = ConsoleColor.Gray;
-                    //Console.BackgroundColor = ConsoleColor.Black;
                 }
 
                 return string.Concat(finalisedChunks);

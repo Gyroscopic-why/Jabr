@@ -38,7 +38,7 @@ namespace JabrAPI
         }
         private List<char> GetRemainingAllowed(List<char> banned, Int32 targetCount, bool banAlreadyUsed)
         {
-            List<char> result = [.. DEFAULT.CHARACTERS.WITHOUT_SPACE];
+            List<char> result = [.. DEFAULT.CHARACTERS.WITHOUT_WSPACE];
 
             if (!banAlreadyUsed) ReconfigureNoiseParametersCount(256 - banned.Count);
             else foreach (char bannedChar in _primaryNoise == ""

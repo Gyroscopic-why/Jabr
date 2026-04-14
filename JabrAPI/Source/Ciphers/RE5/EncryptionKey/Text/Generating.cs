@@ -165,7 +165,7 @@ namespace JabrAPI
                 Int32 maxLength, List<char> necessary,
                 List<char> banned, bool validateParameters = true)
             {
-                List<char> allowed = [.. DEFAULT.CHARACTERS.WITHOUT_SPACE];
+                List<char> allowed = [.. DEFAULT.CHARACTERS.WITHOUT_WSPACE];
 
                 if (banned != null)
                 {

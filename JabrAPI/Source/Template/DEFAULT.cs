@@ -19,8 +19,8 @@ namespace JabrAPI
             
             
 
-            static public string WITHOUT_SPACE =>      _withoutSpace;
-            static public string WITH_SPACE    => " " + _withoutSpace;
+            static public string WITHOUT_WSPACE => _withoutSpace;
+            static public string WITH_WSPACE    => _withoutSpace + " \r\t\n";
         }
 
 

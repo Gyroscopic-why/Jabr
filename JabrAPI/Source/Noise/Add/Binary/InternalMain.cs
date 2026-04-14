@@ -66,8 +66,6 @@ namespace JabrAPI
                 fakeSelection = fakeSelection.Count < 1 ? noisifier.PrimaryNoise : fakeSelection;
                 Int32 prevFinalUnnoised = 0, maxRoundLength, offset = 0, messageChunk;
 
-                Int32 REMOVE_AFTER_TESTING;
-
                 for (var curOptimalSize = chunkSize; result.Count + initialLength - offset < outputLength; curOptimalSize += chunkSize)
                 {
                     random.Reseed();
@@ -95,8 +93,6 @@ namespace JabrAPI
                             )
                         );
 
-                    REMOVE_AFTER_TESTING = result.Count;
-
                     result.AddRange
                     (
                         AdditionRound
@@ -117,19 +113,7 @@ namespace JabrAPI
                         )
                     );
 
-
                     offset += messageChunk;
-
-                    //Console.ForegroundColor = ConsoleColor.Red;
-                    //Console.Write($"\n\t{curOptimalSize / chunkSize})       ");
-                    //Console.BackgroundColor = ConsoleColor.Red;
-                    //Console.Write("".PadRight(result.Count - REMOVE_AFTER_TESTING, ' '));
-                    //Console.ForegroundColor = ConsoleColor.White;
-                    //Console.BackgroundColor = ConsoleColor.Black;
-                    //Console.Write(" " + "(" + messageChunk + ") "
-                    //    + (result.Count - REMOVE_AFTER_TESTING)
-                    //    + "/" + maxRoundLength + ": " + result.Count);
-                    //Console.ForegroundColor = ConsoleColor.Gray;
                 }
 
                 return result;

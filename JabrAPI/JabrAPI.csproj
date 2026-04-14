@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -22,7 +22,6 @@
     <Compile Remove="Source\Ciphers\RE3\RE3.cs" />
     <Compile Remove="Source\Ciphers\RE4\RE4.cs" />
     <Compile Remove="Source\Demo\Demo.cs" />
-    <Compile Remove="Source\Demo\Program.cs" />
     <Compile Remove="Source\Demo\Test_Benchmarker.cs" />
   </ItemGroup>
 
@@ -30,7 +29,6 @@
     <None Include="Source\Ciphers\RE3\RE3.cs" />
     <None Include="Source\Ciphers\RE4\RE4.cs" />
     <None Include="Source\Demo\Demo.cs" />
-    <None Include="Source\Demo\Program.cs" />
     <None Include="Source\Demo\Test_Benchmarker.cs" />
   </ItemGroup>
 

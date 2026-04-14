@@ -30,7 +30,7 @@ namespace JabrAPI
             }
 
 
-            static public bool TextFile(string inputPath, string outputPath,
+            static public bool TextFile(string absoluteInputDirectory, string fileName, string absoluteOutputDirectory,
                 EncryptionKey reKey, out Exception? exception)
             {
                 if (IsReKeyValid(reKey, out exception) &&
@@ -38,27 +38,34 @@ namespace JabrAPI
                 {
                     try
                     {
-                        FastTextFile(inputPath, outputPath, reKey);
+                        FastTextFile(absoluteInputDirectory, fileName, absoluteOutputDirectory, reKey);
                         return true;
                     }
                     catch (Exception innerException) { exception = innerException; }
                 }
                 return false;
             }
-            static public bool TextFile(string inputPath, string outputPath,
+            static public bool TextFile(string absoluteInputDirectory, string fileName,
+                EncryptionKey reKey, out Exception? exception)
+                => TextFile(absoluteInputDirectory, fileName, absoluteInputDirectory, reKey, out exception);
+            static public bool TextFile(string absoluteInputDirectory, string fileName, string absoluteOutputDirectory,
                 EncryptionKey reKey, bool throwExceptions = false)
             {
-                bool result = TextFile(inputPath, outputPath, reKey, out Exception? exception);
+                bool result = TextFile(absoluteInputDirectory, fileName, absoluteOutputDirectory, reKey, out Exception? exception);
                 if (exception != null && throwExceptions) throw exception;
                 return result;
             }
+            static public bool TextFile(string absoluteInputDirectory, string fileName,
+                EncryptionKey reKey, bool throwExceptions = false)
+                => TextFile(absoluteInputDirectory, fileName, absoluteInputDirectory, reKey, throwExceptions);
 
 
 
             static public string FastText(string message, EncryptionKey reKey)
                 => Internal.EncryptFastText(message, reKey);
-            static public void FastTextFile(string inputPath, string outputPath, EncryptionKey reKey)
-                => Internal.EncryptFastTextFile(inputPath, outputPath, reKey);
+            static public void FastTextFile(string absoluteInputDirectory, string fileName,
+                string absoluteOutputDirectory, EncryptionKey reKey)
+                => Internal.EncryptFastTextFile(absoluteInputDirectory, fileName, absoluteInputDirectory, reKey);
         }
     }
 }

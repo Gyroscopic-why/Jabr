@@ -83,14 +83,6 @@ namespace JabrAPI
                             ref decodedId
                         )
                     );
-
-
-                    //Console.ForegroundColor = ConsoleColor.Yellow;
-                    //Console.Write($"\n\t{chunk + 1})       ");
-                    //Console.BackgroundColor = ConsoleColor.Yellow;
-                    //Console.Write("".PadRight(result.Length, ' '));
-                    //Console.ForegroundColor = ConsoleColor.Gray;
-                    //Console.BackgroundColor = ConsoleColor.Black;
                 }
 
                 return result.ToString();
