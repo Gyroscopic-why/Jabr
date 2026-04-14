@@ -14,7 +14,7 @@ namespace JabrAPI
     {
         static internal partial class Internal
         {
-            static public List<Byte> DecryptFastBytes(List<Byte> encrypted, BinaryKey reKey)
+            static public List<Byte> DecryptFastBinary(List<Byte> encrypted, BinaryKey reKey)
             {
                 Int32 exLength = reKey.ExLength, shCount = reKey.ShCount, encLength = encrypted.Count;
                 List<Byte> prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet, allShifts = reKey.Shifts;
@@ -90,7 +90,7 @@ namespace JabrAPI
             }
 
 
-            static public void DecryptFastBytesFile(string inputPath, string outputPath, BinaryKey reKey)
+            static public void DecryptFastBinaryFile(string inputPath, string outputPath, BinaryKey reKey)
             {
                 Int32 exLength = reKey.ExLength, shCount = reKey.ShCount;
                 List<Byte> prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet, allShifts = reKey.Shifts;

@@ -14,7 +14,7 @@ namespace JabrAPI
     {
         static public partial class Add
         {
-            static public List<Byte> Bytes(List<Byte> message, IBinaryKey reKey,
+            static public List<Byte> Binary(List<Byte> message, IBinaryKey reKey,
                 out Exception? exception)
             {
                 if (IsMessageAndReKeyAndNoisifierValid(message, reKey, out exception) &&
@@ -22,23 +22,23 @@ namespace JabrAPI
                 {
                     try
                     {
-                        return FastBytes(message, reKey.Noisifier);
+                        return FastBinary(message, reKey.Noisifier);
                     }
                     catch (Exception innerException) { exception = innerException; }
                 }
                 return [];
             }
-            static public List<Byte> Bytes(List<Byte> message, IBinaryKey reKey,
+            static public List<Byte> Binary(List<Byte> message, IBinaryKey reKey,
                 bool throwExceptions = false)
             {
-                List<Byte> result = Bytes(message, reKey, out Exception? exception);
+                List<Byte> result = Binary(message, reKey, out Exception? exception);
                 if (exception != null && throwExceptions) throw exception;
                 return result;
             }
 
 
 
-            static public List<Byte> Bytes(List<Byte> message, BinaryNoisifier noisifier,
+            static public List<Byte> Binary(List<Byte> message, BinaryNoisifier noisifier,
                 out Exception? exception)
             {
                 if (IsMessageAndNoisifierValid(message, noisifier, out exception) &&
@@ -46,22 +46,22 @@ namespace JabrAPI
                 {
                     try
                     {
-                        return FastBytes(message, noisifier);
+                        return FastBinary(message, noisifier);
                     }
                     catch (Exception innerException) { exception = innerException; }
                 }
                 return [];
             }
-            static public List<Byte> Bytes(List<Byte> message, BinaryNoisifier noisifier,
+            static public List<Byte> Binary(List<Byte> message, BinaryNoisifier noisifier,
                 bool throwExceptions = false)
             {
-                List<Byte> result = Bytes(message, noisifier, out Exception? exception);
+                List<Byte> result = Binary(message, noisifier, out Exception? exception);
                 if (exception != null && throwExceptions) throw exception;
                 return result;
             }
-            static public List<Byte> FastBytes(List<Byte> message, BinaryNoisifier noisifier)
+            static public List<Byte> FastBinary(List<Byte> message, BinaryNoisifier noisifier)
             {
-                return Internal.AddFastBytes
+                return Internal.AddFastBinary
                 (
                     message,
                     noisifier,

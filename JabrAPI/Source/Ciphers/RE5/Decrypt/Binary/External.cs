@@ -12,28 +12,28 @@ namespace JabrAPI
     {
         static public partial class Decrypt
         {
-            static public List<Byte> Bytes(List<Byte> encrypted, BinaryKey reKey, out Exception? exception)
+            static public List<Byte> Binary(List<Byte> encrypted, BinaryKey reKey, out Exception? exception)
             {
                 if (IsMessageAndReKeyValid(encrypted, reKey, out exception) &&
                     reKey.IsValid.ForDecryption(encrypted, out exception))
                 {
                     try
                     {
-                        return FastBytes(encrypted, reKey);
+                        return FastBinary(encrypted, reKey);
                     }
                     catch (Exception innerException) { exception = innerException; }
                 }
                 return [];
             }
-            static public List<Byte> Bytes(List<Byte> encrypted, BinaryKey reKey, bool throwExceptions = false)
+            static public List<Byte> Binary(List<Byte> encrypted, BinaryKey reKey, bool throwExceptions = false)
             {
-                List<Byte> result = Bytes(encrypted, reKey, out Exception? exception);
+                List<Byte> result = Binary(encrypted, reKey, out Exception? exception);
                 if (exception != null && throwExceptions) throw exception;
                 return result;
             }
 
 
-            static public bool BytesFile(string inputPath, string outputPath,
+            static public bool BinaryFile(string inputPath, string outputPath,
                 BinaryKey reKey, out Exception? exception)
             {
                 if (IsReKeyValid(reKey, out exception) &&
@@ -41,27 +41,27 @@ namespace JabrAPI
                 {
                     try
                     {
-                        FastBytesFile(inputPath, outputPath, reKey);
+                        FastBinaryFile(inputPath, outputPath, reKey);
                         return true;
                     }
                     catch (Exception innerException) { exception = innerException; }
                 }
                 return false;
             }
-            static public bool BytesFile(string inputPath, string outputPath,
+            static public bool BinaryFile(string inputPath, string outputPath,
                 BinaryKey reKey, bool throwExceptions = false)
             {
-                bool result = BytesFile(inputPath, outputPath, reKey, out Exception? exception);
+                bool result = BinaryFile(inputPath, outputPath, reKey, out Exception? exception);
                 if (exception != null && throwExceptions) throw exception;
                 return result;
             }
 
 
 
-            static public List<Byte> FastBytes(List<Byte> message, BinaryKey reKey)
-                => Internal.DecryptFastBytes(message, reKey);
-            static public void FastBytesFile(string inputPath, string outputPath, BinaryKey reKey)
-                => Internal.DecryptFastBytesFile(inputPath, outputPath, reKey);
+            static public List<Byte> FastBinary(List<Byte> message, BinaryKey reKey)
+                => Internal.DecryptFastBinary(message, reKey);
+            static public void FastBinaryFile(string inputPath, string outputPath, BinaryKey reKey)
+                => Internal.DecryptFastBinaryFile(inputPath, outputPath, reKey);
         }
     }
 }

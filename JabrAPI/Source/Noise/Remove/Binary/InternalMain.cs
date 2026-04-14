@@ -10,7 +10,7 @@ namespace JabrAPI
     {
         static internal partial class Internal
         {
-            static public Byte[] RemoveFastBytes(List<Byte> message, BinaryNoisifier noisifier)
+            static public Byte[] RemoveFastBinary(List<Byte> message, BinaryNoisifier noisifier)
             {
                 Int32 chunkSize  = (Int32)noisifier.settings.ChunkSize,
                       chunkCount = (Int32)Math.Ceiling((double)message.Count / chunkSize);

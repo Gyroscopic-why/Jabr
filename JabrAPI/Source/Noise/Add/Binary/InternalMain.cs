@@ -12,7 +12,7 @@ namespace JabrAPI
     {
         static internal partial class Internal
         {
-            static public List<Byte> AddFastBytes(List<Byte> message, BinaryNoisifier noisifier, List<Byte> fakeSelection)
+            static public List<Byte> AddFastBinary(List<Byte> message, BinaryNoisifier noisifier, List<Byte> fakeSelection)
             {
                 Int32 chunkSize = (Int32)noisifier.settings.ChunkSize,
                     hardChunkSize = (Int32)(chunkSize * noisifier.settings.HardChunkSizeToSoftCoefficient);
