@@ -121,7 +121,7 @@ namespace JabrAPI
                 }
                 else finalFileName = fileName + ".re5";
 
-                using FileStream inputStream = new(Path.Combine(absoluteInputDirectory, fileName), FileMode.Open, FileAccess.Read);
+                using FileStream inputStream  = new(Path.Combine(absoluteInputDirectory, fileName), FileMode.Open, FileAccess.Read);
                 using FileStream outputStream = new(Path.Combine(absoluteOutputDirectory, finalFileName), FileMode.Create, FileAccess.Write);
                 
                 using BinaryReader reader = new(inputStream);

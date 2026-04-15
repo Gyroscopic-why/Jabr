@@ -21,11 +21,11 @@ namespace JabrAPI
             List<Byte> lolinit = [0, 1, 2, 3, 3, 3, 2, 1, 0,];
             Int32 EXTEND = 128, attemptCount = 0;
 
-
+            binKey.KeepOriginalFileExtension = false;
             string fileContent = "Aboba\r\nhello world\r\n228 baobab ,.!?";
             string txtFilePath = ;
-            string fileName = "Test2";
-            string encFileName = "Test2.re5";
+            string fileName = "Test2.aboba";
+            string encFileName = "Test2.enc-re5";
             string decFileName = "Test1.dec-re5";
 
             Write("\n\tDeleting old Test.txt.re5 & Test1.dec-re5 file\n");

@@ -90,7 +90,8 @@ namespace JabrAPI
             }
 
 
-            static public void DecryptFastBinaryFile(string inputPath, string outputPath, BinaryKey reKey)
+            static public void DecryptFastBinaryFile(string absoluteInputDirectory, string fileName,
+                string absoluteOutputDirectory, BinaryKey reKey)
             {
                 Int32 exLength = reKey.ExLength, shCount = reKey.ShCount;
                 List<Byte> prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet, allShifts = reKey.Shifts;
@@ -119,42 +120,52 @@ namespace JabrAPI
 
 
 
-                //using BinaryReader reader = new(inputPath);
-                //using BinaryWriter writer = new(outputPath);
+                string finalFileName;
+                if (!reKey.KeepOriginalFileExtension)
+                {
+                    finalFileName = Path.ChangeExtension(fileName, "dec-re5");
+                    for (var i = 1; File.Exists(Path.Combine(absoluteOutputDirectory, finalFileName)); i++)
+                        finalFileName = Path.ChangeExtension(fileName, $"dec{i}-re5");
+                }
+                else finalFileName = Path.ChangeExtension(fileName, null);
 
-                //Byte[] messageChunk = new Byte[chunkSize];
-                //Int32 offset = 0, thisRoundLength = reader.ReadBlock(messageChunk, offset, chunkSize);
+                using FileStream inputStream  = new(Path.Combine(absoluteInputDirectory, fileName), FileMode.Open, FileAccess.Read);
+                using FileStream outputStream = new(Path.Combine(absoluteOutputDirectory, finalFileName), FileMode.Create, FileAccess.Write);
 
-                //while (thisRoundLength > 0)
-                //{
-                //    var shiftStartId = (offset / maxEncodingLength) % shCount;
-                //    List<Byte> shifts = shiftStartId + thisRoundLength > shCount ?
-                //        [.. allShifts.GetRange(shiftStartId, shCount - shiftStartId),
-                //         .. allShifts.GetRange(0, shiftStartId)]
-                //          : allShifts.GetRange(shiftStartId, thisRoundLength);
+                using BinaryReader reader = new(inputStream);
+                using BinaryWriter writer = new(outputStream);
 
-                //    writer.Write
-                //    (
-                //        DecryptionRound
-                //        (
-                //            messageChunk.ToList().GetRange
-                //            (
-                //                offset,
-                //                thisRoundLength
-                //            ),
-                //            prAlphabet,
-                //            exAlphabet,
-                //            shifts,
-                //            exLength,
-                //            maxEncodingLength,
-                //            thisRoundLength / maxEncodingLength,
-                //            ref decodedId
-                //        )
-                //    );
 
-                //    offset += thisRoundLength;
-                //    thisRoundLength = reader.ReadBlock(messageChunk, offset, chunkSize);
-                //}
+                Byte[] messageChunk = new Byte[chunkSize];
+                Int32 offset = 0, bytesRead;
+
+                while ((bytesRead = reader.Read(messageChunk, 0, chunkSize)) > 0)
+                {
+                    var shiftStartId = (offset / maxEncodingLength) % shCount;
+                    List<Byte> shifts = shiftStartId + bytesRead > shCount ?
+                        [.. allShifts.GetRange(shiftStartId, shCount - shiftStartId),
+                         .. allShifts.GetRange(0, shiftStartId)]
+                          : allShifts.GetRange(shiftStartId, bytesRead);
+
+                    writer.Write
+                    (
+                        [..
+                            DecryptionRound
+                            (
+                                new List<Byte>(messageChunk).GetRange(0, bytesRead),
+                                prAlphabet,
+                                exAlphabet,
+                                shifts,
+                                exLength,
+                                maxEncodingLength,
+                                bytesRead / maxEncodingLength,
+                                ref decodedId
+                            )
+                        ]
+                    );
+
+                    offset += bytesRead;
+                }
             }
         }
     }
