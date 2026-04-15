@@ -24,8 +24,8 @@ namespace JabrAPI
 
             string fileContent = "Aboba\r\nhello world\r\n228 baobab ,.!?";
             string txtFilePath = ;
-            string fileName = "Test1.txt";
-            string encFileName = "Test1.txt.re5";
+            string fileName = "Test2";
+            string encFileName = "Test2.re5";
             string decFileName = "Test1.dec-re5";
 
             Write("\n\tDeleting old Test.txt.re5 & Test1.dec-re5 file\n");
@@ -36,16 +36,30 @@ namespace JabrAPI
 
             ReadKey();
 
-            fileContent = RE5.Encrypt.Text(fileContent, reKey, true);
-            Write("\n\tExpected behaviour: " + fileContent);
-            Write("\n\tEncrypting file in process: " + RE5.Encrypt.TextFile(txtFilePath, fileName, reKey, true));
+            //fileContent = RE5.Encrypt.Text(fileContent, reKey, true);
+            //Write("\n\tExpected behaviour: " + fileContent);
+            //Write("\n\tEncrypting file in process: " + RE5.Encrypt.TextFile(txtFilePath, fileName, reKey, true));
+
+            //ReadKey();
+
+            //Write("\n\tExpected behaviour: " + RE5.Decrypt.Text(fileContent, reKey, true));
+            //Write("\n\tDecrypting file in process: " + RE5.Decrypt.TextFile(txtFilePath, encFileName, reKey, true));
+
+            Write("\n\tExpected behaviour: ");
+            lolinit = RE5.Encrypt.Binary(lolinit, binKey, true);
+            foreach (var b in lolinit) Write(b + " ");
+
+            Write("\n\tEncrypting file in process: " + RE5.Encrypt.BinaryFile(txtFilePath, fileName, binKey, true));
 
             ReadKey();
 
-            Write("\n\tExpected behaviour: " + RE5.Decrypt.Text(fileContent, reKey, true));
-            Write("\n\tEncrypting file in process: " + RE5.Decrypt.TextFile(txtFilePath, encFileName, reKey, true));
+            Write("\n\tExpected behaviour: ");
+            lolinit = RE5.Decrypt.Binary(lolinit, binKey, true);
+            foreach (var b in lolinit) Write(b + " ");
 
-            ReadKey();
+            Write("\n\tDecrypting file in process: " + RE5.Decrypt.BinaryFile(txtFilePath, encFileName, binKey, true));
+
+            ReadLine();
 
 
             //reKey.ChunkSize = TextChunkSize.cTEST;

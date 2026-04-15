@@ -58,7 +58,7 @@ artifacts/
 *.meta
 #*.obj
 *.pch
-*.pdb
+# *.pdb
 *.pgc
 *.pgd
 *.rsp
@@ -299,3 +299,6 @@ __pycache__/
 *.props
 Jabr/Properties/
 JabrAPI_Android/
+JabrAPI/bin/Release/net10.0/AVcontrol.pdb
+JabrAPI/bin/Release/net10.0/JabrAPI.pdb
+Jabr/bin/Release/Jabr.pdb
