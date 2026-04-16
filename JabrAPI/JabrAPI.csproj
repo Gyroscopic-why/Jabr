@@ -33,14 +33,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="AVcontrol">
-      <HintPath>..\lib\AVcontrol.dll</HintPath>
-    </Reference>
+    <Folder Include="Source\Legacy\RE4\" />
+    <Folder Include="Source\Legacy\RE3\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Source\Legacy\RE4\" />
-    <Folder Include="Source\Legacy\RE3\" />
+    <Reference Include="AVcontrol">
+      <HintPath>..\lib\AVcontrol.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

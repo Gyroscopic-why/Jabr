@@ -110,12 +110,7 @@ namespace JabrAPI
         {
             try
             {
-                Int32 primaryCount = FromBinary.BigEndian<Int32>
-                (
-                    [..
-                        data.GetRange(0, 4)
-                    ]
-                );
+                Int32 primaryCount = FromBinary.BigEndian<Int32>(data.GetRange(0, 4));
 
 
                 if (data.Count < primaryCount + 8)
@@ -143,9 +138,7 @@ namespace JabrAPI
 
                 Int32 complexCount = FromBinary.BigEndian<Int32>
                 (
-                    [..
-                        data.GetRange(primaryCount + 4, 4)
-                    ]
+                    data.GetRange(primaryCount + 4, 4)
                 );
 
                 if (data.Count < complexCount + primaryCount + 8)

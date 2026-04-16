@@ -12,7 +12,7 @@ namespace JabrAPI
     {
         static internal partial class InternalLink
         {
-            static internal List<Byte> EncryptTextValidator(string message, EncryptionKey reKey,
+            static internal List<Byte> EncryptTextToBinaryValidator(string message, EncryptionKey reKey,
                 Func<string, Byte[]> convertRule, out Exception? exception)
             {
                 if (IsMessageAndReKeyAndNoisifierValid(message, reKey, out exception) &&
@@ -26,10 +26,37 @@ namespace JabrAPI
                 }
                 return [];
             }
-            static internal List<Byte> EncryptTextValidator(string message, EncryptionKey reKey,
+            static internal List<Byte> EncryptTextToBinaryValidator(string message, EncryptionKey reKey,
                 Func<string, Byte[]> convertRule, bool throwExceptions)
             {
-                List<Byte> result = EncryptTextValidator(message, reKey, convertRule, out Exception? exception);
+                List<Byte> result = EncryptTextToBinaryValidator(message, reKey, convertRule, out Exception? exception);
+                if (exception != null && throwExceptions) throw exception;
+                return result;
+            }
+
+
+
+            static internal bool EncryptTextToBinaryFileValidator(string absoluteInputDirectory, string fileName,
+                string absoluteOutputDirectory, EncryptionKey reKey, Func<string, Byte[]> convertRule, out Exception? exception)
+            {
+                if (IsReKeyValid(reKey, out exception) &&
+                    IsNoisifierValid(reKey.Noisifier, out exception))
+                {
+                    try
+                    {
+                        EncryptFastTextToBinaryFile(absoluteInputDirectory, fileName,
+                            absoluteOutputDirectory, reKey, convertRule);
+                        return true;
+                    }
+                    catch (Exception innerException) { exception = innerException; }
+                }
+                return false;
+            }
+            static internal bool EncryptTextToBinaryFileValidator(string absoluteInputDirectory, string fileName,
+                string absoluteOutputDirectory, EncryptionKey reKey, Func<string, Byte[]> convertRule, bool throwExceptions)
+            {
+                bool result = EncryptTextToBinaryFileValidator(absoluteInputDirectory, fileName,
+                                absoluteOutputDirectory, reKey, convertRule, out Exception? exception);
                 if (exception != null && throwExceptions) throw exception;
                 return result;
             }
@@ -38,9 +65,9 @@ namespace JabrAPI
 
             static internal List<Byte> EncryptFastTextToBinary(string message, EncryptionKey reKey, Func<string, Byte[]> convertRule)
                 => Internal.EncryptFastTextToBinary(message, reKey, convertRule);
-            static internal void EncryptFastTextFileToBinary(string absoluteInputDirectory, string fileName,
+            static internal void EncryptFastTextToBinaryFile(string absoluteInputDirectory, string fileName,
                 string absoluteOutputDirectory, EncryptionKey reKey, Func<string, Byte[]> convertRule)
-                => Internal.EncryptFastTextFileToBinary(absoluteInputDirectory, fileName, absoluteInputDirectory, reKey, convertRule);
+                => Internal.EncryptFastTextToBinaryFile(absoluteInputDirectory, fileName, absoluteOutputDirectory, reKey, convertRule);
         }
     }
 }

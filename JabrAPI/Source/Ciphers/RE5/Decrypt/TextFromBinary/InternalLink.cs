@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 
 using static JabrAPI.Miscellaneous;
-using static JabrAPI.RE5;
 
 
 
@@ -13,13 +12,17 @@ namespace JabrAPI
     {
         static internal partial class InternalLink
         {
-            static internal string DecryptTextValidator(List<Byte> encrypted, EncryptionKey reKey,
-                Func<List<Byte>, string> convertRule, out Exception? exception)
+            internal delegate string FromBinaryDelegate(List<Byte> input, out List<Byte> output);
+
+
+            static internal string DecryptTextFromBinaryValidator(List<Byte> encrypted, EncryptionKey reKey,
+                FromBinaryDelegate convertRule, out Exception? exception)
             {
-                var msgForValidation = convertRule(encrypted);
+                var msgForValidation = convertRule(encrypted, out List<Byte>? leftover);
 
                 if (IsMessageAndReKeyAndNoisifierValid(msgForValidation, reKey, out exception) &&
-                    reKey.IsValid.ForDecryption(msgForValidation, out exception))
+                    reKey.IsValid.ForDecryption(msgForValidation, out exception) &&
+                    (leftover == null || leftover.Count == 0))
                 {
                     try
                     {
@@ -29,21 +32,49 @@ namespace JabrAPI
                 }
                 return "";
             }
-            static internal string DecryptTextValidator(List<Byte> encrypted, EncryptionKey reKey,
-                Func<List<Byte>, string> convertRule, bool throwExceptions)
+            static internal string DecryptTextFromBinaryValidator(List<Byte> encrypted, EncryptionKey reKey,
+                FromBinaryDelegate convertRule, bool throwExceptions)
             {
-                string result = DecryptTextValidator(encrypted, reKey, convertRule, out Exception? exception);
+                string result = DecryptTextFromBinaryValidator(encrypted, reKey, convertRule, out Exception? exception);
+                if (exception != null && throwExceptions) throw exception;
+                return result;
+            }
+
+
+            static internal bool DecryptTextFromBinaryFileValidator(string absoluteInputDirectory, string fileName,
+                string absoluteOutputDirectory, EncryptionKey reKey, FromBinaryDelegate convertRule, out Exception? exception)
+            {
+                if (IsReKeyValid(reKey, out exception) &&
+                    IsNoisifierValid(reKey.Noisifier, out exception))
+                {
+                    try
+                    {
+                        DecryptFastTextFromBinaryFile(absoluteInputDirectory, fileName,
+                            absoluteOutputDirectory, reKey, convertRule);
+                        return true;
+                    }
+                    catch (Exception innerException) { exception = innerException; }
+                }
+                return false;
+            }
+            static internal bool DecryptTextFromBinaryFileValidator(string absoluteInputDirectory, string fileName,
+                string absoluteOutputDirectory, EncryptionKey reKey, FromBinaryDelegate convertRule, bool throwExceptions)
+            {
+                bool result = DecryptTextFromBinaryFileValidator(absoluteInputDirectory, fileName,
+                                absoluteOutputDirectory, reKey, convertRule, out Exception? exception);
                 if (exception != null && throwExceptions) throw exception;
                 return result;
             }
 
 
 
-            static internal string DecryptFastTextFromBinary(List<Byte> encrypted, EncryptionKey reKey, Func<List<Byte>, string> convertRule)
+            static internal string DecryptFastTextFromBinary(List<Byte> encrypted, EncryptionKey reKey,
+                FromBinaryDelegate convertRule)
                 => Internal.DecryptFastTextFromBinary(encrypted, reKey, convertRule);
-            static internal void DecryptFastTextFileFromBinary(string absoluteInputDirectory, string fileName,
-                string absoluteOutputDirectory, EncryptionKey reKey, Func<List<Byte>, string> convertRule)
-                => Internal.DecryptFastTextFileFromBinary(absoluteInputDirectory, fileName, absoluteInputDirectory, reKey, convertRule);
+            static internal void DecryptFastTextFromBinaryFile(string absoluteInputDirectory, string fileName,
+                string absoluteOutputDirectory, EncryptionKey reKey, FromBinaryDelegate convertRule)
+                => Internal.DecryptFastTextFromBinaryFile(absoluteInputDirectory, fileName,
+                    absoluteOutputDirectory, reKey, convertRule);
         }
     }
 }

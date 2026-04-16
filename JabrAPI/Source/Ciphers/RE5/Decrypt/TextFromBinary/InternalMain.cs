@@ -1,11 +1,11 @@
-﻿using System;
-using System.IO;
-using System.Text;
-using System.Linq;
+﻿using AVcontrol;
+using System;
 using System.Collections.Generic;
-
-
-using AVcontrol;
+using System.IO;
+using System.Linq;
+using System.Text;
+using static JabrAPI.RE5;
+using static JabrAPI.RE5.InternalLink;
 
 
 
@@ -15,7 +15,7 @@ namespace JabrAPI
     {
         static internal partial class Internal
         {
-            static public string DecryptFastTextFromBinary(List<Byte> encrypted, EncryptionKey reKey, Func<List<Byte>, string> convertRule)
+            static public string DecryptFastTextFromBinary(List<Byte> encrypted, EncryptionKey reKey, FromBinaryDelegate convertRule)
             {
                 Int32 exLength = reKey.ExLength, shCount = reKey.ShCount, encLength = encrypted.Count;
                 string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
@@ -43,46 +43,65 @@ namespace JabrAPI
                 chunkSize -= chunkSize % maxEncodingLength;
 
                 if (chunkSize < maxEncodingLength) chunkSize = maxEncodingLength;
-                Int32 chunkCount = (Int32)Math.Ceiling((double)encLength / chunkSize);
-                Int32 shPerChunk = chunkSize / maxEncodingLength;
+                Int32 chunkCount = (Int32)Math.Ceiling((double)encLength / chunkSize), shiftStartId = 0;
 
-
-                StringBuilder result = new(encLength / maxEncodingLength);  //  Real message length
+                List<Byte> leftoverRaw = [];
+                string  leftoverParsed = "";
+                StringBuilder   result = new(encLength / maxEncodingLength);  //  Real message length
 
                 for (var chunk = 0; chunk < chunkCount; chunk++)
                 {
-                    Int32 thisRoundLength =
-                        Math.Min
+                    string messageChunk =
+                        leftoverParsed +
+                        convertRule
                         (
-                            encLength - chunk * chunkSize,
-                            chunkSize
+                            [
+                                .. leftoverRaw,
+                                .. encrypted.GetRange
+                                (
+                                    chunk * chunkSize,
+                                    Math.Min  //  thisRoundLength
+                                    (
+                                        encLength - chunk * chunkSize,
+                                        chunkSize
+                                    )
+                                )
+                            ],
+                            out leftoverRaw
                         );
 
-                    var shiftStartId = (chunk * shPerChunk) % shCount;
-                    List<Int16> shifts = shiftStartId + thisRoundLength > shCount ?
+                    leftoverParsed = messageChunk
+                        [
+                           ^(
+                                messageChunk.Length % maxEncodingLength
+                            )..
+                        ];
+                    messageChunk = messageChunk
+                        [..
+                            ^leftoverParsed.Length
+                        ];
+
+                    Int32 realMessageLength = messageChunk.Length / maxEncodingLength,
+                          shDelta = shiftStartId + realMessageLength;
+
+                    List<Int16> shifts = shDelta > shCount ?
                         [.. allShifts.GetRange(shiftStartId, shCount - shiftStartId),
-                         .. allShifts.GetRange(0, shiftStartId)]
-                          : allShifts.GetRange(shiftStartId, thisRoundLength);
+                         .. allShifts.GetRange(0, Math.Min(shiftStartId, shDelta - shCount))]
+                          : allShifts.GetRange(shiftStartId, realMessageLength);
+                    shiftStartId = shDelta % shCount;
 
 
                     result.Append
                     (
                         DecryptionRound
                         (
-                            convertRule
-                            (
-                                encrypted.GetRange
-                                (
-                                    chunk * chunkSize,
-                                    thisRoundLength
-                                )
-                            ),
+                            messageChunk,
                             prAlphabet,
                             exAlphabet,
                             shifts,
                             exLength,
                             maxEncodingLength,
-                            thisRoundLength / maxEncodingLength,
+                            realMessageLength,
                             ref decodedId
                         )
                     );
@@ -93,10 +112,108 @@ namespace JabrAPI
 
 
 
-            static public void DecryptFastTextFileFromBinary(string absoluteInputDirectory, string fileName,
-                string absoluteOutputDirectory, EncryptionKey reKey, Func<List<Byte>, string> convertRule)
+            static public void DecryptFastTextFromBinaryFile(string absoluteInputDirectory, string fileName,
+                string absoluteOutputDirectory, EncryptionKey reKey, FromBinaryDelegate convertRule)
             {
+                Int32 exLength = reKey.ExLength, shCount = reKey.ShCount;
+                string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
+                List<Int16> allShifts = reKey.Shifts;
 
+
+                Int32 helper = (Int32)Math.Ceiling
+                    (
+                        (double)
+                        (   //  -4 bcs: (alphabet ids start at zero & dont reach .Length value) x 2
+                            reKey.PrLength * 2 + allShifts.Max() - 4
+                        ) / exLength
+                    );
+                Int32 maxEncodingLength = exLength == 10 ?
+                    Utils.DigitCount(helper) + 1  // Optimisation for base 10 encoding
+                    : Numsys.AsList
+                    (
+                        helper.ToString(),
+                        10,
+                        exLength
+                    ).Count + 1;  //  + 1 is to account for EncodingLength and the character it belongs to
+
+
+                Int32 chunkSize = (Int32)reKey.ChunkSize, decodedId = 0;
+                chunkSize -= chunkSize % maxEncodingLength;
+                if (chunkSize < maxEncodingLength) chunkSize = maxEncodingLength;
+
+
+                string finalFileName;
+                if (!reKey.KeepOriginalFileExtension)
+                {
+                    finalFileName = Path.ChangeExtension(fileName, "dec-re5");
+                    for (var i = 1; File.Exists(Path.Combine(absoluteOutputDirectory, finalFileName)); i++)
+                        finalFileName = Path.ChangeExtension(fileName, $"dec{i}-re5");
+                }
+                else finalFileName = Path.ChangeExtension(fileName, null);
+
+                using FileStream inputStream = new(Path.Combine(absoluteInputDirectory, fileName), FileMode.Open, FileAccess.Read);
+
+                using BinaryReader reader = new(inputStream);
+                using StreamWriter writer = new(Path.Combine(absoluteOutputDirectory, finalFileName));
+
+
+                List<Byte> leftoverRaw = [];
+                string  leftoverParsed = "";
+                Byte[] readChunk = new Byte[chunkSize];
+                Int32 offset = 0, bytesRead, shiftStartId = 0;
+
+                while ((bytesRead = reader.Read(readChunk, 0, chunkSize)) > 0)
+                {
+                    string messageChunk =
+                        leftoverParsed +
+                        convertRule
+                        (
+                            [
+                                .. leftoverRaw,
+                                .. readChunk.AsSpan(0, bytesRead)
+                            ],
+                            out leftoverRaw
+                        );
+
+                    leftoverParsed = messageChunk
+                        [
+                           ^(
+                                messageChunk.Length % maxEncodingLength
+                            )..
+                        ];
+                    messageChunk = messageChunk
+                        [..
+                            ^leftoverParsed.Length
+                        ];
+
+
+                    Int32 realMessageLength = messageChunk.Length / maxEncodingLength,
+                          shDelta = shiftStartId + realMessageLength;
+
+                    List<Int16> shifts = shDelta > shCount ?
+                        [.. allShifts.GetRange(shiftStartId, shCount - shiftStartId),
+                         .. allShifts.GetRange(0, Math.Min(shiftStartId, shDelta - shCount))]
+                          : allShifts.GetRange(shiftStartId, realMessageLength);
+                    shiftStartId = shDelta % shCount;
+
+
+                    writer.Write
+                    (
+                        DecryptionRound
+                        (
+                            messageChunk,
+                            prAlphabet,
+                            exAlphabet,
+                            shifts,
+                            exLength,
+                            maxEncodingLength,
+                            messageChunk.Length / maxEncodingLength,
+                            ref decodedId
+                        )
+                    );
+
+                    offset += bytesRead;
+                }
             }
         }
     }

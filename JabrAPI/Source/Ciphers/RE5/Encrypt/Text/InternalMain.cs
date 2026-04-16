@@ -107,7 +107,7 @@ namespace JabrAPI
                         exLength
                     ).Count;
 
-                Int32 chunkSize  = (Int32)reKey.ChunkSize / maxEncodingLength, prevId = 0;
+                Int32 chunkSize  = (Int32)reKey.ChunkSize / (maxEncodingLength + 1), prevId = 0;
                 if   (chunkSize <= maxEncodingLength) chunkSize = maxEncodingLength + 1;
 
 

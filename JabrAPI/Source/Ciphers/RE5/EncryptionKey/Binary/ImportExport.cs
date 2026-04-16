@@ -71,7 +71,7 @@ namespace JabrAPI
                             );
                         return false;
                     }
-                    Int32 parsedShiftCount = FromBinary.BigEndian<Int32>([.. data.GetRange(0, 4)]);
+                    Int32 parsedShiftCount = FromBinary.BigEndian<Int32>(data.GetRange(0, 4));
 
 
                     //  6 is the lowest possible length of an exported key

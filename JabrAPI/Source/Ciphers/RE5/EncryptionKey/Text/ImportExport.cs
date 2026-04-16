@@ -244,12 +244,7 @@ namespace JabrAPI
                     }
 
 
-                    Int32 noisifierBytesCount = FromBinary.BigEndian<Int32>
-                    (
-                        [..
-                            data.GetRange(0, 4)
-                        ]
-                    );
+                    Int32 noisifierBytesCount = FromBinary.BigEndian<Int32>(data.GetRange(0, 4));
 
                     if (data.Count < noisifierBytesCount + 4)
                     {
@@ -264,12 +259,7 @@ namespace JabrAPI
                     }
 
 
-                    noisifierBytesCount += FromBinary.BigEndian<Int32>
-                    (
-                        [..
-                            data.GetRange(noisifierBytesCount + 4, 4)
-                        ]
-                    );
+                    noisifierBytesCount += FromBinary.BigEndian<Int32>(data.GetRange(noisifierBytesCount + 4, 4));
 
                     if (data.Count < noisifierBytesCount + 4)
                     {
@@ -301,12 +291,7 @@ namespace JabrAPI
                     }
 
 
-                    Int32 parsedShiftCountInBytes = FromBinary.BigEndian<Int32>
-                    (
-                        [..
-                            data.GetRange(0, 4)
-                        ]
-                    ) * 2;
+                    Int32 parsedShiftCountInBytes = FromBinary.BigEndian<Int32>(data.GetRange(0, 4)) * 2;
 
                     //  12 (Bytes) is the lowest possible length of an exported key
                     //  2x2 bytes reserved for PrLength and ExLength
@@ -327,7 +312,7 @@ namespace JabrAPI
                     if (parsedShiftCountInBytes > 0)
                     {
                         for (var i = 4; i < parsedShiftCountInBytes + 4; i += 2)
-                            _shifts.Add(FromBinary.BigEndian<Int16>([.. data.GetRange(i, 2)]));
+                            _shifts.Add(FromBinary.BigEndian<Int16>(data.GetRange(i, 2)));
                     }
                     else _shifts.Add(0);
 
@@ -335,9 +320,7 @@ namespace JabrAPI
 
                     Int32 parsedLengthInBytes = FromBinary.BigEndian<Int32>
                     (
-                        [..
-                            data.GetRange(parsedShiftCountInBytes + 4, 4)
-                        ]
+                        data.GetRange(parsedShiftCountInBytes + 4, 4)
                     );
 
                     if (data.Count < parsedShiftCountInBytes + 4 + parsedLengthInBytes + 8)
@@ -380,9 +363,7 @@ namespace JabrAPI
                     parsedShiftCountInBytes += parsedLengthInBytes + 4;
                     parsedLengthInBytes = FromBinary.BigEndian<Int32>
                     (
-                        [..
-                            data.GetRange(parsedShiftCountInBytes + 4, 4)
-                        ]
+                        data.GetRange(parsedShiftCountInBytes + 4, 4)
                     );
 
                     if (data.Count < parsedShiftCountInBytes + 4 + parsedLengthInBytes)
