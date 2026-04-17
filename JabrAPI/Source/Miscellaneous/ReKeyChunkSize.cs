@@ -5,6 +5,7 @@ namespace JabrAPI
 {
     public enum BinaryChunkSize
     {
+        bTEST = 7,
         Byte256  = 256,
         Byte512  = 512,
         
@@ -26,7 +27,7 @@ namespace JabrAPI
 
     public enum TextChunkSize
     {
-        cTEST = 11,
+        cTEST = 17,
         c256 = 256,
         c512 = 512,
 

@@ -25,10 +25,33 @@ namespace JabrAPI
             binKey.KeepOriginalFileExtension = false;
 
             reKey.ChunkSize = TextChunkSize.cTEST;
+            binKey.ChunkSize = BinaryChunkSize.bTEST;
+
+
+
+            Write("\n\tEnc: " + RE5.Encrypt.Text(aboba, reKey, true));
+            Write("\n\tDec: " + RE5.Decrypt.Text(RE5.Encrypt.Text(aboba, reKey, true), reKey, true));
+
+            Write("\n\tBin-enc: ");
+            List<Byte> bbinenc = RE5.Encrypt.Binary(lolinit, binKey, true);
+            foreach (Byte b in bbinenc) Write(b + " ");
+
+            Write("\n\tBin-dec: ");
+            List<Byte> bbindec = RE5.Decrypt.Binary(bbinenc, binKey, true);
+            foreach (Byte b in bbindec) Write(b + " ");
+
+            ReadKey();
+
+
+
+
+
+
+
 
             string fileContent = "Aboba\r\nhello world\r\n228 baobab ,.!?";
             string filePath = ;
-            string fileName = "Test2.txt";
+            string fileName = "Test2.aboba";
             string encFileName = "Test2.enc-re5";
             string decFileName = "Test2.dec-re5";
 
@@ -40,38 +63,39 @@ namespace JabrAPI
 
             ReadKey();
 
-            Write(reKey.ExportAsString() + "\n");
+            //Write(reKey.ExportAsString() + "\n");
             //fileContent = RE5.Encrypt.Text(fileContent, reKey, true);
-            Write("\n\tExpected behaviour: ");
-            lolinit = RE5.Encrypt.TextToBinary_Utf16(fileContent, reKey, true);
-            foreach (var b in lolinit) Write(b + " ");
             //Write("\n\tExpected behaviour: " + fileContent);
-            //Write("\n\tEncrypting file in process: " + RE5.Encrypt.TextFile(txtFilePath, fileName, reKey, true));
-            Write("\n\tEncrypting file in process: " + RE5.Encrypt.TextToBinaryFile_Utf16(filePath, fileName, reKey, true));
+            //Write("\n\tExpected behaviour: ");
+            //lolinit = RE5.Encrypt.TextToBinary_Utf8(fileContent, reKey, true);
+            //foreach (var b in lolinit) Write(b + " ");
+            //Write("\n\tEncrypting file in process: " + RE5.Encrypt.TextFile(filePath, fileName, reKey, true));
+            //Write("\n\tEncrypting file in process: " + RE5.Encrypt.TextToBinaryFile_Utf8(filePath, fileName, reKey, true));
 
             ReadKey();
 
-            Write("\n\t(Decoded binary): " + FromBinary.Utf16(lolinit));
-            Write("\n\tExpected binary:  " + RE5.Encrypt.Text(fileContent, reKey, true));
-            Write("\n\tExpected decrypt: " + RE5.Decrypt.Text(RE5.Encrypt.Text(fileContent, reKey, true), reKey, true));
+            //Write("\n\t(Decoded binary): " + FromBinary.Utf8(lolinit));
+            //Write("\n\tExpected binary:  " + RE5.Encrypt.Text(fileContent, reKey, true));
+            //Write("\n\tExpected decrypt: " + RE5.Decrypt.Text(RE5.Encrypt.Text(fileContent, reKey, true), reKey, true));
             //Write("\n\tExpected behaviour: " + RE5.Decrypt.Text(fileContent, reKey, true));
-            Write("\n\tExpected behaviour: " + RE5.Decrypt.TextFromBinary_Utf16(lolinit, reKey, true));
-            Write("\n\tDecrypting file in process: " + RE5.Decrypt.TextFromBinaryFile_Utf16(filePath, encFileName, reKey, true));
+            //Write("\n\tDecrypting file in process: " + RE5.Decrypt.TextFile(filePath, encFileName, reKey, true));
+            //Write("\n\tExpected behaviour: " + RE5.Decrypt.TextFromBinary_Utf8(lolinit, reKey, true));
+            //Write("\n\tDecrypting file in process: " + RE5.Decrypt.TextFromBinaryFile_Utf8(filePath, encFileName, reKey, true));
 
 
-            //Write("\n\tExpected behaviour: ");
-            //lolinit = RE5.Encrypt.Binary(lolinit, binKey, true);
-            //foreach (var b in lolinit) Write(b + " ");
+            Write("\n\tExpected behaviour: ");
+            lolinit = RE5.Encrypt.Binary(lolinit, binKey, true);
+            foreach (var b in lolinit) Write(b + " ");
 
-            //Write("\n\tEncrypting file in process: " + RE5.Encrypt.BinaryFile(txtFilePath, fileName, binKey, true));
+            Write("\n\tEncrypting file in process: " + RE5.Encrypt.BinaryFile(filePath, fileName, binKey, true));
 
-            //ReadKey();
+            ReadKey();
 
-            //Write("\n\tExpected behaviour: ");
-            //lolinit = RE5.Decrypt.Binary(lolinit, binKey, true);
-            //foreach (var b in lolinit) Write(b + " ");
+            Write("\n\tExpected behaviour: ");
+            lolinit = RE5.Decrypt.Binary(lolinit, binKey, true);
+            foreach (var b in lolinit) Write(b + " ");
 
-            //Write("\n\tDecrypting file in process: " + RE5.Decrypt.BinaryFile(txtFilePath, encFileName, binKey, true));
+            Write("\n\tDecrypting file in process: " + RE5.Decrypt.BinaryFile(filePath, encFileName, binKey, true));
 
             ReadLine();
 

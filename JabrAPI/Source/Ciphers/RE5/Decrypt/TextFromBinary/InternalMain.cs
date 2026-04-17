@@ -1,10 +1,11 @@
-﻿using AVcontrol;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
 using System.Text;
-using static JabrAPI.RE5;
+using System.Linq;
+using System.Collections.Generic;
+
+
+using AVcontrol;
 using static JabrAPI.RE5.InternalLink;
 
 
@@ -19,7 +20,7 @@ namespace JabrAPI
             {
                 Int32 exLength = reKey.ExLength, shCount = reKey.ShCount, encLength = encrypted.Count;
                 string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
-                List<Int16> allShifts = reKey.Shifts;
+                List<Int16> allShifts = reKey.Shifts, shifts;
 
 
                 Int32 helper = (Int32)Math.Ceiling
@@ -39,19 +40,19 @@ namespace JabrAPI
                     ).Count + 1;  //  + 1 is to account for EncodingLength and the character it belongs to
 
 
-                Int32 chunkSize = (Int32)reKey.ChunkSize, decodedId = 0;
-                chunkSize -= chunkSize % maxEncodingLength;
+                Int32 chunkSize = (Int32)reKey.ChunkSize / maxEncodingLength * maxEncodingLength;
+                if   (chunkSize < maxEncodingLength) chunkSize = maxEncodingLength;
 
-                if (chunkSize < maxEncodingLength) chunkSize = maxEncodingLength;
-                Int32 chunkCount = (Int32)Math.Ceiling((double)encLength / chunkSize), shiftStartId = 0;
+                Int32 chunkCount = (Int32)Math.Ceiling((double)encLength / chunkSize);
+                Int32 decodedId  = 0, shiftStartId = 0, realMessageLength, shDelta;
 
                 List<Byte> leftoverRaw = [];
-                string  leftoverParsed = "";
+                string  leftoverParsed = "", messageChunk;
                 StringBuilder   result = new(encLength / maxEncodingLength);  //  Real message length
 
                 for (var chunk = 0; chunk < chunkCount; chunk++)
                 {
-                    string messageChunk =
+                    messageChunk =
                         leftoverParsed +
                         convertRule
                         (
@@ -81,10 +82,10 @@ namespace JabrAPI
                             ^leftoverParsed.Length
                         ];
 
-                    Int32 realMessageLength = messageChunk.Length / maxEncodingLength,
-                          shDelta = shiftStartId + realMessageLength;
+                    realMessageLength = messageChunk.Length / maxEncodingLength;
+                    shDelta = shiftStartId + realMessageLength;
 
-                    List<Int16> shifts = shDelta > shCount ?
+                    shifts  = shDelta > shCount ?
                         [.. allShifts.GetRange(shiftStartId, shCount - shiftStartId),
                          .. allShifts.GetRange(0, Math.Min(shiftStartId, shDelta - shCount))]
                           : allShifts.GetRange(shiftStartId, realMessageLength);
@@ -117,7 +118,7 @@ namespace JabrAPI
             {
                 Int32 exLength = reKey.ExLength, shCount = reKey.ShCount;
                 string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
-                List<Int16> allShifts = reKey.Shifts;
+                List<Int16> allShifts = reKey.Shifts, shifts;
 
 
                 Int32 helper = (Int32)Math.Ceiling
@@ -137,9 +138,8 @@ namespace JabrAPI
                     ).Count + 1;  //  + 1 is to account for EncodingLength and the character it belongs to
 
 
-                Int32 chunkSize = (Int32)reKey.ChunkSize, decodedId = 0;
-                chunkSize -= chunkSize % maxEncodingLength;
-                if (chunkSize < maxEncodingLength) chunkSize = maxEncodingLength;
+                Int32 chunkSize = (Int32)reKey.ChunkSize / maxEncodingLength * maxEncodingLength;
+                if   (chunkSize < maxEncodingLength) chunkSize = maxEncodingLength;
 
 
                 string finalFileName;
@@ -158,13 +158,14 @@ namespace JabrAPI
 
 
                 List<Byte> leftoverRaw = [];
-                string  leftoverParsed = "";
+                string  leftoverParsed = "", messageChunk;
                 Byte[] readChunk = new Byte[chunkSize];
-                Int32 offset = 0, bytesRead, shiftStartId = 0;
+                Int32 offset = 0, bytesRead, decodedId = 0, shiftStartId = 0;
+                Int32 realMessageLength, shDelta;
 
                 while ((bytesRead = reader.Read(readChunk, 0, chunkSize)) > 0)
                 {
-                    string messageChunk =
+                    messageChunk =
                         leftoverParsed +
                         convertRule
                         (
@@ -187,10 +188,10 @@ namespace JabrAPI
                         ];
 
 
-                    Int32 realMessageLength = messageChunk.Length / maxEncodingLength,
-                          shDelta = shiftStartId + realMessageLength;
+                    realMessageLength = messageChunk.Length / maxEncodingLength;
+                    shDelta = shiftStartId + realMessageLength;
 
-                    List<Int16> shifts = shDelta > shCount ?
+                    shifts  = shDelta > shCount ?
                         [.. allShifts.GetRange(shiftStartId, shCount - shiftStartId),
                          .. allShifts.GetRange(0, Math.Min(shiftStartId, shDelta - shCount))]
                           : allShifts.GetRange(shiftStartId, realMessageLength);

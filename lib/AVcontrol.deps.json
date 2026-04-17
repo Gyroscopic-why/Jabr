@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v10.0": {
-      "AVcontrol/2.7-beta": {
+      "AVcontrol/2.7-gamma": {
         "runtime": {
           "AVcontrol.dll": {}
         }
@@ -14,7 +14,7 @@
     }
   },
   "libraries": {
-    "AVcontrol/2.7-beta": {
+    "AVcontrol/2.7-gamma": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

@@ -16,7 +16,7 @@ namespace JabrAPI
         {
             static public List<Byte> EncryptFastBinary(List<Byte> message, BinaryKey reKey)
             {
-                List<Byte> prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet, allShifts = reKey.Shifts;
+                List<Byte> prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet, allShifts = reKey.Shifts, shifts;
                 Int32 exLength = reKey.ExLength, messageLength = message.Count, shCount = reKey.ShCount;
 
 
@@ -36,9 +36,11 @@ namespace JabrAPI
                         exLength
                     ).Count;
 
-                Int32 chunkSize = (Int32)reKey.ChunkSize / (maxEncodingLength + 1), prevId = 0;
-                if (chunkSize <= maxEncodingLength) chunkSize = maxEncodingLength + 1;
+                Int32 chunkSize  = (Int32)reKey.ChunkSize / (maxEncodingLength + 1);
+                if   (chunkSize <= maxEncodingLength) chunkSize = maxEncodingLength + 1;
+
                 Int32 chunkCount = (Int32)Math.Ceiling((double)messageLength / chunkSize);
+                Int32 thisRoundLength, shDelta, shiftStartId = 0, prevId = 0;
 
 
                 #pragma warning disable IDE0028
@@ -48,18 +50,20 @@ namespace JabrAPI
 
                 for (var chunk = 0; chunk < chunkCount; chunk++)
                 {
-                    Int32 thisRoundLength =
+                    thisRoundLength =
                         Math.Min
                         (
                             messageLength - chunk * chunkSize,
                             chunkSize
                         );
 
-                    var shiftStartId = (chunk * chunkSize) % shCount;
-                    List<Byte> shifts = shiftStartId + thisRoundLength > shCount ?
+                    shDelta = shiftStartId + thisRoundLength;
+
+                    shifts  = shDelta > shCount ?
                         [.. allShifts.GetRange(shiftStartId, shCount - shiftStartId),
-                         .. allShifts.GetRange(0, shiftStartId)]
+                         .. allShifts.GetRange(0, Math.Min(shiftStartId, shDelta - shCount))]
                           : allShifts.GetRange(shiftStartId, thisRoundLength);
+                    shiftStartId = shDelta % shCount;
 
 
                     result.AddRange
@@ -88,7 +92,7 @@ namespace JabrAPI
             static public void EncryptFastBinaryFile(string absoluteInputDirectory, string fileName,
                 string absoluteOutputDirectory, BinaryKey reKey)
             {
-                List<Byte> prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
+                List<Byte> prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet, allShifts = reKey.Shifts, shifts;
                 Int32 exLength = reKey.ExLength, shCount = reKey.ShCount;
 
 
@@ -108,8 +112,8 @@ namespace JabrAPI
                         exLength
                     ).Count;
 
-                Int32 chunkSize = (Int32)reKey.ChunkSize / (maxEncodingLength + 1), prevId = 0;
-                if (chunkSize <= maxEncodingLength) chunkSize = maxEncodingLength + 1;
+                Int32 chunkSize  = (Int32)reKey.ChunkSize / (maxEncodingLength + 1);
+                if   (chunkSize <= maxEncodingLength) chunkSize = maxEncodingLength + 1;
 
 
                 string finalFileName;
@@ -129,15 +133,17 @@ namespace JabrAPI
 
 
                 Byte[] messageChunk = new Byte[chunkSize];
-                Int32 offset = 0, bytesRead;
+                Int32 offset = 0, prevId = 0, shiftStartId = 0, shDelta, bytesRead;
 
                 while ((bytesRead = reader.Read(messageChunk, 0, chunkSize)) > 0)
                 {
-                    var shiftStartId = offset % shCount;
-                    List<Byte> shifts = shiftStartId + bytesRead > shCount ?
-                        [.. reKey.Shifts.GetRange(shiftStartId, shCount - shiftStartId),
-                         .. reKey.Shifts.GetRange(0, shiftStartId)]
-                          : reKey.Shifts.GetRange(shiftStartId, bytesRead);
+                    shDelta = shiftStartId + bytesRead;
+
+                    shifts = shDelta > shCount ?
+                        [.. allShifts.GetRange(shiftStartId, shCount - shiftStartId),
+                         .. allShifts.GetRange(0, Math.Min(shiftStartId, shDelta - shCount))]
+                          : allShifts.GetRange(shiftStartId, bytesRead);
+                    shiftStartId = shDelta % shCount;
 
                     writer.Write
                     (
