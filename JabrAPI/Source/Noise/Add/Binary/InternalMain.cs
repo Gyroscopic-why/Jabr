@@ -49,13 +49,13 @@ namespace JabrAPI
                         initialLength,
                         outputLength
                     );
-                Int32 maxAvgNoiseCount =
+                double maxAvgNoiseCount =
                     Math.Max
                     (
-                        1,
+                        0,
                         (outputLength - initialLength)
-                        / (initialLength + 1)
-                    ) * 2 + 1;
+                        / (double)(initialLength + 1)
+                    ) * 2;
                 double avgNoisePerCharInRound = (double)initialLength / outputLength;
 
                 #pragma warning disable IDE0028

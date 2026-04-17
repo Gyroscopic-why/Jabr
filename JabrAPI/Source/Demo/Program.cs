@@ -18,29 +18,29 @@ namespace JabrAPI
             RE5.EncryptionKey reKey = new(true);
             RE5.BinaryKey binKey = new(true);
             string aboba = "aboba baobab";
-            List<Byte> lolinit = [0, 1, 2, 3, 3, 3, 2, 1, 0,];
+            List<Byte> lolinit = [0, 1, 2, 3, 3, 3, 2, 1, 0];
             Int32 EXTEND = 128, attemptCount = 0;
 
             reKey.KeepOriginalFileExtension = false;
             binKey.KeepOriginalFileExtension = false;
 
-            reKey.ChunkSize = TextChunkSize.cTEST;
-            binKey.ChunkSize = BinaryChunkSize.bTEST;
+            //reKey.ChunkSize = TextChunkSize.cTEST;
+            //binKey.ChunkSize = BinaryChunkSize.bTEST;
 
 
 
-            Write("\n\tEnc: " + RE5.Encrypt.Text(aboba, reKey, true));
-            Write("\n\tDec: " + RE5.Decrypt.Text(RE5.Encrypt.Text(aboba, reKey, true), reKey, true));
+            //Write("\n\tEnc: " + RE5.Encrypt.Text(aboba, reKey, true));
+            //Write("\n\tDec: " + RE5.Decrypt.Text(RE5.Encrypt.Text(aboba, reKey, true), reKey, true));
 
-            Write("\n\tBin-enc: ");
-            List<Byte> bbinenc = RE5.Encrypt.Binary(lolinit, binKey, true);
-            foreach (Byte b in bbinenc) Write(b + " ");
+            //Write("\n\tBin-enc: ");
+            //List<Byte> bbinenc = RE5.Encrypt.Binary(lolinit, binKey, true);
+            //foreach (Byte b in bbinenc) Write(b + " ");
 
-            Write("\n\tBin-dec: ");
-            List<Byte> bbindec = RE5.Decrypt.Binary(bbinenc, binKey, true);
-            foreach (Byte b in bbindec) Write(b + " ");
+            //Write("\n\tBin-dec: ");
+            //List<Byte> bbindec = RE5.Decrypt.Binary(bbinenc, binKey, true);
+            //foreach (Byte b in bbindec) Write(b + " ");
 
-            ReadKey();
+            //ReadKey();
 
 
 
@@ -50,7 +50,7 @@ namespace JabrAPI
 
 
             string fileContent = "Aboba\r\nhello world\r\n228 baobab ,.!?";
-            string filePath = ;
+            string filePath = "C:\\Users\\egorg\\Desktop\\Egor\\Programming\\C#\\Programs\\New console projects\\Ciphers\\Jabr\\JabrAPI\\bin\\Debug\\net10.0";
             string fileName = "Test2.aboba";
             string encFileName = "Test2.enc-re5";
             string decFileName = "Test2.dec-re5";
@@ -72,7 +72,7 @@ namespace JabrAPI
             //Write("\n\tEncrypting file in process: " + RE5.Encrypt.TextFile(filePath, fileName, reKey, true));
             //Write("\n\tEncrypting file in process: " + RE5.Encrypt.TextToBinaryFile_Utf8(filePath, fileName, reKey, true));
 
-            ReadKey();
+            //ReadKey();
 
             //Write("\n\t(Decoded binary): " + FromBinary.Utf8(lolinit));
             //Write("\n\tExpected binary:  " + RE5.Encrypt.Text(fileContent, reKey, true));
@@ -83,21 +83,21 @@ namespace JabrAPI
             //Write("\n\tDecrypting file in process: " + RE5.Decrypt.TextFromBinaryFile_Utf8(filePath, encFileName, reKey, true));
 
 
-            Write("\n\tExpected behaviour: ");
-            lolinit = RE5.Encrypt.Binary(lolinit, binKey, true);
-            foreach (var b in lolinit) Write(b + " ");
+            //Write("\n\tExpected behaviour: ");
+            //lolinit = RE5.Encrypt.Binary(lolinit, binKey, true);
+            //foreach (var b in lolinit) Write(b + " ");
 
-            Write("\n\tEncrypting file in process: " + RE5.Encrypt.BinaryFile(filePath, fileName, binKey, true));
+            //Write("\n\tEncrypting file in process: " + RE5.Encrypt.BinaryFile(filePath, fileName, binKey, true));
 
-            ReadKey();
+            //ReadKey();
 
-            Write("\n\tExpected behaviour: ");
-            lolinit = RE5.Decrypt.Binary(lolinit, binKey, true);
-            foreach (var b in lolinit) Write(b + " ");
+            //Write("\n\tExpected behaviour: ");
+            //lolinit = RE5.Decrypt.Binary(lolinit, binKey, true);
+            //foreach (var b in lolinit) Write(b + " ");
 
-            Write("\n\tDecrypting file in process: " + RE5.Decrypt.BinaryFile(filePath, encFileName, binKey, true));
+            //Write("\n\tDecrypting file in process: " + RE5.Decrypt.BinaryFile(filePath, encFileName, binKey, true));
 
-            ReadLine();
+            //ReadLine();
 
 
             //reKey.ChunkSize = TextChunkSize.cTEST;
@@ -106,6 +106,7 @@ namespace JabrAPI
             //binKey.ChunkSize = BinaryChunkSize.bTEST;
             //binKey.Noisifier.settings.ChunkSize = BinaryChunkSize.bTEST;
 
+            lolinit = RE5.Encrypt.TextToBinary_Utf8(fileContent + fileContent + fileContent, reKey, true);
 
             double valueBias = 1.6, powerBias = 1.5;
 
