@@ -124,9 +124,9 @@ namespace JabrAPI
                             Math.Min
                             (
                                 maxAvgNoiseCount,
-                                maxAvgNoiseCount
-                                //maxRoundLength - message.Count
-                                //    - (initialLength - i) / maxSyntropy
+                                //maxAvgNoiseCount
+                                maxRoundLength - message.Count
+                                    - (initialLength - i) / maxSyntropy
                             ),
                             noisifier.settings.ForceOptimalEntropy
                             && prevFinalUnnoised >= maxSyntropy
