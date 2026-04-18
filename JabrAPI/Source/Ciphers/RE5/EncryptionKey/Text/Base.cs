@@ -14,11 +14,12 @@ namespace JabrAPI
         {
             private readonly SetHelper _setHelper;
             private readonly ValidateHelper _validateHelper;
+            override public IKeySettings Settings { get; set; } = new KeySettings();
 
-            private string _primaryAlphabet = "";
+            private string  _primaryAlphabet = "";
             private string _externalAlphabet = "";
 
-            private List<char> _primaryNecessary = [], _primaryAllowed = [], _primaryBanned = [];
+            private List<char>  _primaryNecessary = [],  _primaryAllowed = [],  _primaryBanned = [];
             private List<char> _externalNecessary = [], _externalAllowed = [], _externalBanned = [];
             private Int32 _primaryMaxLength = -1, _externalMaxLength = -1;
 

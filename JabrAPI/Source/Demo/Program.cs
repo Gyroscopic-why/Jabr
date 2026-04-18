@@ -50,7 +50,7 @@ namespace JabrAPI
 
 
             string fileContent = "Aboba\r\nhello world\r\n228 baobab ,.!?";
-            string filePath = "C:\\Users\\egorg\\Desktop\\Egor\\Programming\\C#\\Programs\\New console projects\\Ciphers\\Jabr\\JabrAPI\\bin\\Debug\\net10.0";
+            string filePath = "";
             string fileName = "Test2.aboba";
             string encFileName = "Test2.enc-re5";
             string decFileName = "Test2.dec-re5";
