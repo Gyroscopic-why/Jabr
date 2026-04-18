@@ -15,9 +15,9 @@ namespace JabrAPI
             static public List<Byte> AddFastBinary(List<Byte> message, BinaryNoisifier noisifier, List<Byte> fakeSelection)
             {
                 Int32 chunkSize = (Int32)noisifier.settings.ChunkSize,
-                    hardChunkSize = (Int32)(chunkSize * noisifier.settings.HardChunkSizeToSoftCoefficient);
+                  hardChunkSize = (Int32)(chunkSize * noisifier.settings.HardChunkSizeToSoftCoefficient);
                 if (chunkSize < 2) chunkSize = 2;
-                if (hardChunkSize < 2) hardChunkSize = 2;
+                if (hardChunkSize < chunkSize) hardChunkSize = chunkSize;
 
 
                 Int32 outputLength = noisifier.settings.OutputLength, initialLength = message.Count;
@@ -49,20 +49,11 @@ namespace JabrAPI
                         initialLength,
                         outputLength
                     );
-                double maxAvgNoiseCount =
-                    //(double)2 * initialLength / outputLength;
-                    Math.Max
-                    (
-                        0.00001,
-                        (outputLength - initialLength)
-                        / (double)(initialLength + 1)
-                    ) * 2;
+                double maxAvgNoiseCount = 2.0 * (outputLength - initialLength) / (initialLength + 1);
                 double avgNoisePerCharInRound = (double)initialLength / outputLength;
 
-                #pragma warning disable IDE0028
                 SecureRandom random = new(128);
-                List<Byte> result = new(outputLength);
-                #pragma warning restore IDE0028
+                List <Byte>  result = new(outputLength);
 
                 fakeSelection = fakeSelection.Count < 1 ? noisifier.PrimaryNoise : fakeSelection;
                 Int32 prevFinalUnnoised = 0, maxRoundLength, offset = 0, messageChunk;

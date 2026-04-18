@@ -20,7 +20,6 @@ namespace JabrAPI
                 ref Int32 prevFinalUnnoised)
             {
                 Int32 initialLength = message.Count, chosenOffset;
-                double overflow;
 
                 if (initialLength >= maxRoundLength)
                 {
@@ -28,11 +27,12 @@ namespace JabrAPI
                     return message;
                 }
 
+                Int32 minNoiseCount = noisifier.settings.ForceOptimalEntropy
+                        && prevFinalUnnoised >= maxSyntropy ? 1 : 0;
 
-                overflow = random.NextDouble
+                double overflow = random.NextDouble
                 (
-                    noisifier.settings.ForceOptimalEntropy
-                        && prevFinalUnnoised >= maxSyntropy ? 1 : 0,
+                    minNoiseCount,
                     Math.Max
                     (
                         Math.Min
@@ -114,23 +114,22 @@ namespace JabrAPI
 
                 for (var i = 1; i <= initialLength; i++)
                 {
+                    minNoiseCount = noisifier.settings.ForceOptimalEntropy
+                            && prevFinalUnnoised >= maxSyntropy
+                            && i < initialLength ? 1 : 0;
+
                     overflow += random.NextDouble
                     (
-                        noisifier.settings.ForceOptimalEntropy
-                            && prevFinalUnnoised >= maxSyntropy
-                            && i < initialLength ? 1 : 0,
+                        minNoiseCount,
                         Math.Max
                         (
                             Math.Min
                             (
                                 maxAvgNoiseCount,
-                                //maxAvgNoiseCount
                                 maxRoundLength - message.Count
                                     - (initialLength - i) / maxSyntropy
                             ),
-                            noisifier.settings.ForceOptimalEntropy
-                            && prevFinalUnnoised >= maxSyntropy
-                            && i < initialLength ? 1 : 0
+                            minNoiseCount
                         )
                     );
                     chosenOffset = (Int32)Math.Floor(overflow);

@@ -50,18 +50,18 @@ namespace JabrAPI
 
 
             string fileContent = "Aboba\r\nhello world\r\n228 baobab ,.!?";
-            string filePath = "";
-            string fileName = "Test2.aboba";
-            string encFileName = "Test2.enc-re5";
-            string decFileName = "Test2.dec-re5";
+            //string filePath = "";
+            //string fileName = "Test2.aboba";
+            //string encFileName = "Test2.enc-re5";
+            //string decFileName = "Test2.dec-re5";
 
-            Write($"\n\tDeleting old {encFileName} & {decFileName} file\n");
-            if (File.Exists(Path.Combine(filePath, encFileName)))
-                File.Delete(Path.Combine(filePath, encFileName));
-            if (File.Exists(Path.Combine(filePath, decFileName)))
-                File.Delete(Path.Combine(filePath, decFileName));
+            //Write($"\n\tDeleting old {encFileName} & {decFileName} file\n");
+            //if (File.Exists(Path.Combine(filePath, encFileName)))
+            //    File.Delete(Path.Combine(filePath, encFileName));
+            //if (File.Exists(Path.Combine(filePath, decFileName)))
+            //    File.Delete(Path.Combine(filePath, decFileName));
 
-            ReadKey();
+            //ReadKey();
 
             //Write(reKey.ExportAsString() + "\n");
             //fileContent = RE5.Encrypt.Text(fileContent, reKey, true);
