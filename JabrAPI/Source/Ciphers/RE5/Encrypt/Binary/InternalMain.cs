@@ -42,10 +42,7 @@ namespace JabrAPI
                 Int32 chunkCount = (Int32)Math.Ceiling((double)messageLength / chunkSize);
                 Int32 thisRoundLength, shDelta, shiftStartId = 0, prevId = 0;
 
-
-                #pragma warning disable IDE0028
                 List<Byte> result = new(messageLength * (maxEncodingLength + 1));
-                #pragma warning restore IDE0028
 
 
                 for (var chunk = 0; chunk < chunkCount; chunk++)

@@ -32,10 +32,8 @@ namespace JabrAPI
                     maxEncodingLength
                 );
 
-                #pragma warning disable IDE0028
                 List<Byte> encrypted = new(messageLength * (maxEncodingLength + 1));
                 encrypted.AddRange([exAlphabet[curFinal % exLength], .. encoding]);
-                #pragma warning restore IDE0028
 
 
                 for (var curId = 1; curId < messageLength; curId++)

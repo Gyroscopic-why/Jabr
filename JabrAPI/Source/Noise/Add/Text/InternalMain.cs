@@ -58,10 +58,8 @@ namespace JabrAPI
                     ) * 2 + 1;
                 double avgNoisePerCharInRound = (double)initialLength / outputLength;
 
-                #pragma warning disable IDE0028
                 SecureRandom random = new(128);
                 List<char> result = new(outputLength);
-                #pragma warning restore IDE0028
 
                 fakeSelection = fakeSelection == "" ? noisifier.PrimaryNoise : fakeSelection;
                 Int32 prevFinalUnnoised = 0, maxRoundLength, offset = 0, messageChunk;
