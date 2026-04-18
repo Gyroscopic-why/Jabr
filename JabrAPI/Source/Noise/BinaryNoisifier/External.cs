@@ -32,5 +32,9 @@ namespace JabrAPI
                     _ => _complexNoise[_random.Next(ComplexNoiseCount)]
                 )
             ];
+
+
+        public void UpdateRandomReseedInterval(UInt64 afterGeneratedBytes = 128)
+            => _random.UpdateReseedInterval(afterGeneratedBytes);
     }
 }

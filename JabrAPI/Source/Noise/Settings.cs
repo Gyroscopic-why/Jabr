@@ -15,6 +15,7 @@ namespace JabrAPI
             bool minimizeOutputLengthIfDynamic = true,
 
             bool keepOriginalFileExtension = true,
+            UInt64 reseedRandomAfterBytesGenerated = 128,
 
             bool forceOptimalEntropy = true,
             ExpectedEntropy expectedEntropy = ExpectedEntropy.C1_Medium,
@@ -33,6 +34,7 @@ namespace JabrAPI
                 minimizeOutputLengthIfDynamic,
 
                 keepOriginalFileExtension,
+                reseedRandomAfterBytesGenerated,
 
                 forceOptimalEntropy,
                 expectedEntropy,
@@ -57,6 +59,7 @@ namespace JabrAPI
             bool minimizeOutputLengthIfDynamic = true,
 
             bool keepOriginalFileExtension = true,
+            UInt64 reseedRandomAfterBytesGenerated = 128,
 
             bool forceOptimalEntropy = true,
             ExpectedEntropy expectedEntropy = ExpectedEntropy.C1_Medium,
@@ -75,6 +78,7 @@ namespace JabrAPI
                 minimizeOutputLengthIfDynamic,
 
                 keepOriginalFileExtension,
+                reseedRandomAfterBytesGenerated,
 
                 forceOptimalEntropy,
                 expectedEntropy,

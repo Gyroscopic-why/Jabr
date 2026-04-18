@@ -45,9 +45,7 @@ namespace JabrAPI
                 Int32 realMessageLength, thisRoundLength, shDelta;
 
 
-                #pragma warning disable IDE0028
                 List<Byte> result = new(encLength / maxEncodingLength);  //  Real message length
-                #pragma warning restore IDE0028
 
 
                 for (var chunk = 0; chunk < chunkCount; chunk++)

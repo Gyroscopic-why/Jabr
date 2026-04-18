@@ -14,7 +14,6 @@ namespace JabrAPI
         {
             private readonly SetHelper _setHelper;
             private readonly ValidateHelper _validateHelper;
-            override public IKeySettings Settings { get; set; } = new KeySettings();
 
             private string  _primaryAlphabet = "";
             private string _externalAlphabet = "";

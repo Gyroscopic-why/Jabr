@@ -37,10 +37,8 @@ namespace JabrAPI
                     + parsedEncoding * exLength;
 
 
-                #pragma warning disable IDE0028
                 List<Byte> decrypted = new(realMessageLength);
                 decrypted.AddRange(prAlphabet[decodedId]);
-                #pragma warning restore IDE0028
 
 
                 for (var curId = 1; curId < realMessageLength; curId++)

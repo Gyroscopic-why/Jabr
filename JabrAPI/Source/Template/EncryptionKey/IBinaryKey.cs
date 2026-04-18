@@ -35,6 +35,9 @@ namespace JabrAPI.Template
 
         abstract public List<Byte> FinalAlphabet { get; }
 
+        public void UpdateRandomReseedInterval(UInt64 afterGeneratedBytes = 128)
+            => _random.UpdateReseedInterval(afterGeneratedBytes);
+
 
 
         public void Next(bool resetSettingsToDefaultIfFailed = true, bool throwExceptions = true)
