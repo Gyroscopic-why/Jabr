@@ -7,7 +7,7 @@ namespace JabrAPI
 {
     public partial class BinaryNoisifier
     {
-        public void CopyFrom(BinaryNoisifier otherNoisifier, bool fullCopy = true)
+        public  void CopyFrom(BinaryNoisifier otherNoisifier, bool fullCopy = true)
         {
             CopyFrom(otherNoisifier.PrimaryNoise, otherNoisifier.ComplexNoise);
 
@@ -51,6 +51,8 @@ namespace JabrAPI
             foreach (Byte bannedByte in banned)
                 result.RemoveAll(c => c == bannedByte);
 
+
+            _random.Shuffle(ref result);
 
             Int32 chosenId, curCount = result.Count;
             while (curCount > targetCount)

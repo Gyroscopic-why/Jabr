@@ -49,6 +49,8 @@ namespace JabrAPI
                 result.RemoveAll(c => c == bannedChar);
 
 
+            _random.Shuffle(ref result);
+
             Int32 chosenId, curCount = result.Count;
             while (curCount > targetCount)
             {

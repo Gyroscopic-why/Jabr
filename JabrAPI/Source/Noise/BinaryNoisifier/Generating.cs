@@ -53,12 +53,23 @@ namespace JabrAPI
 
         public List<Byte> GenerateNoise(Byte count, List<Byte> allowed)
         {
-            List<Byte> result = [];
+            if (count <= 0) return [];
+            if (count > allowed.Count) throw new ArgumentOutOfRangeException
+                (
+                    $"Count is greater than max possible length: {allowed.Count}"
+                );
 
-            for (var noiseByteId = 0; noiseByteId < count; noiseByteId++)
+            List<Byte> result = new(count);
+            Int32  totalCount = allowed.Count;
+
+            for (var lastUsedId = 0; lastUsedId < count; lastUsedId++)
             {
-                Int32 chosenId = _random.Next(result.Count);
-                result.Insert(chosenId, allowed[noiseByteId]);
+                Int32 chosenUnused = _random.Next(lastUsedId, totalCount);
+
+                (allowed[chosenUnused], allowed[lastUsedId]) =
+                (allowed[lastUsedId], allowed[chosenUnused]);
+
+                result.Add(allowed[lastUsedId]);
             }
 
             return result;
