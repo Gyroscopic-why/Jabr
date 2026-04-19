@@ -19,7 +19,7 @@ namespace JabrAPI.Template
         double complexNoisePairBiasPercents     = 25.0,
         double complexNoiseIntervalBiasPercents = 66.6,
 
-        bool  forceFullBoundary = true,
+        bool  forceFullBoundary = false,
         Noise.DynamicBoundaryOffset dynamicBoundaryOffset = Noise.DynamicBoundaryOffset.Minimize)
     {
         public Int32  OutputLength                     { get; set; } = outputLength;

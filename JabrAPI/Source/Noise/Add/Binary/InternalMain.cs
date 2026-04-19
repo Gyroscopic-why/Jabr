@@ -26,13 +26,14 @@ namespace JabrAPI
                     outputLength = (Int32)Math.Pow
                     (
                         2,
-                        noisifier.settings.MinimizeOutputLengthIfDynamic ?
-                            Math.Min
+                        noisifier.settings.ForceFullBoundary ?
+                            (Int32)noisifier.settings.BoundaryAlignment
+                            : Math.Min
                             (
                                 (Int32)noisifier.settings.BoundaryAlignment,
                                 (Int32)Math.Ceiling(Math.Log2(initialLength))
+                                    + (Int32)noisifier.settings.DynamicBoundaryOffset
                             )
-                        : (Int32)noisifier.settings.BoundaryAlignment
                     );
 
                 if (initialLength > outputLength)
@@ -89,7 +90,7 @@ namespace JabrAPI
                     (
                         AdditionRound
                         (
-                             [.. message.GetRange
+                            [.. message.GetRange
                                 (
                                     offset,
                                     messageChunk

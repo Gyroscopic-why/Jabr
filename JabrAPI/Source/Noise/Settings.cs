@@ -24,7 +24,7 @@ namespace JabrAPI
             double complexNoisePairBiasPercents     = 25.0,
             double complexNoiseIntervalBiasPercents = 66.6,
 
-            bool   forceFullBoundary                    = true,
+            bool   forceFullBoundary                    = false,
             DynamicBoundaryOffset dynamicBoundaryOffset = DynamicBoundaryOffset.Minimize,
             TextChunkSize chunkSize                     = TextChunkSize.c4096,
             TextOutputBoundaryAlignment boundaryAlignment
@@ -71,7 +71,7 @@ namespace JabrAPI
             double complexNoisePairBiasPercents     = 25.0,
             double complexNoiseIntervalBiasPercents = 66.6,
 
-            bool forceFullBoundary                      = true,
+            bool forceFullBoundary                      = false,
             DynamicBoundaryOffset dynamicBoundaryOffset = DynamicBoundaryOffset.Minimize,
             BinaryChunkSize chunkSize                   = BinaryChunkSize.KByte8,
             BinaryOutputBoundaryAlignment boundaryAlignment

@@ -14,10 +14,10 @@ namespace JabrAPI
         {
             static public string AddFastText(string message, Noisifier noisifier, string fakeSelection)
             {
-                Int32 chunkSize   = (Int32)noisifier.settings.ChunkSize,
-                    hardChunkSize = (Int32)(chunkSize * noisifier.settings.HardChunkSizeToSoftCoefficient);
+                Int32 chunkSize = (Int32)noisifier.settings.ChunkSize,
+                  hardChunkSize = (Int32)(chunkSize * noisifier.settings.HardChunkSizeToSoftCoefficient);
                 if (chunkSize < 2) chunkSize = 2;
-                if (hardChunkSize < 2) hardChunkSize = 2;
+                if (hardChunkSize < chunkSize) hardChunkSize = chunkSize;
 
 
                 Int32 outputLength = noisifier.settings.OutputLength, initialLength = message.Length;
@@ -26,13 +26,14 @@ namespace JabrAPI
                     outputLength = (Int32)Math.Pow
                     (
                         2,
-                        noisifier.settings.MinimizeOutputLengthIfDynamic ?
-                            Math.Min
+                        noisifier.settings.ForceFullBoundary ?
+                            (Int32)noisifier.settings.BoundaryAlignment
+                            : Math.Min
                             (
                                 (Int32)noisifier.settings.BoundaryAlignment,
                                 (Int32)Math.Ceiling(Math.Log2(initialLength))
+                                    + (Int32)noisifier.settings.DynamicBoundaryOffset
                             )
-                        : (Int32)noisifier.settings.BoundaryAlignment
                     );
 
                 if (initialLength > outputLength)
@@ -49,17 +50,11 @@ namespace JabrAPI
                         initialLength,
                         outputLength
                     );
-                Int32 maxAvgNoiseCount =
-                    Math.Max
-                    (
-                        1,
-                        (outputLength - initialLength)
-                        / (initialLength + 1)
-                    ) * 2 + 1;
+                double maxAvgNoiseCount = 2.0 * (outputLength - initialLength) / (initialLength + 1);
                 double avgNoisePerCharInRound = (double)initialLength / outputLength;
 
                 SecureRandom random = new(128);
-                List<char> result = new(outputLength);
+                List <char>  result = new(outputLength);
 
                 fakeSelection = fakeSelection == "" ? noisifier.PrimaryNoise : fakeSelection;
                 Int32 prevFinalUnnoised = 0, maxRoundLength, offset = 0, messageChunk;
@@ -86,7 +81,7 @@ namespace JabrAPI
                             Math.Max
                             (
                                 (Int32)(maxRoundLength * avgNoisePerCharInRound),
-                                (Int32)(result.Count * avgNoisePerCharInRound
+                                (Int32)(result.Count   * avgNoisePerCharInRound
                                     + 0.75 - result.Count / outputLength) - offset  // 0.75 = ((outP / outP) + 0.5) / 2
                             )
                         );
