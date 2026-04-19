@@ -106,7 +106,7 @@ namespace JabrAPI
             //binKey.ChunkSize = BinaryChunkSize.bTEST;
             //binKey.Noisifier.settings.ChunkSize = BinaryChunkSize.bTEST;
 
-            lolinit = RE5.Encrypt.TextToBinary_Utf8(fileContent + fileContent + fileContent, reKey, true);
+            lolinit = RE5.Encrypt.TextToBinary_Utf8(fileContent + fileContent, reKey, true);
 
             double valueBias = 1.6, powerBias = 1.5;
 

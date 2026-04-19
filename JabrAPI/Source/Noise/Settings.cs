@@ -10,28 +10,29 @@ namespace JabrAPI
     static public partial class Noise
     {
         public class Settings(
-            Int32 outputLength = 0,
-            bool useDynamicOutputAlignment = true,
-            bool minimizeOutputLengthIfDynamic = true,
+            Int32  outputLength                   = 0,
+            bool   useDynamicOutputAlignment      = true,
+            double hardChunkSizeToSoftCoefficient = 4.0,
 
-            bool keepOriginalFileExtension = true,
+            bool   keepOriginalFileExtension       = true,
             UInt64 reseedRandomAfterBytesGenerated = 128,
 
-            bool forceOptimalEntropy = true,
+            bool   forceOptimalEntropy      = true,
             ExpectedEntropy expectedEntropy = ExpectedEntropy.C1_Medium,
 
-            double primaryNoiseBiasPercents = 50.0,
-            double complexNoisePairBiasPercents = 25.0,
+            double primaryNoiseBiasPercents         = 50.0,
+            double complexNoisePairBiasPercents     = 25.0,
             double complexNoiseIntervalBiasPercents = 66.6,
 
-            double hardChunkSizeToSoftCoefficient = 4.0,
-            TextChunkSize chunkSize = TextChunkSize.c4096,
+            bool   forceFullBoundary                    = true,
+            DynamicBoundaryOffset dynamicBoundaryOffset = DynamicBoundaryOffset.Minimize,
+            TextChunkSize chunkSize                     = TextChunkSize.c4096,
             TextOutputBoundaryAlignment boundaryAlignment
-                = TextOutputBoundaryAlignment.c256
+                                                        = TextOutputBoundaryAlignment.c256
             ) : INoiseSettings(
                 outputLength,
                 useDynamicOutputAlignment,
-                minimizeOutputLengthIfDynamic,
+                hardChunkSizeToSoftCoefficient,
 
                 keepOriginalFileExtension,
                 reseedRandomAfterBytesGenerated,
@@ -43,7 +44,8 @@ namespace JabrAPI
                 complexNoisePairBiasPercents,
                 complexNoiseIntervalBiasPercents,
 
-                hardChunkSizeToSoftCoefficient
+                forceFullBoundary,
+                dynamicBoundaryOffset
             )
         {
             public TextOutputBoundaryAlignment BoundaryAlignment
@@ -53,29 +55,31 @@ namespace JabrAPI
         }
 
 
-        public class BinarySettings(
-            Int32 outputLength = 0,
-            bool useDynamicOutputAlignment = true,
-            bool minimizeOutputLengthIfDynamic = true,
 
-            bool keepOriginalFileExtension = true,
+        public class BinarySettings(
+            Int32  outputLength                   = 0,
+            bool   useDynamicOutputAlignment      = true,
+            double hardChunkSizeToSoftCoefficient = 4.0,
+
+            bool   keepOriginalFileExtension       = true,
             UInt64 reseedRandomAfterBytesGenerated = 128,
 
-            bool forceOptimalEntropy = true,
+            bool   forceOptimalEntropy      = true,
             ExpectedEntropy expectedEntropy = ExpectedEntropy.C1_Medium,
 
-            double primaryNoiseBiasPercents = 50.0,
-            double complexNoisePairBiasPercents = 25.0,
+            double primaryNoiseBiasPercents         = 50.0,
+            double complexNoisePairBiasPercents     = 25.0,
             double complexNoiseIntervalBiasPercents = 66.6,
 
-            double hardChunkSizeToSoftCoefficient = 4.0,
-            BinaryChunkSize chunkSize = BinaryChunkSize.KByte8,
+            bool forceFullBoundary                      = true,
+            DynamicBoundaryOffset dynamicBoundaryOffset = DynamicBoundaryOffset.Minimize,
+            BinaryChunkSize chunkSize                   = BinaryChunkSize.KByte8,
             BinaryOutputBoundaryAlignment boundaryAlignment
-                = BinaryOutputBoundaryAlignment.KByte1
+                                                        = BinaryOutputBoundaryAlignment.KByte1
             ) : INoiseSettings(
                 outputLength,
                 useDynamicOutputAlignment,
-                minimizeOutputLengthIfDynamic,
+                hardChunkSizeToSoftCoefficient,
 
                 keepOriginalFileExtension,
                 reseedRandomAfterBytesGenerated,
@@ -87,7 +91,8 @@ namespace JabrAPI
                 complexNoisePairBiasPercents,
                 complexNoiseIntervalBiasPercents,
 
-                hardChunkSizeToSoftCoefficient
+                forceFullBoundary,
+                dynamicBoundaryOffset
             )
         {
             public BinaryOutputBoundaryAlignment BoundaryAlignment
@@ -142,6 +147,26 @@ namespace JabrAPI
 
             c1048576 = 20
         }
+
+        public enum DynamicBoundaryOffset
+        {
+            Minimize = 0,
+
+            x2 = 1,
+            x4 = 2,
+            x8 = 3,
+
+            x16 = 4,
+            x32 = 5,
+            x64 = 6,
+
+            x128 = 7,
+            x256 = 8,
+            x512 = 9,
+
+            x1024 = 10,
+        }
+
 
 
         public enum ExpectedEntropy
