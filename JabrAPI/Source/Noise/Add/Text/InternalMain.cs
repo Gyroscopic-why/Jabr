@@ -1,8 +1,9 @@
-﻿using System;
+﻿using AVcontrol;
+using System;
 using System.Collections.Generic;
-
-
-using AVcontrol;
+using System.Diagnostics;
+using System.IO;
+using System.Text.RegularExpressions;
 
 
 
@@ -16,8 +17,8 @@ namespace JabrAPI
             {
                 Int32 chunkSize = (Int32)noisifier.settings.ChunkSize,
                   hardChunkSize = (Int32)(chunkSize * noisifier.settings.HardChunkSizeToSoftCoefficient);
-                if (chunkSize < 2) chunkSize = 2;
-                if (hardChunkSize < chunkSize) hardChunkSize = chunkSize;
+                if (chunkSize   < 2) chunkSize = 2;
+                if (hardChunkSize <  chunkSize) hardChunkSize = chunkSize;
 
 
                 Int32 outputLength = noisifier.settings.OutputLength, initialLength = message.Length;
@@ -110,6 +111,150 @@ namespace JabrAPI
                 }
 
                 return new string([.. result]);
+            }
+            static public void AddFastTextFile(string absoluteInputDirectory, string fileName,
+                string absoluteOutputDirectory, Noisifier noisifier, string fakeSelection)
+            {
+                Int32 chunkSize = (Int32)noisifier.settings.ChunkSize,
+                  hardChunkSize = (Int32)(chunkSize * noisifier.settings.HardChunkSizeToSoftCoefficient);
+                if (chunkSize   < 2) chunkSize = 2;
+                if (hardChunkSize <  chunkSize) hardChunkSize = chunkSize;
+
+
+                Int32 outputLength = noisifier.settings.OutputLength, initialLength = 0;
+                using (StreamReader lengthReader = new(Path.Combine(absoluteInputDirectory, fileName)))
+                {
+                    while (lengthReader.Read() != -1) initialLength++;
+
+                    lengthReader.Close();
+                    lengthReader.Dispose();
+                }
+                //initialLength = 35;
+
+
+                if (outputLength == 0)
+                    outputLength = (Int32)Math.Pow
+                    (
+                        2,
+                        noisifier.settings.ForceFullBoundary ?
+                            (Int32)noisifier.settings.BoundaryAlignment
+                            : Math.Min
+                            (
+                                (Int32)noisifier.settings.BoundaryAlignment,
+                                (Int32)Math.Ceiling(Math.Log2(initialLength))
+                                    + (Int32)noisifier.settings.DynamicBoundaryOffset
+                            )
+                    );
+
+
+                string finalFileName;
+                if (!noisifier.settings.KeepOriginalFileExtension)
+                {
+                    finalFileName = Path.ChangeExtension(fileName, "noisedv5");
+                    for (var i = 1; File.Exists(Path.Combine(absoluteOutputDirectory, finalFileName)); i++)
+                        finalFileName = Path.ChangeExtension(fileName, $"noisedv5-{i}");
+                }
+                else finalFileName = fileName + ".noisedv5";
+
+
+                if (initialLength > outputLength)
+                {
+                    if (noisifier.settings.UseDynamicOutputAlignment)
+                        outputLength *= 1 + initialLength / outputLength;
+                    else
+                    {
+                        File.Copy
+                        (
+                            Path.Combine(absoluteInputDirectory, fileName),
+                            Path.Combine(absoluteOutputDirectory, finalFileName),
+                            false  //  overwrite
+                        );
+                        return;
+                    }
+                }
+
+
+                Int32 maxSyntropy = Miscellaneous.CalculateMaxNonEntropy
+                    (
+                        noisifier.settings.ExpectedEntropy,
+                        initialLength,
+                        outputLength
+                    );
+                double maxAvgNoiseCount = 2.0 * (outputLength - initialLength) / (initialLength + 1);
+                double avgNoisePerCharInRound = (double)initialLength / outputLength;
+
+                SecureRandom random = new(noisifier.RandomReseedInterval);
+
+                using StreamReader reader = new(Path.Combine(absoluteInputDirectory, fileName));
+                using StreamWriter writer = new(Path.Combine(absoluteOutputDirectory, finalFileName));
+
+                fakeSelection = fakeSelection == "" ? noisifier.PrimaryNoise : fakeSelection;
+
+                List<char> parsedChars = [];
+                bool isFileEnd = false;
+                Int32 prevFinalUnnoised = 0, offset = 0, processedCount = 0, maxRoundLength, messageChunk;
+
+                for (var curOptimalSize = chunkSize; processedCount + initialLength - offset < outputLength; curOptimalSize += chunkSize)
+                {
+                    random.Reseed();
+
+                    maxRoundLength = Math.Min
+                        (
+                            hardChunkSize,
+                            Math.Min
+                            (
+                                outputLength,
+                                curOptimalSize
+                            ) - processedCount
+                        );
+
+                    messageChunk = processedCount - outputLength + maxRoundLength >= 0
+                        ? initialLength - offset
+                        : Math.Min
+                        (
+                            initialLength - offset,
+                            Math.Max
+                            (
+                                (Int32)(maxRoundLength * avgNoisePerCharInRound),
+                                (Int32)(processedCount * avgNoisePerCharInRound
+                                    + 0.75 - processedCount / outputLength) - offset  // 0.75 = ((outP / outP) + 0.5) / 2
+                            )
+                        );
+
+                    if (!isFileEnd)
+                    {
+                        if (messageChunk == 0) isFileEnd = true;
+                        else
+                        {
+                            char[] readBuffer = new char[messageChunk];
+                            var  actuallyRead = reader.ReadBlock(readBuffer, 0, messageChunk);
+
+                            parsedChars = new List<char>(readBuffer).GetRange(0, actuallyRead);
+                            isFileEnd   = actuallyRead == 0;
+                        }
+                    }
+                    else
+                    {
+                        parsedChars = [];
+                        maxRoundLength = outputLength - processedCount;
+                    }
+
+                    parsedChars = AdditionRound
+                                (
+                                    parsedChars,
+                                    fakeSelection,
+                                    noisifier,
+                                    random,
+                                    maxRoundLength,
+                                    maxSyntropy,
+                                    maxAvgNoiseCount,
+                                    ref prevFinalUnnoised
+                                );
+
+                    offset += messageChunk;
+                    processedCount += parsedChars.Count;
+                    writer.Write( [.. parsedChars]);
+                }
             }
         }
     }

@@ -10,7 +10,6 @@ namespace JabrAPI.Template
         double hardChunkSizeToSoftCoefficient = 4.0,
 
         bool   keepOriginalFileExtension = true,
-        UInt64 reseedRandomAfterBytesGenerated = 128,
 
         bool   forceOptimalEntropy = true,
         Noise.ExpectedEntropy expectedEntropy = Noise.ExpectedEntropy.C1_Medium,
@@ -28,7 +27,6 @@ namespace JabrAPI.Template
 
 
         public bool   KeepOriginalFileExtension        { get; set; } = keepOriginalFileExtension;
-        public UInt64 ReseedRandomAfterBytesGenerated  { get; set; } = reseedRandomAfterBytesGenerated;
 
 
         public bool   ForceOptimalEntropy              { get; set; } = forceOptimalEntropy;

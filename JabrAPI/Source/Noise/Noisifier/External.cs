@@ -21,6 +21,17 @@ namespace JabrAPI
         public char RandomComplexChar => _complexNoise[_random.Next(ComplexNoiseCount)];
 
 
+        public UInt64 RandomReseedInterval
+        {
+            get;
+            set
+            {
+                field = value >= 128 ? value : 128;
+                _random.UpdateReseedInterval(field);
+            }
+        }
+
+
         public string RandomPrimarySequence(Int32 count) =>
             string.Concat(
                 Enumerable.Range(0, count).Select
@@ -35,9 +46,5 @@ namespace JabrAPI
                     _ => _complexNoise[_random.Next(ComplexNoiseCount)]
                 )
             );
-
-
-        public void UpdateRandomReseedInterval(UInt64 afterGeneratedBytes = 128)
-            => _random.UpdateReseedInterval(afterGeneratedBytes);
     }
 }

@@ -45,23 +45,47 @@ namespace JabrAPI
 
 
 
-
+            reKey.Noisifier.RandomReseedInterval = 8192;
+            reKey.Noisifier.settings.BoundaryAlignment = Noise.TextOutputBoundaryAlignment.c8192;
 
 
 
             string fileContent = "Aboba\r\nhello world\r\n228 baobab ,.!?";
-            //string filePath = "";
-            //string fileName = "Test2.aboba";
+            string filePath = "C:\\Users\\egorg\\Desktop\\Egor\\Programming\\C#\\Programs\\New console projects\\Ciphers\\Jabr\\JabrAPI\\bin\\Debug\\net10.0";
+            string fileName = "Test4.txt";
             //string encFileName = "Test2.enc-re5";
             //string decFileName = "Test2.dec-re5";
+            string noisedFileName = "Test4.noisedv5";
+            string denoisFileName = "Test4.dnoisev5";
 
-            //Write($"\n\tDeleting old {encFileName} & {decFileName} file\n");
-            //if (File.Exists(Path.Combine(filePath, encFileName)))
-            //    File.Delete(Path.Combine(filePath, encFileName));
-            //if (File.Exists(Path.Combine(filePath, decFileName)))
-            //    File.Delete(Path.Combine(filePath, decFileName));
+            for (var ii = 0; ii < 10; ii++)
+            {
 
-            //ReadKey();
+                //Write($"\n\tDeleting old {encFileName} & {decFileName} file\n");
+                //if (File.Exists(Path.Combine(filePath, encFileName)))
+                //    File.Delete(Path.Combine(filePath, encFileName));
+                //if (File.Exists(Path.Combine(filePath, decFileName)))
+                //    File.Delete(Path.Combine(filePath, decFileName));
+                //Write($"\n\tDeleting old {noisedFileName} & {denoisFileName} file\n");
+                if (File.Exists(Path.Combine(filePath, noisedFileName)))
+                    File.Delete(Path.Combine(filePath, noisedFileName));
+                if (File.Exists(Path.Combine(filePath, denoisFileName)))
+                    File.Delete(Path.Combine(filePath, denoisFileName));
+
+                //ReadKey();
+
+                Stopwatch timerN = new();
+                timerN.Start();
+                //Write("\n\tNoising file in process: " + );
+                Noise.Add.TextFile(filePath, fileName, reKey, true);
+                timerN.Stop();
+
+                Write("Done: " + ii + " (" + timerN.ElapsedMilliseconds + ")\n");
+
+                //ReadKey();
+                if (ii > 100) ReadKey();
+            }
+            ReadLine();
 
             //Write(reKey.ExportAsString() + "\n");
             //fileContent = RE5.Encrypt.Text(fileContent, reKey, true);
@@ -108,7 +132,7 @@ namespace JabrAPI
 
             //lolinit = RE5.Encrypt.TextToBinary_Utf8(fileContent + fileContent, reKey, true);
 
-            aboba += fileContent + aboba + fileContent;
+            //aboba += fileContent + aboba + fileContent;
             double valueBias = 1.6, powerBias = 1.5;
 
             reKey.Noisifier.settings.BoundaryAlignment = Noise.TextOutputBoundaryAlignment.c2048;
@@ -116,7 +140,7 @@ namespace JabrAPI
             reKey.Noisifier.settings.DynamicBoundaryOffset = Noise.DynamicBoundaryOffset.x2;
 
             Int32 maxNonEntropy = 0, extendBuffer;
-            for (var i = 0; i < 1_000; i++)
+            for (var i = 0; i < 1_0; i++)
             {
                 Write("\n\tAttempt: " + ++attemptCount);
                 //reKey.Set.Sensitive.ExAlphabet("Xv+");
@@ -330,9 +354,6 @@ namespace JabrAPI
                 binKey.ChunkSize = BinaryChunkSize.bTEST;
 
 
-
-
-
                 extendBuffer = EXTEND;
                 EXTEND = noised.Length;
                 //EXTEND = binoised.Count;
@@ -457,11 +478,16 @@ namespace JabrAPI
             for (var hide = 0; hide < 1; hide++)
             {
                 List<Int64> ms1 = [], ms2 = [];
-                const Int64 totalAttempts = 10, iterationsPerAttempt = 333_000;
+                const Int64 totalAttempts = 10, iterationsPerAttempt = 100;
                 Write($"\n\n\n\t\t[i]  - Starting benchmark of {totalAttempts * iterationsPerAttempt / 1_000}k Key Export & Import");
 
                 for (var attempt = 0; attempt < totalAttempts; attempt++)
                 {
+                    if (File.Exists(Path.Combine(filePath, noisedFileName)))
+                        File.Delete(Path.Combine(filePath, noisedFileName));
+                    if (File.Exists(Path.Combine(filePath, denoisFileName)))
+                        File.Delete(Path.Combine(filePath, denoisFileName));
+
                     if (attempt % 2 == 0)
                     {
                         initial.Next();
@@ -470,7 +496,8 @@ namespace JabrAPI
                         timer.Start();
 
                         for (var i = 0; i < iterationsPerAttempt; i++)
-                            exportBuffer = initial.ExportAsBinary();
+                            //    exportBuffer = initial.ExportAsBinary();
+                            Noise.Add.TextFile(filePath, fileName, reKey, true);
 
                         timer.Stop();
                         ms1.Add(timer.ElapsedMilliseconds);
@@ -480,7 +507,9 @@ namespace JabrAPI
                         Write("\n\t\t\tIMPORT     - ");
                         timer.Start();
 
-                        for (var i = 0; i < iterationsPerAttempt; i++) copy.ImportFromBinary(exportBuffer, true);
+                        for (var i = 0; i < iterationsPerAttempt; i++)
+                            //copy.ImportFromBinary(exportBuffer, true);
+                            Noise.Add.TextFile(filePath, fileName, reKey, true);
 
                         timer.Stop();
                         ms2.Add(timer.ElapsedMilliseconds);
@@ -491,62 +520,62 @@ namespace JabrAPI
                     timer.Reset();
 
 
-                    if (attempt % 2 == 1)
-                    {
-                        Write("\n\t\t\tVALIDATING - ");
+                    //if (attempt % 2 == 1)
+                    //{
+                    //    Write("\n\t\t\tVALIDATING - ");
 
-                        List<Byte> import = copy.ExportAsBinary();
+                    //    List<Byte> import = copy.ExportAsBinary();
 
-                        if (import.Count != exportBuffer.Count)
-                        {
-                            ForegroundColor = ConsoleColor.Green;
-                            Write("\tFAILURE! See differences:");
-                            ForegroundColor = ConsoleColor.Gray;
+                    //    if (import.Count != exportBuffer.Count)
+                    //    {
+                    //        ForegroundColor = ConsoleColor.Green;
+                    //        Write("\tFAILURE! See differences:");
+                    //        ForegroundColor = ConsoleColor.Gray;
 
-                            Write("\n\t\t\tInitial: ");
-                            foreach (var infoByte in exportBuffer)
-                                Write(infoByte + " ");
+                    //        Write("\n\t\t\tInitial: ");
+                    //        foreach (var infoByte in exportBuffer)
+                    //            Write(infoByte + " ");
 
-                            Write("\n\t\t\tImport:  ");
-                            foreach (var infoByte in import)
-                                Write(infoByte + " ");
+                    //        Write("\n\t\t\tImport:  ");
+                    //        foreach (var infoByte in import)
+                    //            Write(infoByte + " ");
 
-                            ReadKey();
-                        }
-                        else
-                        {
-                            bool doesMatch = true;
+                    //        ReadKey();
+                    //    }
+                    //    else
+                    //    {
+                    //        bool doesMatch = true;
 
-                            for (var i = 0; i < exportBuffer.Count; i++)
-                            {
-                                if (import[i] != exportBuffer[i])
-                                {
-                                    ForegroundColor = ConsoleColor.Green;
-                                    Write("\tFAILURE! See differences:");
-                                    ForegroundColor = ConsoleColor.Gray;
+                    //        for (var i = 0; i < exportBuffer.Count; i++)
+                    //        {
+                    //            if (import[i] != exportBuffer[i])
+                    //            {
+                    //                ForegroundColor = ConsoleColor.Green;
+                    //                Write("\tFAILURE! See differences:");
+                    //                ForegroundColor = ConsoleColor.Gray;
 
-                                    Write("\n\t\t\tInitial: ");
-                                    foreach (var infoByte in exportBuffer)
-                                        Write(infoByte);
+                    //                Write("\n\t\t\tInitial: ");
+                    //                foreach (var infoByte in exportBuffer)
+                    //                    Write(infoByte);
 
-                                    Write("\n\t\t\tImport:  ");
-                                    foreach (var infoByte in import)
-                                        Write(infoByte);
+                    //                Write("\n\t\t\tImport:  ");
+                    //                foreach (var infoByte in import)
+                    //                    Write(infoByte);
 
-                                    i += exportBuffer.Count;
-                                    doesMatch = false;
+                    //                i += exportBuffer.Count;
+                    //                doesMatch = false;
 
-                                    ReadKey();
-                                }
-                            }
-                            if (doesMatch)
-                            {
-                                ForegroundColor = ConsoleColor.Green;
-                                Write("\tSUCCESS! Import matches export");
-                                ForegroundColor = ConsoleColor.Gray;
-                            }
-                        }
-                    }
+                    //                ReadKey();
+                    //            }
+                    //        }
+                    //        if (doesMatch)
+                    //        {
+                    //            ForegroundColor = ConsoleColor.Green;
+                    //            Write("\tSUCCESS! Import matches export");
+                    //            ForegroundColor = ConsoleColor.Gray;
+                    //        }
+                    //    }
+                    //}
                 }
 
                 double min1 = (double)ms1.Min() / 1000, max1 = (double)ms1.Max() / 1000;
@@ -572,9 +601,9 @@ namespace JabrAPI
                 else Write($"{a2}, average: {v3}");
 
                 Write("\n\n\n\t\t\tTotal time elapsed for");
-                Write($"\n\t\tEXPORT    - {totalAttempts * iterationsPerAttempt / 1_000_000}m operations: {s1}\t[{(Int32)(sum1 / (sum1 + sum2) * 100)} %]");
-                Write($"\n\t\tIMPORT    - {totalAttempts * iterationsPerAttempt / 1_000_000}m operations: {s2}\t[{(Int32)(sum2 / (sum1 + sum2) * 100)} %]");
-                Write($"\n\t\tGLOBAL    - {totalAttempts * iterationsPerAttempt / 1_000_000}m operations: {s3}");
+                Write($"\n\t\tEXPORT    - {totalAttempts * iterationsPerAttempt / 1_000}k operations: {s1}\t[{(Int32)(sum1 / (sum1 + sum2) * 100)} %]");
+                Write($"\n\t\tIMPORT    - {totalAttempts * iterationsPerAttempt / 1_000}k operations: {s2}\t[{(Int32)(sum2 / (sum1 + sum2) * 100)} %]");
+                Write($"\n\t\tGLOBAL    - {totalAttempts * iterationsPerAttempt / 1_000}k operations: {s3}");
 
                 ReadKey();
             }
