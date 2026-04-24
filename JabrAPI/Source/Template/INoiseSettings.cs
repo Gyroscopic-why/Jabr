@@ -7,6 +7,7 @@ namespace JabrAPI.Template
     abstract public class INoiseSettings(
         Int32  outputLength = 0,
         bool   useDynamicOutputAlignment = true,
+        double dynamicOutputNoiseCoefficient  = 1.8742,
         double hardChunkSizeToSoftCoefficient = 4.0,
 
         bool   keepOriginalFileExtension = true,
@@ -23,6 +24,7 @@ namespace JabrAPI.Template
     {
         public Int32  OutputLength                     { get; set; } = outputLength;
         public bool   UseDynamicOutputAlignment        { get; set; } = useDynamicOutputAlignment;
+        public double DynamicOutputNoiseCoefficient    { get; set; } = dynamicOutputNoiseCoefficient;
         public double HardChunkSizeToSoftCoefficient   { get; set; } = hardChunkSizeToSoftCoefficient;
 
 

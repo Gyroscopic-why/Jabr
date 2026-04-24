@@ -43,20 +43,24 @@ namespace JabrAPI
             //ReadKey();
 
 
-
+            reKey.Noisifier.Set.Default(['A', 'b', 'o', 'a', '\r', '\n', 'h', 'e', 'l', ' ', 'w', 'r', 'd', '2', '8', ',', '.', '?', '!',
+            'i', 'f', 'y', 'u', 'n', 'g', 't', 's', '-', 'T', 'H', 'E', 'c', 'm', 'k', 'N', 'O', 'I', 'S', 'F', 'R']);
+            reKey.Noisifier.Next();
 
             reKey.Noisifier.RandomReseedInterval = 8192;
             reKey.Noisifier.settings.BoundaryAlignment = Noise.TextOutputBoundaryAlignment.c8192;
+            reKey.Noisifier.settings.KeepOriginalFileExtension = false;
 
 
 
             string fileContent = "Aboba\r\nhello world\r\n228 baobab ,.!?";
-            string filePath = "C:\\Users\\egorg\\Desktop\\Egor\\Programming\\C#\\Programs\\New console projects\\Ciphers\\Jabr\\JabrAPI\\bin\\Debug\\net10.0";
+            string filePath = "";
             string fileName = "Test4.txt";
             //string encFileName = "Test2.enc-re5";
             //string decFileName = "Test2.dec-re5";
             string noisedFileName = "Test4.noisedv5";
             string denoisFileName = "Test4.dnoisev5";
+            Write($"\n\tReKey: {reKey.ExAlphabet}, PrNoise: {reKey.Noisifier.PrimaryNoise}, CplxNoise: {reKey.Noisifier.ComplexNoise}");
 
             for (var ii = 0; ii < 10; ii++)
             {
@@ -66,7 +70,7 @@ namespace JabrAPI
                 //    File.Delete(Path.Combine(filePath, encFileName));
                 //if (File.Exists(Path.Combine(filePath, decFileName)))
                 //    File.Delete(Path.Combine(filePath, decFileName));
-                //Write($"\n\tDeleting old {noisedFileName} & {denoisFileName} file\n");
+                Write($"\n\tDeleting old {noisedFileName} & {denoisFileName} file\n");
                 if (File.Exists(Path.Combine(filePath, noisedFileName)))
                     File.Delete(Path.Combine(filePath, noisedFileName));
                 if (File.Exists(Path.Combine(filePath, denoisFileName)))
@@ -76,13 +80,22 @@ namespace JabrAPI
 
                 Stopwatch timerN = new();
                 timerN.Start();
-                //Write("\n\tNoising file in process: " + );
+                Write("\n\tNoising file in process: ");
                 Noise.Add.TextFile(filePath, fileName, reKey, true);
                 timerN.Stop();
 
                 Write("Done: " + ii + " (" + timerN.ElapsedMilliseconds + ")\n");
 
-                //ReadKey();
+
+                timerN.Reset();
+                timerN.Start();
+                Write("\n\tDeNoising file in process: ");
+                Noise.Remove.TextFile(filePath, noisedFileName, reKey, true);
+                timerN.Stop();
+
+                Write("Done: " + ii + " (" + timerN.ElapsedMilliseconds + ")\n");
+
+                ReadKey();
                 if (ii > 100) ReadKey();
             }
             ReadLine();

@@ -1,9 +1,9 @@
-﻿using AVcontrol;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System;
 using System.IO;
-using System.Text.RegularExpressions;
+using System.Collections.Generic;
+
+
+using AVcontrol;
 
 
 
@@ -40,7 +40,12 @@ namespace JabrAPI
                 if (initialLength > outputLength)
                 {
                     if (noisifier.settings.UseDynamicOutputAlignment)
-                        outputLength *= 1 + initialLength / outputLength;
+                        outputLength = (Int32)
+                        (
+                            outputLength *
+                            (1 + initialLength / outputLength) *
+                            noisifier.settings.DynamicOutputNoiseCoefficient
+                        );
                     else return message;
                 }
 
@@ -129,7 +134,6 @@ namespace JabrAPI
                     lengthReader.Close();
                     lengthReader.Dispose();
                 }
-                //initialLength = 35;
 
 
                 if (outputLength == 0)
@@ -160,7 +164,12 @@ namespace JabrAPI
                 if (initialLength > outputLength)
                 {
                     if (noisifier.settings.UseDynamicOutputAlignment)
-                        outputLength *= 1 + initialLength / outputLength;
+                        outputLength = (Int32)
+                        (
+                            outputLength *
+                            (1 + initialLength / outputLength) *
+                            noisifier.settings.DynamicOutputNoiseCoefficient
+                        );
                     else
                     {
                         File.Copy

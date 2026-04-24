@@ -1,7 +1,8 @@
-﻿using JabrAPI.Template;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
+
+
+using JabrAPI.Template;
 using static JabrAPI.Miscellaneous;
 
 
@@ -34,7 +35,6 @@ namespace JabrAPI
                 return result;
             }
 
-
             static public string Text(string message, Noisifier noisifier,
                 out Exception? exception)
             {
@@ -65,12 +65,12 @@ namespace JabrAPI
                 if (IsReKeyValid(reKey, out exception) &&
                     IsNoisifierValid(reKey.Noisifier, out exception))
                 {
-                    //try
-                    //{
+                    try
+                    {
                         FastTextFile(absoluteInputDirectory, fileName, absoluteOutputDirectory, reKey.Noisifier);
                         return true;
-                    //}
-                    //catch (Exception innerException) { exception = innerException; }
+                    }
+                    catch (Exception innerException) { exception = innerException; }
                 }
                 return false;
             }

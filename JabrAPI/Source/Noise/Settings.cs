@@ -12,6 +12,7 @@ namespace JabrAPI
         public class Settings(
             Int32  outputLength                   = 0,
             bool   useDynamicOutputAlignment      = true,
+            double dynamicOutputNoiseCoefficient  = 1.8742,
             double hardChunkSizeToSoftCoefficient = 4.0,
 
             bool   keepOriginalFileExtension       = true,
@@ -31,6 +32,7 @@ namespace JabrAPI
             ) : INoiseSettings(
                 outputLength,
                 useDynamicOutputAlignment,
+                dynamicOutputNoiseCoefficient,
                 hardChunkSizeToSoftCoefficient,
 
                 keepOriginalFileExtension,
@@ -57,6 +59,7 @@ namespace JabrAPI
         public class BinarySettings(
             Int32  outputLength                   = 0,
             bool   useDynamicOutputAlignment      = true,
+            double dynamicOutputNoiseCoefficient  = 1.8742,
             double hardChunkSizeToSoftCoefficient = 4.0,
 
             bool   keepOriginalFileExtension       = true,
@@ -76,6 +79,7 @@ namespace JabrAPI
             ) : INoiseSettings(
                 outputLength,
                 useDynamicOutputAlignment,
+                dynamicOutputNoiseCoefficient,
                 hardChunkSizeToSoftCoefficient,
 
                 keepOriginalFileExtension,

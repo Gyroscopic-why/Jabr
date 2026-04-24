@@ -39,7 +39,12 @@ namespace JabrAPI
                 if (initialLength > outputLength)
                 {
                     if (noisifier.settings.UseDynamicOutputAlignment)
-                        outputLength *= 1 + initialLength / outputLength;
+                        outputLength = (Int32)
+                        (
+                            outputLength *
+                            (1 + initialLength / outputLength) *
+                            noisifier.settings.DynamicOutputNoiseCoefficient
+                        );
                     else return message;
                 }
 
