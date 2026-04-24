@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 
 
@@ -115,6 +116,159 @@ namespace JabrAPI
                 }
 
                 return result;
+            }
+
+
+
+            static public void AddFastBinaryFile(string absoluteInputDirectory,
+                string fileName, string absoluteOutputDirectory, BinaryNoisifier noisifier)
+            {
+                Int32 chunkSize = (Int32)noisifier.settings.ChunkSize,
+                  hardChunkSize = (Int32)(chunkSize * noisifier.settings.HardChunkSizeToSoftCoefficient);
+                if (chunkSize   < 2) chunkSize = 2;
+                if (hardChunkSize <  chunkSize) hardChunkSize = chunkSize;
+
+                string finalFileName;
+                if (!noisifier.settings.KeepOriginalFileExtension)
+                {
+                    finalFileName = Path.ChangeExtension(fileName, "noisedv5");
+                    for (var i = 1; File.Exists(Path.Combine(absoluteOutputDirectory, finalFileName)); i++)
+                        finalFileName = Path.ChangeExtension(fileName, $"noisedv5-{i}");
+                }
+                else finalFileName = fileName + ".noisedv5";
+
+
+                using FileStream lengthStream = new(Path.Combine(absoluteInputDirectory, fileName),       FileMode.Open, FileAccess.Read);
+                using FileStream inputStream  = new(Path.Combine(absoluteInputDirectory, fileName),       FileMode.Open,   FileAccess.Read);
+                using FileStream outputStream = new(Path.Combine(absoluteOutputDirectory, finalFileName), FileMode.Create, FileAccess.Write);
+
+                Int32 outputLength = noisifier.settings.OutputLength, initialLength = 0;
+                using (BinaryReader lengthReader = new(lengthStream))
+                {
+                    while (lengthReader.Read() != -1) initialLength++;
+
+                    lengthReader.Close();
+                    lengthReader.Dispose();
+                }
+
+
+                if (outputLength == 0)
+                    outputLength = (Int32)Math.Pow
+                    (
+                        2,
+                        noisifier.settings.ForceFullBoundary ?
+                            (Int32)noisifier.settings.BoundaryAlignment
+                            : Math.Min
+                            (
+                                (Int32)noisifier.settings.BoundaryAlignment,
+                                (Int32)Math.Ceiling(Math.Log2(initialLength))
+                                    + (Int32)noisifier.settings.DynamicBoundaryOffset
+                            )
+                    );
+
+
+                if (initialLength > outputLength)
+                {
+                    if (noisifier.settings.UseDynamicOutputAlignment)
+                        outputLength = (Int32)
+                        (
+                            outputLength *
+                            (1 + initialLength / outputLength) *
+                            noisifier.settings.DynamicOutputNoiseCoefficient
+                        );
+                    else
+                    {
+                        File.Copy
+                        (
+                            Path.Combine(absoluteInputDirectory, fileName),
+                            Path.Combine(absoluteOutputDirectory, finalFileName),
+                            false  //  overwrite
+                        );
+                        return;
+                    }
+                }
+
+
+                Int32 maxSyntropy = Miscellaneous.CalculateMaxNonEntropy
+                    (
+                        noisifier.settings.ExpectedEntropy,
+                        initialLength,
+                        outputLength
+                    );
+                double maxAvgNoiseCount = 2.0 * (outputLength - initialLength) / (initialLength + 1);
+                double avgNoisePerCharInRound = (double)initialLength / outputLength;
+
+                SecureRandom random = new(noisifier.RandomReseedInterval);
+
+                using BinaryReader reader = new(inputStream);
+                using BinaryWriter writer = new(outputStream);
+
+                List<Byte> parsedChars = [];
+                bool isFileEnd = false;
+                Int32 prevFinalUnnoised = 0, offset = 0, processedCount = 0, maxRoundLength, messageChunk;
+
+                for (var curOptimalSize = chunkSize; processedCount + initialLength - offset < outputLength; curOptimalSize += chunkSize)
+                {
+                    random.Reseed();
+
+                    maxRoundLength = Math.Min
+                        (
+                            hardChunkSize,
+                            Math.Min
+                            (
+                                outputLength,
+                                curOptimalSize
+                            ) - processedCount
+                        );
+
+                    messageChunk = processedCount - outputLength + maxRoundLength >= 0
+                        ? initialLength - offset
+                        : Math.Min
+                        (
+                            initialLength - offset,
+                            Math.Max
+                            (
+                                (Int32)(maxRoundLength * avgNoisePerCharInRound),
+                                (Int32)(processedCount * avgNoisePerCharInRound
+                                    + 0.75 - processedCount / outputLength) - offset  // 0.75 = ((outP / outP) + 0.5) / 2
+                            )
+                        );
+
+                    if (!isFileEnd)
+                    {
+                        if (messageChunk == 0) isFileEnd = true;
+                        else
+                        {
+                            Byte[] readBuffer = new Byte[messageChunk];
+                            var actuallyRead  = reader.Read(readBuffer, 0, messageChunk);
+
+                            parsedChars = new List<Byte>(readBuffer).GetRange(0, actuallyRead);
+                            isFileEnd = actuallyRead == 0;
+                        }
+                    }
+                    else
+                    {
+                        parsedChars = [];
+                        maxRoundLength = outputLength - processedCount;
+                    }
+
+
+                    parsedChars = AdditionRound
+                    (
+                        parsedChars,
+                        noisifier.PrimaryNoise,  //  Fake selection is not supported in file noise.Addition
+                        noisifier,
+                        random,
+                        maxRoundLength,
+                        maxSyntropy,
+                        maxAvgNoiseCount,
+                        ref prevFinalUnnoised
+                    );
+
+                    offset += messageChunk;
+                    processedCount += parsedChars.Count;
+                    writer.Write([.. parsedChars]);
+                }
             }
         }
     }

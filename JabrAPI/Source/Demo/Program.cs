@@ -43,6 +43,16 @@ namespace JabrAPI
             //ReadKey();
 
 
+            binKey.Noisifier.Set.Default([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+            binKey.Noisifier.Next();
+
+            binKey.Noisifier.RandomReseedInterval = 8192;
+            binKey.Noisifier.settings.BoundaryAlignment = Noise.BinaryOutputBoundaryAlignment.KByte8;
+            binKey.Noisifier.settings.KeepOriginalFileExtension = false;
+
+
+
+
             reKey.Noisifier.Set.Default(['A', 'b', 'o', 'a', '\r', '\n', 'h', 'e', 'l', ' ', 'w', 'r', 'd', '2', '8', ',', '.', '?', '!',
             'i', 'f', 'y', 'u', 'n', 'g', 't', 's', '-', 'T', 'H', 'E', 'c', 'm', 'k', 'N', 'O', 'I', 'S', 'F', 'R']);
             reKey.Noisifier.Next();
@@ -55,11 +65,11 @@ namespace JabrAPI
 
             string fileContent = "Aboba\r\nhello world\r\n228 baobab ,.!?";
             string filePath = "";
-            string fileName = "Test4.txt";
+            string fileName = "Test5.aboba";
             //string encFileName = "Test2.enc-re5";
             //string decFileName = "Test2.dec-re5";
-            string noisedFileName = "Test4.noisedv5";
-            string denoisFileName = "Test4.dnoisev5";
+            string noisedFileName = "Test5.noisedv5";
+            string denoisFileName = "Test5.dnoisev5";
             Write($"\n\tReKey: {reKey.ExAlphabet}, PrNoise: {reKey.Noisifier.PrimaryNoise}, CplxNoise: {reKey.Noisifier.ComplexNoise}");
 
             for (var ii = 0; ii < 10; ii++)
@@ -81,19 +91,19 @@ namespace JabrAPI
                 Stopwatch timerN = new();
                 timerN.Start();
                 Write("\n\tNoising file in process: ");
-                Noise.Add.TextFile(filePath, fileName, reKey, true);
+                Noise.Add.BinaryFile(filePath, fileName, binKey, true);
                 timerN.Stop();
 
                 Write("Done: " + ii + " (" + timerN.ElapsedMilliseconds + ")\n");
 
 
-                timerN.Reset();
-                timerN.Start();
-                Write("\n\tDeNoising file in process: ");
-                Noise.Remove.TextFile(filePath, noisedFileName, reKey, true);
-                timerN.Stop();
+                //timerN.Reset();
+                //timerN.Start();
+                //Write("\n\tDeNoising file in process: ");
+                //Noise.Remove.BinaryFile(filePath, noisedFileName, binKey, true);
+                //timerN.Stop();
 
-                Write("Done: " + ii + " (" + timerN.ElapsedMilliseconds + ")\n");
+                //Write("Done: " + ii + " (" + timerN.ElapsedMilliseconds + ")\n");
 
                 ReadKey();
                 if (ii > 100) ReadKey();

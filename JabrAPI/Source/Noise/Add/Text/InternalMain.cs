@@ -117,13 +117,24 @@ namespace JabrAPI
 
                 return new string([.. result]);
             }
+
+
             static public void AddFastTextFile(string absoluteInputDirectory, string fileName,
-                string absoluteOutputDirectory, Noisifier noisifier, string fakeSelection)
+                string absoluteOutputDirectory, Noisifier noisifier)
             {
                 Int32 chunkSize = (Int32)noisifier.settings.ChunkSize,
                   hardChunkSize = (Int32)(chunkSize * noisifier.settings.HardChunkSizeToSoftCoefficient);
                 if (chunkSize   < 2) chunkSize = 2;
                 if (hardChunkSize <  chunkSize) hardChunkSize = chunkSize;
+
+                string finalFileName;
+                if (!noisifier.settings.KeepOriginalFileExtension)
+                {
+                    finalFileName = Path.ChangeExtension(fileName, "noisedv5");
+                    for (var i = 1; File.Exists(Path.Combine(absoluteOutputDirectory, finalFileName)); i++)
+                        finalFileName = Path.ChangeExtension(fileName, $"noisedv5-{i}");
+                }
+                else finalFileName = fileName + ".noisedv5";
 
 
                 Int32 outputLength = noisifier.settings.OutputLength, initialLength = 0;
@@ -149,16 +160,6 @@ namespace JabrAPI
                                     + (Int32)noisifier.settings.DynamicBoundaryOffset
                             )
                     );
-
-
-                string finalFileName;
-                if (!noisifier.settings.KeepOriginalFileExtension)
-                {
-                    finalFileName = Path.ChangeExtension(fileName, "noisedv5");
-                    for (var i = 1; File.Exists(Path.Combine(absoluteOutputDirectory, finalFileName)); i++)
-                        finalFileName = Path.ChangeExtension(fileName, $"noisedv5-{i}");
-                }
-                else finalFileName = fileName + ".noisedv5";
 
 
                 if (initialLength > outputLength)
@@ -196,8 +197,6 @@ namespace JabrAPI
 
                 using StreamReader reader = new(Path.Combine(absoluteInputDirectory, fileName));
                 using StreamWriter writer = new(Path.Combine(absoluteOutputDirectory, finalFileName));
-
-                fakeSelection = fakeSelection == "" ? noisifier.PrimaryNoise : fakeSelection;
 
                 List<char> parsedChars = [];
                 bool isFileEnd = false;
@@ -248,17 +247,18 @@ namespace JabrAPI
                         maxRoundLength = outputLength - processedCount;
                     }
 
+
                     parsedChars = AdditionRound
-                                (
-                                    parsedChars,
-                                    fakeSelection,
-                                    noisifier,
-                                    random,
-                                    maxRoundLength,
-                                    maxSyntropy,
-                                    maxAvgNoiseCount,
-                                    ref prevFinalUnnoised
-                                );
+                    (
+                        parsedChars,
+                        noisifier.PrimaryNoise,  //  Fake selection is not supported in file noise.Addition
+                        noisifier,
+                        random,
+                        maxRoundLength,
+                        maxSyntropy,
+                        maxAvgNoiseCount,
+                        ref prevFinalUnnoised
+                    );
 
                     offset += messageChunk;
                     processedCount += parsedChars.Count;

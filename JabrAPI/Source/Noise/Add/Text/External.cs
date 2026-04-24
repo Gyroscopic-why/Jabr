@@ -139,8 +139,7 @@ namespace JabrAPI
                     absoluteInputDirectory,
                     fileName,
                     absoluteOutputDirectory,
-                    noisifier,
-                    ""
+                    noisifier
                 );
             }
         }
