@@ -76,17 +76,27 @@ namespace JabrAPI
             Write("\n\n\tDecoded noised: " + FromBinary.Utf8(result));
 
 
+            Write("\n\tDenoised: " + Noise.Remove.TextFromBinary_Utf8(result, reKey, true));
+
+
+
+
+            ReadKey();
 
             string t1filePath = "";
-            string t1fileName = "Test3.txt";
+            string t1fileName = "Test6.txt";
             //string encFileName = "Test2.enc-re5";
             //string decFileName = "Test2.dec-re5";
-            string t1noisedFileName = "Test3.noisedv5";
-            string t1denoisFileName = "Test3.dnoisev5";
+            string t1noisedFileName = "Test6.noisedv5";
+            string t1denoisFileName = "Test6.dnoisev5";
 
 
             Write("\n\tNoising file in process: ");
             Noise.Add.TextToBinaryFile_Utf8(t1filePath, t1fileName, reKey, true);
+            Write("Done!");
+
+            Write("\n\tDeNoising file in process: ");
+            Noise.Remove.TextFromBinaryFile_Utf8(t1filePath, t1noisedFileName, reKey, true);
             Write("Done!");
 
             ReadKey();

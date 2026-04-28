@@ -1,5 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Collections.Generic;
+
+
+using static JabrAPI.Noise.InternalLink;
 
 
 
@@ -9,10 +13,10 @@ namespace JabrAPI
     {
         static internal partial class Internal
         {
-            static public string RemoveFastText(string noised, Noisifier noisifier)
+            static public string RemoveNoiseFastTextFromBinary(List<Byte> noised, Noisifier noisifier, FromBinaryDelegate convertRule)
             {
                 Int32 chunkSize  = (Int32)noisifier.settings.ChunkSize,
-                      chunkCount = (Int32)Math.Ceiling((double)noised.Length / chunkSize);
+                      chunkCount = (Int32)Math.Ceiling((double)noised.Count / chunkSize);
 
                 if (chunkSize < 1)
                     throw new ArgumentException
@@ -20,6 +24,8 @@ namespace JabrAPI
                         $"Impossible to split data into chunks of size: {chunkSize}",
                         nameof(noisifier.settings)
                     );
+
+                List<Byte> leftoverRaw = [];
 
                 string[] finalisedChunks = new string[chunkCount];
                 bool ignoringIsActive = false;
@@ -30,14 +36,21 @@ namespace JabrAPI
                     finalisedChunks[chunk] =
                         RemovalRound
                         (
-                            noised.Substring
+                            convertRule
                             (
-                                chunk * chunkSize,
-                                Math.Min
-                                (
-                                    chunkSize,
-                                    noised.Length - chunk * chunkSize
-                                )
+                                [
+                                    .. leftoverRaw,
+                                    .. noised.GetRange
+                                    (
+                                        chunk * chunkSize,
+                                        Math.Min
+                                        (
+                                            chunkSize,
+                                            noised.Count - chunk * chunkSize
+                                        )
+                                    )
+                                ],
+                                out leftoverRaw
                             ),
                             ref ignoringIsActive,
                             primary,
@@ -50,11 +63,12 @@ namespace JabrAPI
 
 
 
-            static public void RemoveFastTextFile(string absoluteInputDirectory, string fileName, string absoluteOutputDirectory, Noisifier noisifier)
+            static public void RemoveNoiseFastTextFromBinaryFile(string absoluteInputDirectory, string fileName,
+                string absoluteOutputDirectory, Noisifier noisifier, FromBinaryDelegate convertRule)
             {
                 string primary = noisifier.PrimaryNoise, complex = noisifier.ComplexNoise, finalFileName;
                 Int32 chunkSize = (Int32)noisifier.settings.ChunkSize;
-                if   (chunkSize < 2) chunkSize = 2;
+                if (chunkSize < 2) chunkSize = 2;
 
 
                 if (!noisifier.settings.KeepOriginalFileExtension)
@@ -65,21 +79,31 @@ namespace JabrAPI
                 }
                 else finalFileName = fileName + ".dnoisev5";
 
-                using StreamReader reader = new(Path.Combine(absoluteInputDirectory, fileName));
+                using FileStream inputStream = new(Path.Combine(absoluteInputDirectory, fileName), FileMode.Open, FileAccess.Read);
+
+                using BinaryReader reader = new(inputStream);
                 using StreamWriter writer = new(Path.Combine(absoluteOutputDirectory, finalFileName));
 
 
                 Int32 charsRead;
+                List<Byte> leftoverRaw = [];
                 bool ignoringIsActive = false;
-                char[] noisedChunk = new char[chunkSize];
+                Byte[] noisedChunk = new Byte[chunkSize];
 
-                while ((charsRead = reader.ReadBlock(noisedChunk, 0, chunkSize)) > 0)
+                while ((charsRead = reader.Read(noisedChunk, 0, chunkSize)) > 0)
                 {
                     writer.Write
                     (
                         RemovalRound
                         (
-                            new string(noisedChunk[0..charsRead]),
+                            convertRule
+                            (
+                                [
+                                    .. leftoverRaw,
+                                    .. noisedChunk[0..charsRead]
+                                ],
+                                out leftoverRaw
+                            ),
                             ref ignoringIsActive,
                             primary,
                             complex
