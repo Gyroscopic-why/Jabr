@@ -60,11 +60,41 @@ namespace JabrAPI
             reKey.Noisifier.RandomReseedInterval = 8192;
             reKey.Noisifier.settings.BoundaryAlignment = Noise.TextOutputBoundaryAlignment.c8192;
             reKey.Noisifier.settings.KeepOriginalFileExtension = false;
-            reKey.Noisifier.settings.OutputLength = 256;
+            reKey.Noisifier.settings.OutputLength = 128;
 
 
 
-            string fileContent = "Aboba\r\nhello world\r\n228 baobab ,.!?";
+            string fileContent = "Aboba\nhello world\n228 baobab ,.!?";
+
+
+
+            Write("\n\tInitial: " + fileContent);
+            Write("\n\tAdding Noise.TextToBinary: ");
+            List<Byte> result = Noise.Add.TextToBinary_Utf8(fileContent, reKey, true);
+            foreach (byte b in result) Write(b + " ");
+
+            Write("\n\n\tDecoded noised: " + FromBinary.Utf8(result));
+
+
+
+            string t1filePath = "";
+            string t1fileName = "Test3.txt";
+            //string encFileName = "Test2.enc-re5";
+            //string decFileName = "Test2.dec-re5";
+            string t1noisedFileName = "Test3.noisedv5";
+            string t1denoisFileName = "Test3.dnoisev5";
+
+
+            Write("\n\tNoising file in process: ");
+            Noise.Add.TextToBinaryFile_Utf8(t1filePath, t1fileName, reKey, true);
+            Write("Done!");
+
+            ReadKey();
+
+
+
+
+
             string filePath = "";
             string fileName = "Test5.aboba";
             //string encFileName = "Test2.enc-re5";
