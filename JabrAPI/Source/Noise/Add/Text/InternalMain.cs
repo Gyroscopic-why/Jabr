@@ -231,7 +231,12 @@ namespace JabrAPI
 
                     if (!isFileEnd)
                     {
-                        if (messageChunk == 0) isFileEnd = true;
+                        if (messageChunk == 0)
+                        {
+                            isFileEnd = true;
+                            parsedChars = [];
+                            maxRoundLength = outputLength - processedCount;
+                        }
                         else
                         {
                             char[] readBuffer = new char[messageChunk];

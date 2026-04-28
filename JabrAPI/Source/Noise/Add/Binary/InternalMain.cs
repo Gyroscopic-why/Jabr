@@ -138,7 +138,7 @@ namespace JabrAPI
                 else finalFileName = fileName + ".noisedv5";
 
 
-                using FileStream lengthStream = new(Path.Combine(absoluteInputDirectory, fileName),       FileMode.Open, FileAccess.Read);
+                using FileStream lengthStream = new(Path.Combine(absoluteInputDirectory, fileName),       FileMode.Open,   FileAccess.Read);
                 using FileStream inputStream  = new(Path.Combine(absoluteInputDirectory, fileName),       FileMode.Open,   FileAccess.Read);
                 using FileStream outputStream = new(Path.Combine(absoluteOutputDirectory, finalFileName), FileMode.Create, FileAccess.Write);
 
@@ -236,11 +236,16 @@ namespace JabrAPI
 
                     if (!isFileEnd)
                     {
-                        if (messageChunk == 0) isFileEnd = true;
+                        if (messageChunk == 0)
+                        {
+                            isFileEnd = true;
+                            parsedChars = [];
+                            maxRoundLength = outputLength - processedCount;
+                        }
                         else
                         {
                             Byte[] readBuffer = new Byte[messageChunk];
-                            var actuallyRead  = reader.Read(readBuffer, 0, messageChunk);
+                            var actuallyRead = reader.Read(readBuffer, 0, messageChunk);
 
                             parsedChars = new List<Byte>(readBuffer).GetRange(0, actuallyRead);
                             isFileEnd = actuallyRead == 0;

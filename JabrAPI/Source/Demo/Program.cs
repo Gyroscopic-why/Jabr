@@ -49,7 +49,7 @@ namespace JabrAPI
             binKey.Noisifier.RandomReseedInterval = 8192;
             binKey.Noisifier.settings.BoundaryAlignment = Noise.BinaryOutputBoundaryAlignment.KByte8;
             binKey.Noisifier.settings.KeepOriginalFileExtension = false;
-
+            binKey.Noisifier.settings.OutputLength = 256;
 
 
 
@@ -60,6 +60,7 @@ namespace JabrAPI
             reKey.Noisifier.RandomReseedInterval = 8192;
             reKey.Noisifier.settings.BoundaryAlignment = Noise.TextOutputBoundaryAlignment.c8192;
             reKey.Noisifier.settings.KeepOriginalFileExtension = false;
+            reKey.Noisifier.settings.OutputLength = 256;
 
 
 
@@ -70,9 +71,16 @@ namespace JabrAPI
             //string decFileName = "Test2.dec-re5";
             string noisedFileName = "Test5.noisedv5";
             string denoisFileName = "Test5.dnoisev5";
+
+
+            string tfileName = "Test3.txt";
+            //string encFileName = "Test2.enc-re5";
+            //string decFileName = "Test2.dec-re5";
+            string tnoisedFileName = "Test3.noisedv5";
+            string tdenoisFileName = "Test3.dnoisev5";
             Write($"\n\tReKey: {reKey.ExAlphabet}, PrNoise: {reKey.Noisifier.PrimaryNoise}, CplxNoise: {reKey.Noisifier.ComplexNoise}");
 
-            for (var ii = 0; ii < 10; ii++)
+            for (var ii = 0; ii < 1000; ii++)
             {
 
                 //Write($"\n\tDeleting old {encFileName} & {decFileName} file\n");
@@ -80,30 +88,38 @@ namespace JabrAPI
                 //    File.Delete(Path.Combine(filePath, encFileName));
                 //if (File.Exists(Path.Combine(filePath, decFileName)))
                 //    File.Delete(Path.Combine(filePath, decFileName));
-                Write($"\n\tDeleting old {noisedFileName} & {denoisFileName} file\n");
-                if (File.Exists(Path.Combine(filePath, noisedFileName)))
-                    File.Delete(Path.Combine(filePath, noisedFileName));
-                if (File.Exists(Path.Combine(filePath, denoisFileName)))
-                    File.Delete(Path.Combine(filePath, denoisFileName));
+
+                //Write($"\n\tDeleting old {noisedFileName} & {denoisFileName} file\n");
+                //if (File.Exists(Path.Combine(filePath, noisedFileName)))
+                //    File.Delete(Path.Combine(filePath, noisedFileName));
+                //if (File.Exists(Path.Combine(filePath, denoisFileName)))
+                //    File.Delete(Path.Combine(filePath, denoisFileName));
+                Write($"\n\tDeleting old {tnoisedFileName} & {tdenoisFileName} file\n");
+                if (File.Exists(Path.Combine(filePath, tnoisedFileName)))
+                    File.Delete(Path.Combine(filePath, tnoisedFileName));
+                if (File.Exists(Path.Combine(filePath, tdenoisFileName)))
+                    File.Delete(Path.Combine(filePath, tdenoisFileName));
 
                 //ReadKey();
 
                 Stopwatch timerN = new();
                 timerN.Start();
                 Write("\n\tNoising file in process: ");
-                Noise.Add.BinaryFile(filePath, fileName, binKey, true);
+                Noise.Add.TextFile(filePath, tfileName, reKey, true);
+                //Noise.Add.BinaryFile(filePath, fileName, binKey, true);
                 timerN.Stop();
 
                 Write("Done: " + ii + " (" + timerN.ElapsedMilliseconds + ")\n");
 
 
-                //timerN.Reset();
-                //timerN.Start();
-                //Write("\n\tDeNoising file in process: ");
+                timerN.Reset();
+                timerN.Start();
+                Write("\n\tDeNoising file in process: ");
+                Noise.Remove.TextFile(filePath, tnoisedFileName, reKey, true);
                 //Noise.Remove.BinaryFile(filePath, noisedFileName, binKey, true);
-                //timerN.Stop();
+                timerN.Stop();
 
-                //Write("Done: " + ii + " (" + timerN.ElapsedMilliseconds + ")\n");
+                Write("Done: " + ii + " (" + timerN.ElapsedMilliseconds + ")\n");
 
                 ReadKey();
                 if (ii > 100) ReadKey();
