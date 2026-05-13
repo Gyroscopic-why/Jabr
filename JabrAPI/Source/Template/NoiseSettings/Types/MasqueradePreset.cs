@@ -1,4 +1,4 @@
-﻿namespace JabrAPI.Template
+﻿namespace JabrAPI
 { 
     public enum MasqueradePreset
     {

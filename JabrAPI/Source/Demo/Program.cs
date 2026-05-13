@@ -47,7 +47,7 @@ namespace JabrAPI
             binKey.Noisifier.Next();
 
             binKey.Noisifier.RandomReseedInterval = 8192;
-            binKey.Noisifier.settings.BoundaryAlignment = Noise.BinaryOutputBoundaryAlignment.KByte8;
+            binKey.Noisifier.settings.BoundaryAlignment = BinaryBoundaryAlignment.KByte8;
             binKey.Noisifier.settings.KeepOriginalFileExtension = false;
             binKey.Noisifier.settings.OutputLength = 256;
 
@@ -58,7 +58,7 @@ namespace JabrAPI
             reKey.Noisifier.Next();
 
             reKey.Noisifier.RandomReseedInterval = 8192;
-            reKey.Noisifier.settings.BoundaryAlignment = Noise.TextOutputBoundaryAlignment.c8192;
+            reKey.Noisifier.settings.BoundaryAlignment = TextBoundaryAlignment.c8192;
             reKey.Noisifier.settings.KeepOriginalFileExtension = false;
             reKey.Noisifier.settings.OutputLength = 128;
 
@@ -214,9 +214,9 @@ namespace JabrAPI
             //aboba += fileContent + aboba + fileContent;
             double valueBias = 1.6, powerBias = 1.5;
 
-            reKey.Noisifier.settings.BoundaryAlignment = Noise.TextOutputBoundaryAlignment.c2048;
+            reKey.Noisifier.settings.BoundaryAlignment = TextBoundaryAlignment.c2048;
             reKey.Noisifier.settings.ForceFullBoundary = false;
-            reKey.Noisifier.settings.DynamicBoundaryOffset = Noise.DynamicBoundaryOffset.x2;
+            reKey.Noisifier.settings.DynamicBoundaryOffset = DynamicBoundaryOffset.x2;
 
             Int32 maxNonEntropy = 0, extendBuffer;
             for (var i = 0; i < 1_0; i++)
@@ -429,8 +429,8 @@ namespace JabrAPI
                 //for (var j = 0; j < bindec.Count; j++)
                 //    Write(bindec[j] + " ");
 
-                reKey.ChunkSize = TextChunkSize.cTEST;
-                binKey.ChunkSize = BinaryChunkSize.bTEST;
+                //reKey.ChunkSize = TextChunkSize.cTEST;
+                //binKey.ChunkSize = BinaryChunkSize.bTEST;
 
 
                 extendBuffer = EXTEND;

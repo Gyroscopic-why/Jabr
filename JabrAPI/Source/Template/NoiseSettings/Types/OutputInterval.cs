@@ -2,7 +2,7 @@
 
 
 
-namespace JabrAPI.Template
+namespace JabrAPI
 {
     public class OutputInterval(double probability, Int32 minLength, Int32 maxLength)
     {

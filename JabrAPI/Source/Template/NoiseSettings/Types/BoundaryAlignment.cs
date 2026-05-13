@@ -1,6 +1,6 @@
-﻿namespace JabrAPI.Template
+﻿namespace JabrAPI
 {
-    public enum TextOutputBoundaryAlignment
+    public enum TextBoundaryAlignment
     {
         c32 = 5,
         c64 = 6,
