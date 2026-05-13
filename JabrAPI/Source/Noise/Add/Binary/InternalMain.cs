@@ -39,12 +39,12 @@ namespace JabrAPI
 
                 if (initialLength > outputLength)
                 {
-                    if (noisifier.settings.UseDynamicOutputAlignment)
+                    if (noisifier.settings.DoExtendOutputIfLessThanInitial)
                         outputLength = (Int32)
                         (
                             outputLength *
                             (1 + initialLength / outputLength) *
-                            noisifier.settings.DynamicOutputNoiseCoefficient
+                            noisifier.settings.OutputExtendingCoefficient
                         );
                     else return message;
                 }
@@ -169,12 +169,12 @@ namespace JabrAPI
 
                 if (initialLength > outputLength)
                 {
-                    if (noisifier.settings.UseDynamicOutputAlignment)
+                    if (noisifier.settings.DoExtendOutputIfLessThanInitial)
                         outputLength = (Int32)
                         (
                             outputLength *
                             (1 + initialLength / outputLength) *
-                            noisifier.settings.DynamicOutputNoiseCoefficient
+                            noisifier.settings.OutputExtendingCoefficient
                         );
                     else
                     {
