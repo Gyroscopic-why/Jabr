@@ -11,16 +11,18 @@ namespace JabrAPI
     {
         public class Settings(
             MasqueradePreset masqueradePreset = MasqueradePreset.CUSTOM,
+            bool keepOriginalFileExtension = true,
 
-            Int32 outputLength = 0,
             bool useDynamicOutputIntervals = true,
             OutputInterval[]? dynamicOutputIntervals = null,
+            OutputInterval.IntervalChoiceSetting intervalChoiceSetting
+            = OutputInterval.IntervalChoiceSetting.PICK_SMALLEST_WITH_LOWEST_DIFFERENCE,
+            OutputInterval.LengthChoiceSetting lengthChoiceSetting
+            = OutputInterval.LengthChoiceSetting.CHOOSE_RANDOM_FROM_VALID,
 
             bool doExtendOutputIfLessThanInitial = true,
             double dynamicOutputNoiseCoefficient = 1.8742,
             double hardChunkSizeToSoftCoefficient = 4.0,
-
-            bool keepOriginalFileExtension = true,
 
             bool forceOptimalEntropy = true,
             ExpectedEntropy expectedEntropy = ExpectedEntropy.C1_Medium,
@@ -35,16 +37,16 @@ namespace JabrAPI
             TextBoundaryAlignment boundaryAlignment = TextBoundaryAlignment.c256
             ) : INoiseSettings(
                 masqueradePreset,
+                keepOriginalFileExtension,
 
-                outputLength,
                 useDynamicOutputIntervals,
                 dynamicOutputIntervals,
+                intervalChoiceSetting,
+                lengthChoiceSetting,
 
                 dynamicOutputNoiseCoefficient,
                 doExtendOutputIfLessThanInitial,
                 hardChunkSizeToSoftCoefficient,
-
-                keepOriginalFileExtension,
 
                 forceOptimalEntropy,
                 expectedEntropy,
@@ -67,16 +69,19 @@ namespace JabrAPI
 
         public class BinarySettings(
             MasqueradePreset masqueradePreset = MasqueradePreset.CUSTOM,
+            bool keepOriginalFileExtension = true,
 
-            Int32 outputLength = 0,
             bool useDynamicOutputIntervals = true,
             OutputInterval[]? dynamicOutputIntervals = null,
+            OutputInterval.IntervalChoiceSetting intervalChoiceSetting
+            = OutputInterval.IntervalChoiceSetting.PICK_SMALLEST_WITH_LOWEST_DIFFERENCE,
+            OutputInterval.LengthChoiceSetting lengthChoiceSetting
+            = OutputInterval.LengthChoiceSetting.CHOOSE_RANDOM_FROM_VALID,
 
             bool doExtendOutputIfLessThanInitial = true,
             double dynamicOutputNoiseCoefficient = 1.8742,
             double hardChunkSizeToSoftCoefficient = 4.0,
 
-            bool keepOriginalFileExtension = true,
 
             bool forceOptimalEntropy = true,
             ExpectedEntropy expectedEntropy = ExpectedEntropy.C1_Medium,
@@ -91,16 +96,16 @@ namespace JabrAPI
             BinaryBoundaryAlignment boundaryAlignment = BinaryBoundaryAlignment.KByte1
             ) : INoiseSettings(
                 masqueradePreset,
+                keepOriginalFileExtension,
 
-                outputLength,
                 useDynamicOutputIntervals,
                 dynamicOutputIntervals,
+                intervalChoiceSetting,
+                lengthChoiceSetting,
 
                 dynamicOutputNoiseCoefficient,
                 doExtendOutputIfLessThanInitial,
                 hardChunkSizeToSoftCoefficient,
-
-                keepOriginalFileExtension,
 
                 forceOptimalEntropy,
                 expectedEntropy,

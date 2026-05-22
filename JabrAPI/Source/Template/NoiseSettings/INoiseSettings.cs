@@ -1,22 +1,20 @@
-﻿using System;
-
-
-
-namespace JabrAPI.Template
+﻿namespace JabrAPI.Template
 {    
     public class INoiseSettings
     {
         public MasqueradePreset MasqueradePreset = MasqueradePreset.CUSTOM;
+        public bool   KeepOriginalFileExtension = true;
 
-        public Int32  OutputLength = 0;
         public bool   UseDynamicOutputIntervals = true;
         public OutputInterval[] DynamicOutputIntervals = [];
+        public OutputInterval.IntervalChoiceSetting IntervalChoiceSetting
+             = OutputInterval.IntervalChoiceSetting.PICK_SMALLEST_WITH_LOWEST_DIFFERENCE;
+        public OutputInterval.LengthChoiceSetting LengthChoiceSetting
+             = OutputInterval.LengthChoiceSetting.CHOOSE_RANDOM_FROM_VALID;
 
         public double OutputExtendingCoefficient = 1.8742;
         public bool   DoExtendOutputIfLessThanInitial = true;
         public double HardChunkSizeToSoftCoefficient = 4.0;
-
-        public bool   KeepOriginalFileExtension = true;
 
         public bool   ForceOptimalEntropy = true;
         public ExpectedEntropy ExpectedEntropy = ExpectedEntropy.C1_Medium;
@@ -34,16 +32,18 @@ namespace JabrAPI.Template
             => CopyFrom(masqueradePreset);
         public INoiseSettings(
             MasqueradePreset masqueradePreset = MasqueradePreset.CUSTOM,
+            bool keepOriginalFileExtension = true,
             
-            Int32 outputLength = 0,
             bool  useDynamicOutputIntervals = true,
             OutputInterval[]? dynamicOutputIntervals = null,
-            
+            OutputInterval.IntervalChoiceSetting intervalChoiceSetting
+            = OutputInterval.IntervalChoiceSetting.PICK_SMALLEST_WITH_LOWEST_DIFFERENCE,
+            OutputInterval.LengthChoiceSetting lengthChoiceSetting
+            = OutputInterval.LengthChoiceSetting.CHOOSE_RANDOM_FROM_VALID,
+
             double outputExtendingCoefficient = 1.8742,
             bool   doExtendOutputIfLessThanInitial = true,
             double hardChunkSizeToSoftCoefficient  = 4.0,
-            
-            bool keepOriginalFileExtension = true,
             
             bool forceOptimalEntropy = true,
             ExpectedEntropy expectedEntropy = ExpectedEntropy.C1_Medium,
@@ -55,20 +55,21 @@ namespace JabrAPI.Template
             bool forceFullBoundary = false,
             DynamicBoundaryOffset dynamicBoundaryOffset = DynamicBoundaryOffset.Minimize)
             => CopyFrom(masqueradePreset,
-                outputLength,
+                    keepOriginalFileExtension,
                 useDynamicOutputIntervals,
                 dynamicOutputIntervals,
+                intervalChoiceSetting,
+                lengthChoiceSetting,
                     outputExtendingCoefficient,
                     doExtendOutputIfLessThanInitial,
                     hardChunkSizeToSoftCoefficient,
-                keepOriginalFileExtension,
-                    forceOptimalEntropy,
-                    expectedEntropy,
-                primaryNoiseBiasPercents,
-                complexNoisePairBiasPercents,
-                complexNoiseIntervalBiasPercents,
-                    forceFullBoundary,
-                    dynamicBoundaryOffset);
+                forceOptimalEntropy,
+                expectedEntropy,
+                    primaryNoiseBiasPercents,
+                    complexNoisePairBiasPercents,
+                    complexNoiseIntervalBiasPercents,
+                forceFullBoundary,
+                dynamicBoundaryOffset);
         
 
 
@@ -95,33 +96,36 @@ namespace JabrAPI.Template
 
         public void CopyFrom(INoiseSettings initial)
             => CopyFrom(initial.MasqueradePreset,
-                initial.OutputLength,
+                    initial.KeepOriginalFileExtension,
                 initial.UseDynamicOutputIntervals,
                 initial.DynamicOutputIntervals,
+                initial.IntervalChoiceSetting,
+                initial.LengthChoiceSetting,
                     initial.OutputExtendingCoefficient,
                     initial.DoExtendOutputIfLessThanInitial,
                     initial.HardChunkSizeToSoftCoefficient,
-                initial.KeepOriginalFileExtension,
-                    initial.ForceOptimalEntropy,
-                    initial.ExpectedEntropy,
-                initial.PrimaryNoiseBiasPercents,
-                initial.ComplexNoisePairBiasPercents,
-                initial.ComplexNoiseIntervalBiasPercents,
-                    initial.ForceFullBoundary,
-                    initial.DynamicBoundaryOffset);
+                initial.ForceOptimalEntropy,
+                initial.ExpectedEntropy,
+                    initial.PrimaryNoiseBiasPercents,
+                    initial.ComplexNoisePairBiasPercents,
+                    initial.ComplexNoiseIntervalBiasPercents,
+                initial.ForceFullBoundary,
+                initial.DynamicBoundaryOffset);
         public void CopyFrom
         (
             MasqueradePreset masqueradePreset = MasqueradePreset.CUSTOM,
+            bool keepOriginalFileExtension = true,
 
-            Int32 outputLength = 0,
             bool useDynamicOutputIntervals = true,
             OutputInterval[]? dynamicOutputIntervals = null,
+            OutputInterval.IntervalChoiceSetting intervalChoiceSetting
+            = OutputInterval.IntervalChoiceSetting.PICK_SMALLEST_WITH_LOWEST_DIFFERENCE,
+            OutputInterval.LengthChoiceSetting lengthChoiceSetting
+            = OutputInterval.LengthChoiceSetting.CHOOSE_RANDOM_FROM_VALID,
 
             double outputExtendingCoefficient = 1.8742,
             bool doExtendOutputIfLessThanInitial = true,
             double hardChunkSizeToSoftCoefficient = 4.0,
-
-            bool keepOriginalFileExtension = true,
 
             bool forceOptimalEntropy = true,
             ExpectedEntropy expectedEntropy = ExpectedEntropy.C1_Medium,
@@ -135,16 +139,16 @@ namespace JabrAPI.Template
         )
         {
             MasqueradePreset = masqueradePreset;
+            KeepOriginalFileExtension = keepOriginalFileExtension;
 
-            OutputLength              = outputLength;
             UseDynamicOutputIntervals = useDynamicOutputIntervals;
             DynamicOutputIntervals    = [.. dynamicOutputIntervals ?? []];
+            IntervalChoiceSetting = intervalChoiceSetting;
+            LengthChoiceSetting   = lengthChoiceSetting;
 
             OutputExtendingCoefficient      = outputExtendingCoefficient;
             DoExtendOutputIfLessThanInitial = doExtendOutputIfLessThanInitial;
             HardChunkSizeToSoftCoefficient  = hardChunkSizeToSoftCoefficient;
-
-            KeepOriginalFileExtension = keepOriginalFileExtension;
 
             ForceOptimalEntropy = forceOptimalEntropy;
             ExpectedEntropy     = expectedEntropy;
