@@ -49,18 +49,17 @@ namespace JabrAPI
             binKey.Noisifier.RandomReseedInterval = 8192;
             binKey.Noisifier.settings.BoundaryAlignment = BinaryBoundaryAlignment.KByte8;
             binKey.Noisifier.settings.KeepOriginalFileExtension = false;
-            binKey.Noisifier.settings.OutputLength = 256;
 
 
 
-            reKey.Noisifier.Set.Default(['A', 'b', 'o', 'a', '\r', '\n', 'h', 'e', 'l', ' ', 'w', 'r', 'd', '2', '8', ',', '.', '?', '!',
-            'i', 'f', 'y', 'u', 'n', 'g', 't', 's', '-', 'T', 'H', 'E', 'c', 'm', 'k', 'N', 'O', 'I', 'S', 'F', 'R']);
+            //reKey.Noisifier.Set.Default(['A', 'b', 'o', 'a', '\r', '\n', 'h', 'e', 'l', ' ', 'w', 'r', 'd', '2', '8', ',', '.', '?', '!',
+            //'i', 'f', 'y', 'u', 'n', 'g', 't', 's', '-', 'T', 'H', 'E', 'c', 'm', 'k', 'N', 'O', 'I', 'S', 'F', 'R']);
+            //reKey.Noisifier.settings.InitFromPreset(MasqueradePreset.HTTP_2_gRPC);
             reKey.Noisifier.Next();
 
             reKey.Noisifier.RandomReseedInterval = 8192;
             reKey.Noisifier.settings.BoundaryAlignment = TextBoundaryAlignment.c8192;
             reKey.Noisifier.settings.KeepOriginalFileExtension = false;
-            reKey.Noisifier.settings.OutputLength = 128;
 
 
 
@@ -68,60 +67,60 @@ namespace JabrAPI
 
 
 
-            Write("\n\tInitial: " + fileContent);
-            Write("\n\tAdding Noise.TextToBinary: ");
-            List<Byte> result = Noise.Add.TextToBinary_Utf8(fileContent, reKey, true);
-            foreach (byte b in result) Write(b + " ");
+            //Write("\n\tInitial: " + fileContent);
+            //Write("\n\tAdding Noise.TextToBinary: ");
+            //List<Byte> result = Noise.Add.TextToBinary_Utf8(fileContent, reKey, true);
+            //foreach (byte b in result) Write(b + " ");
 
-            Write("\n\n\tDecoded noised: " + FromBinary.Utf8(result));
-
-
-            Write("\n\tDenoised: " + Noise.Remove.TextFromBinary_Utf8(result, reKey, true));
+            //Write("\n\n\tDecoded noised: " + FromBinary.Utf8(result));
 
 
+            //Write("\n\tDenoised: " + Noise.Remove.TextFromBinary_Utf8(result, reKey, true));
 
 
-            ReadKey();
 
-            string t1filePath = "";
-            string t1fileName = "Test6.txt";
+
+            //ReadKey();
+
+            //string t1filePath = "";
+            //string t1fileName = "Test6.txt";
+            ////string encFileName = "Test2.enc-re5";
+            ////string decFileName = "Test2.dec-re5";
+            //string t1noisedFileName = "Test6.noisedv5";
+            //string t1denoisFileName = "Test6.dnoisev5";
+
+
+            //Write("\n\tNoising file in process: ");
+            //Noise.Add.TextToBinaryFile_Utf8(t1filePath, t1fileName, reKey, true);
+            //Write("Done!");
+
+            //Write("\n\tDeNoising file in process: ");
+            //Noise.Remove.TextFromBinaryFile_Utf8(t1filePath, t1noisedFileName, reKey, true);
+            //Write("Done!");
+
+            //ReadKey();
+
+
+
+
+
+            //string filePath = "";
+            //string fileName = "Test5.aboba";
             //string encFileName = "Test2.enc-re5";
             //string decFileName = "Test2.dec-re5";
-            string t1noisedFileName = "Test6.noisedv5";
-            string t1denoisFileName = "Test6.dnoisev5";
+            //string noisedFileName = "Test5.noisedv5";
+            //string denoisFileName = "Test5.dnoisev5";
 
 
-            Write("\n\tNoising file in process: ");
-            Noise.Add.TextToBinaryFile_Utf8(t1filePath, t1fileName, reKey, true);
-            Write("Done!");
-
-            Write("\n\tDeNoising file in process: ");
-            Noise.Remove.TextFromBinaryFile_Utf8(t1filePath, t1noisedFileName, reKey, true);
-            Write("Done!");
-
-            ReadKey();
-
-
-
-
-
-            string filePath = "";
-            string fileName = "Test5.aboba";
+            //string tfileName = "Test3.txt";
             //string encFileName = "Test2.enc-re5";
             //string decFileName = "Test2.dec-re5";
-            string noisedFileName = "Test5.noisedv5";
-            string denoisFileName = "Test5.dnoisev5";
+            //string tnoisedFileName = "Test3.noisedv5";
+            //string tdenoisFileName = "Test3.dnoisev5";
+            //Write($"\n\tReKey: {reKey.ExAlphabet}, PrNoise: {reKey.Noisifier.PrimaryNoise}, CplxNoise: {reKey.Noisifier.ComplexNoise}");
 
-
-            string tfileName = "Test3.txt";
-            //string encFileName = "Test2.enc-re5";
-            //string decFileName = "Test2.dec-re5";
-            string tnoisedFileName = "Test3.noisedv5";
-            string tdenoisFileName = "Test3.dnoisev5";
-            Write($"\n\tReKey: {reKey.ExAlphabet}, PrNoise: {reKey.Noisifier.PrimaryNoise}, CplxNoise: {reKey.Noisifier.ComplexNoise}");
-
-            for (var ii = 0; ii < 1000; ii++)
-            {
+            //for (var ii = 0; ii < 1000; ii++)
+            //{
 
                 //Write($"\n\tDeleting old {encFileName} & {decFileName} file\n");
                 //if (File.Exists(Path.Combine(filePath, encFileName)))
@@ -134,37 +133,37 @@ namespace JabrAPI
                 //    File.Delete(Path.Combine(filePath, noisedFileName));
                 //if (File.Exists(Path.Combine(filePath, denoisFileName)))
                 //    File.Delete(Path.Combine(filePath, denoisFileName));
-                Write($"\n\tDeleting old {tnoisedFileName} & {tdenoisFileName} file\n");
-                if (File.Exists(Path.Combine(filePath, tnoisedFileName)))
-                    File.Delete(Path.Combine(filePath, tnoisedFileName));
-                if (File.Exists(Path.Combine(filePath, tdenoisFileName)))
-                    File.Delete(Path.Combine(filePath, tdenoisFileName));
+                //Write($"\n\tDeleting old {tnoisedFileName} & {tdenoisFileName} file\n");
+                //if (File.Exists(Path.Combine(filePath, tnoisedFileName)))
+                //    File.Delete(Path.Combine(filePath, tnoisedFileName));
+                //if (File.Exists(Path.Combine(filePath, tdenoisFileName)))
+                //    File.Delete(Path.Combine(filePath, tdenoisFileName));
 
                 //ReadKey();
 
-                Stopwatch timerN = new();
-                timerN.Start();
-                Write("\n\tNoising file in process: ");
-                Noise.Add.TextFile(filePath, tfileName, reKey, true);
+                //Stopwatch timerN = new();
+                //timerN.Start();
+                //Write("\n\tNoising file in process: ");
+                //Noise.Add.TextFile(filePath, tfileName, reKey, true);
                 //Noise.Add.BinaryFile(filePath, fileName, binKey, true);
-                timerN.Stop();
+                //timerN.Stop();
 
-                Write("Done: " + ii + " (" + timerN.ElapsedMilliseconds + ")\n");
+                //Write("Done: " + ii + " (" + timerN.ElapsedMilliseconds + ")\n");
 
 
-                timerN.Reset();
-                timerN.Start();
-                Write("\n\tDeNoising file in process: ");
-                Noise.Remove.TextFile(filePath, tnoisedFileName, reKey, true);
+                //timerN.Reset();
+                //timerN.Start();
+                //Write("\n\tDeNoising file in process: ");
+                //Noise.Remove.TextFile(filePath, tnoisedFileName, reKey, true);
                 //Noise.Remove.BinaryFile(filePath, noisedFileName, binKey, true);
-                timerN.Stop();
+            //    timerN.Stop();
 
-                Write("Done: " + ii + " (" + timerN.ElapsedMilliseconds + ")\n");
+            //    Write("Done: " + ii + " (" + timerN.ElapsedMilliseconds + ")\n");
 
-                ReadKey();
-                if (ii > 100) ReadKey();
-            }
-            ReadLine();
+            //    ReadKey();
+            //    if (ii > 100) ReadKey();
+            //}
+            //ReadLine();
 
             //Write(reKey.ExportAsString() + "\n");
             //fileContent = RE5.Encrypt.Text(fileContent, reKey, true);
@@ -212,14 +211,14 @@ namespace JabrAPI
             //lolinit = RE5.Encrypt.TextToBinary_Utf8(fileContent + fileContent, reKey, true);
 
             //aboba += fileContent + aboba + fileContent;
-            double valueBias = 1.6, powerBias = 1.5;
+            double valueBias = 1.4, powerBias = 1.33;
 
             reKey.Noisifier.settings.BoundaryAlignment = TextBoundaryAlignment.c2048;
             reKey.Noisifier.settings.ForceFullBoundary = false;
             reKey.Noisifier.settings.DynamicBoundaryOffset = DynamicBoundaryOffset.x2;
 
             Int32 maxNonEntropy = 0, extendBuffer;
-            for (var i = 0; i < 1_0; i++)
+            for (var i = 0; i < 1_000; i++)
             {
                 Write("\n\tAttempt: " + ++attemptCount);
                 //reKey.Set.Sensitive.ExAlphabet("Xv+");
@@ -245,11 +244,11 @@ namespace JabrAPI
                 //List<Byte> bincrypted = RE5.Encrypt.TextToBinary_Utf16(aboba, reKey, true);
 
                 //EXTEND = random.Next(encrypted.Length + 2, encrypted.Length * 5);
-                reKey.Noisifier.settings.OutputLength = EXTEND;
-                binKey.Noisifier.settings.OutputLength = EXTEND;
+                //reKey.Noisifier.settings.OutputLength = EXTEND;
+                //binKey.Noisifier.settings.OutputLength = EXTEND;
 
 
-                //Write($"\n\tReKey: {reKey.ExAlphabet}, PrNoise: {reKey.Noisifier.PrimaryNoise}, CplxNoise: {reKey.Noisifier.ComplexNoise}");
+                Write($"\n\tReKey: {reKey.ExAlphabet}, PrNoise: {reKey.Noisifier.PrimaryNoise}, CplxNoise: {reKey.Noisifier.ComplexNoise}");
                 Write("\n\tInitial: " + encrypted);
                 //Write("\n\tInitial: ");
                 //for (var j = 0; j < bincrypted.Count; j++)
@@ -562,10 +561,10 @@ namespace JabrAPI
 
                 for (var attempt = 0; attempt < totalAttempts; attempt++)
                 {
-                    if (File.Exists(Path.Combine(filePath, noisedFileName)))
-                        File.Delete(Path.Combine(filePath, noisedFileName));
-                    if (File.Exists(Path.Combine(filePath, denoisFileName)))
-                        File.Delete(Path.Combine(filePath, denoisFileName));
+                    //if (File.Exists(Path.Combine(filePath, noisedFileName)))
+                    //    File.Delete(Path.Combine(filePath, noisedFileName));
+                    //if (File.Exists(Path.Combine(filePath, denoisFileName)))
+                    //    File.Delete(Path.Combine(filePath, denoisFileName));
 
                     if (attempt % 2 == 0)
                     {
@@ -575,8 +574,8 @@ namespace JabrAPI
                         timer.Start();
 
                         for (var i = 0; i < iterationsPerAttempt; i++)
-                            //    exportBuffer = initial.ExportAsBinary();
-                            Noise.Add.TextFile(filePath, fileName, reKey, true);
+                                exportBuffer = initial.ExportAsBinary();
+                            //Noise.Add.TextFile(filePath, fileName, reKey, true);
 
                         timer.Stop();
                         ms1.Add(timer.ElapsedMilliseconds);
@@ -587,8 +586,8 @@ namespace JabrAPI
                         timer.Start();
 
                         for (var i = 0; i < iterationsPerAttempt; i++)
-                            //copy.ImportFromBinary(exportBuffer, true);
-                            Noise.Add.TextFile(filePath, fileName, reKey, true);
+                            copy.ImportFromBinary(exportBuffer, true);
+                            //Noise.Add.TextFile(filePath, fileName, reKey, true);
 
                         timer.Stop();
                         ms2.Add(timer.ElapsedMilliseconds);
@@ -599,62 +598,62 @@ namespace JabrAPI
                     timer.Reset();
 
 
-                    //if (attempt % 2 == 1)
-                    //{
-                    //    Write("\n\t\t\tVALIDATING - ");
+                    if (attempt % 2 == 1)
+                    {
+                        Write("\n\t\t\tVALIDATING - ");
 
-                    //    List<Byte> import = copy.ExportAsBinary();
+                        List<Byte> import = copy.ExportAsBinary();
 
-                    //    if (import.Count != exportBuffer.Count)
-                    //    {
-                    //        ForegroundColor = ConsoleColor.Green;
-                    //        Write("\tFAILURE! See differences:");
-                    //        ForegroundColor = ConsoleColor.Gray;
+                        if (import.Count != exportBuffer.Count)
+                        {
+                            ForegroundColor = ConsoleColor.Green;
+                            Write("\tFAILURE! See differences:");
+                            ForegroundColor = ConsoleColor.Gray;
 
-                    //        Write("\n\t\t\tInitial: ");
-                    //        foreach (var infoByte in exportBuffer)
-                    //            Write(infoByte + " ");
+                            Write("\n\t\t\tInitial: ");
+                            foreach (var infoByte in exportBuffer)
+                                Write(infoByte + " ");
 
-                    //        Write("\n\t\t\tImport:  ");
-                    //        foreach (var infoByte in import)
-                    //            Write(infoByte + " ");
+                            Write("\n\t\t\tImport:  ");
+                            foreach (var infoByte in import)
+                                Write(infoByte + " ");
 
-                    //        ReadKey();
-                    //    }
-                    //    else
-                    //    {
-                    //        bool doesMatch = true;
+                            ReadKey();
+                        }
+                        else
+                        {
+                            bool doesMatch = true;
 
-                    //        for (var i = 0; i < exportBuffer.Count; i++)
-                    //        {
-                    //            if (import[i] != exportBuffer[i])
-                    //            {
-                    //                ForegroundColor = ConsoleColor.Green;
-                    //                Write("\tFAILURE! See differences:");
-                    //                ForegroundColor = ConsoleColor.Gray;
+                            for (var i = 0; i < exportBuffer.Count; i++)
+                            {
+                                if (import[i] != exportBuffer[i])
+                                {
+                                    ForegroundColor = ConsoleColor.Green;
+                                    Write("\tFAILURE! See differences:");
+                                    ForegroundColor = ConsoleColor.Gray;
 
-                    //                Write("\n\t\t\tInitial: ");
-                    //                foreach (var infoByte in exportBuffer)
-                    //                    Write(infoByte);
+                                    Write("\n\t\t\tInitial: ");
+                                    foreach (var infoByte in exportBuffer)
+                                        Write(infoByte);
 
-                    //                Write("\n\t\t\tImport:  ");
-                    //                foreach (var infoByte in import)
-                    //                    Write(infoByte);
+                                    Write("\n\t\t\tImport:  ");
+                                    foreach (var infoByte in import)
+                                        Write(infoByte);
 
-                    //                i += exportBuffer.Count;
-                    //                doesMatch = false;
+                                    i += exportBuffer.Count;
+                                    doesMatch = false;
 
-                    //                ReadKey();
-                    //            }
-                    //        }
-                    //        if (doesMatch)
-                    //        {
-                    //            ForegroundColor = ConsoleColor.Green;
-                    //            Write("\tSUCCESS! Import matches export");
-                    //            ForegroundColor = ConsoleColor.Gray;
-                    //        }
-                    //    }
-                    //}
+                                    ReadKey();
+                                }
+                            }
+                            if (doesMatch)
+                            {
+                                ForegroundColor = ConsoleColor.Green;
+                                Write("\tSUCCESS! Import matches export");
+                                ForegroundColor = ConsoleColor.Gray;
+                            }
+                        }
+                    }
                 }
 
                 double min1 = (double)ms1.Min() / 1000, max1 = (double)ms1.Max() / 1000;
