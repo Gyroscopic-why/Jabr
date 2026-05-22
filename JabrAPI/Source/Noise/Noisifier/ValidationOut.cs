@@ -47,7 +47,7 @@ namespace JabrAPI
                     primaryNoise,
                     new ArgumentException
                     (
-                        $"PrimaryNoise bytes can not overlap with ExternalAlphabet chars",
+                        $"PrimaryNoise chars can not overlap with ExternalAlphabet chars",
                         nameof(primaryNoise)
                     ),
                     out exception
@@ -61,7 +61,7 @@ namespace JabrAPI
                     primaryNoise,
                     new ArgumentException
                     (
-                        $"PrimaryNoise bytes can not overlap with message chars",
+                        $"PrimaryNoise chars can not overlap with message chars",
                         nameof(primaryNoise)
                     ),
                     out exception
@@ -87,7 +87,7 @@ namespace JabrAPI
                     complexNoise,
                     new ArgumentException
                     (
-                        $"PrimaryNoise bytes can not overlap with ExternalAlphabet chars",
+                        $"PrimaryNoise chars can not overlap with ExternalAlphabet chars",
                         nameof(complexNoise)
                     ),
                     out exception
@@ -101,7 +101,7 @@ namespace JabrAPI
                     complexNoise,
                     new ArgumentException
                     (
-                        $"PrimaryNoise bytes can not overlap with message chars",
+                        $"PrimaryNoise chars can not overlap with message chars",
                         nameof(complexNoise)
                     ),
                     out exception
@@ -125,7 +125,7 @@ namespace JabrAPI
                     if (exAlphabet_or_message.Contains(noiseChar))
                     {
                         exception = new ArgumentException
-                            (
+                        (
                             errorMessage.Message +
                             $"\nDuplicate char: {noiseChar}",
                             errorMessage.ParamName

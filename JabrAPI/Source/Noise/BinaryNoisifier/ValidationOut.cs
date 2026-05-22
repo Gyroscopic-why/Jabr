@@ -48,7 +48,7 @@ namespace JabrAPI
                     primaryNoise,
                     new ArgumentException
                     (
-                        $"PrimaryNoise bytes can not overlap with ExternalAlphabet chars",
+                        $"PrimaryNoise bytes can not overlap with ExternalAlphabet bytes",
                         nameof(primaryNoise)
                     ),
                     out exception
@@ -62,7 +62,7 @@ namespace JabrAPI
                     primaryNoise,
                     new ArgumentException
                     (
-                        $"PrimaryNoise bytes can not overlap with message chars",
+                        $"PrimaryNoise bytes can not overlap with message bytes",
                         nameof(primaryNoise)
                     ),
                     out exception
@@ -89,7 +89,7 @@ namespace JabrAPI
                     complexNoise,
                     new ArgumentException
                     (
-                        $"PrimaryNoise bytes can not overlap with ExternalAlphabet chars",
+                        $"PrimaryNoise bytes can not overlap with ExternalAlphabet bytes",
                         nameof(complexNoise)
                     ),
                     out exception
@@ -103,7 +103,7 @@ namespace JabrAPI
                     complexNoise,
                     new ArgumentException
                     (
-                        $"PrimaryNoise bytes can not overlap with message chars",
+                        $"PrimaryNoise bytes can not overlap with message bytes",
                         nameof(complexNoise)
                     ),
                     out exception
