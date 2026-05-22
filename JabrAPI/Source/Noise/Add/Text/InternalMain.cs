@@ -1,9 +1,8 @@
-﻿using System;
-using System.IO;
+﻿using AVcontrol;
+using System;
 using System.Collections.Generic;
-
-
-using AVcontrol;
+using System.IO;
+using System.Linq;
 
 
 
@@ -15,13 +14,23 @@ namespace JabrAPI
         {
             static public string AddFastText(string message, Noisifier noisifier, string fakeSelection)
             {
+                SecureRandom random = new(128);
                 Int32 chunkSize = (Int32)noisifier.settings.ChunkSize,
                   hardChunkSize = (Int32)(chunkSize * noisifier.settings.HardChunkSizeToSoftCoefficient);
                 if (chunkSize   < 2) chunkSize = 2;
                 if (hardChunkSize <  chunkSize) hardChunkSize = chunkSize;
 
 
-                Int32 outputLength = noisifier.settings.OutputLength, initialLength = message.Length;
+                Int32 initialLength = message.Length,
+                    outputLength = OutputInterval.OutputLength
+                    (
+                        initialLength,
+                        noisifier.settings.DynamicOutputIntervals,
+                        noisifier.settings.IntervalChoiceSetting,
+                        noisifier.settings.LengthChoiceSetting,
+                        random
+                    );
+
 
                 if (outputLength == 0)
                     outputLength = (Int32)Math.Pow
@@ -59,9 +68,7 @@ namespace JabrAPI
                 double maxAvgNoiseCount = 2.0 * (outputLength - initialLength) / (initialLength + 1);
                 double avgNoisePerCharInRound = (double)initialLength / outputLength;
 
-                SecureRandom random = new(128);
-                List <char>  result = new(outputLength);
-
+                List<char> result = new(outputLength);
                 fakeSelection = fakeSelection == "" ? noisifier.PrimaryNoise : fakeSelection;
                 Int32 prevFinalUnnoised = 0, maxRoundLength, offset = 0, messageChunk;
 
@@ -137,7 +144,7 @@ namespace JabrAPI
                 else finalFileName = fileName + ".noisedv5";
 
 
-                Int32 outputLength = noisifier.settings.OutputLength, initialLength = 0;
+                Int32 outputLength = 0/*noisifierRef.settings.OutputLength*/, initialLength = 0;
                 using (StreamReader lengthReader = new(Path.Combine(absoluteInputDirectory, fileName)))
                 {
                     while (lengthReader.Read() != -1) initialLength++;

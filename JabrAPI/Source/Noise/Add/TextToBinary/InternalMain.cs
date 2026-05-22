@@ -23,7 +23,7 @@ namespace JabrAPI
                 if (hardChunkSize < chunkSize) hardChunkSize = chunkSize;
 
 
-                Int32 outputLength = noisifierRef.settings.OutputLength, initialLength = message.Length;
+                Int32 outputLength = 0/*noisifierRef.settings.OutputLength*/, initialLength = message.Length;
 
                 if (outputLength == 0)
                     outputLength = (Int32)Math.Pow
@@ -132,6 +132,7 @@ namespace JabrAPI
                 string absoluteOutputDirectory, IEncryptionKey reKey, Func<string, Byte[]> convertRule)
             {
                 Noisifier noisifierRef = reKey.Noisifier;
+                SecureRandom random = new(noisifierRef.RandomReseedInterval);
                 Int32 chunkSize = (Int32)noisifierRef.settings.ChunkSize,
                   hardChunkSize = (Int32)(chunkSize * noisifierRef.settings.HardChunkSizeToSoftCoefficient);
                 if (chunkSize < 2) chunkSize = 2;
@@ -147,7 +148,7 @@ namespace JabrAPI
                 else finalFileName = fileName + ".noisedv5";
 
 
-                Int32 outputLength = noisifierRef.settings.OutputLength, initialLength = 0;
+                Int32 initialLength = 0;
 
                 using FileStream outputStream = new(Path.Combine(absoluteOutputDirectory, finalFileName), FileMode.Create, FileAccess.Write);
                 using StreamReader reader = new(Path.Combine(absoluteInputDirectory, fileName));
@@ -161,6 +162,14 @@ namespace JabrAPI
                     lengthReader.Dispose();
                 }
 
+                Int32 outputLength = OutputInterval.OutputLength
+                    (
+                        initialLength,
+                        noisifierRef.settings.DynamicOutputIntervals,
+                        noisifierRef.settings.IntervalChoiceSetting,
+                        noisifierRef.settings.LengthChoiceSetting,
+                        random
+                    );
 
                 if (outputLength == 0)
                     outputLength = (Int32)Math.Pow
@@ -212,7 +221,6 @@ namespace JabrAPI
                 double maxAvgNoiseCount = 2.0 * (outputLength - initialLength) / (initialLength + 1);
                 double avgNoisePerCharInRound = (double)initialLength / outputLength;
 
-                SecureRandom random = new(noisifierRef.RandomReseedInterval);
 
                 List<char> parsedChars = [];
                 Byte[] roundResult;

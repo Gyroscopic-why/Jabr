@@ -15,13 +15,22 @@ namespace JabrAPI
         {
             static public List<Byte> AddFastBinary(List<Byte> message, BinaryNoisifier noisifier, List<Byte> fakeSelection)
             {
+                SecureRandom random = new(128);
                 Int32 chunkSize = (Int32)noisifier.settings.ChunkSize,
                   hardChunkSize = (Int32)(chunkSize * noisifier.settings.HardChunkSizeToSoftCoefficient);
                 if (chunkSize < 2) chunkSize = 2;
                 if (hardChunkSize < chunkSize) hardChunkSize = chunkSize;
 
 
-                Int32 outputLength = noisifier.settings.OutputLength, initialLength = message.Count;
+                Int32 initialLength = message.Count,
+                    outputLength = OutputInterval.OutputLength
+                    (
+                        initialLength,
+                        noisifier.settings.DynamicOutputIntervals,
+                        noisifier.settings.IntervalChoiceSetting,
+                        noisifier.settings.LengthChoiceSetting,
+                        random
+                    );
 
                 if (outputLength == 0)
                     outputLength = (Int32)Math.Pow
@@ -59,9 +68,7 @@ namespace JabrAPI
                 double maxAvgNoiseCount = 2.0 * (outputLength - initialLength) / (initialLength + 1);
                 double avgNoisePerCharInRound = (double)initialLength / outputLength;
 
-                SecureRandom random = new(128);
-                List <Byte>  result = new(outputLength);
-
+                List<Byte> result = new(outputLength);
                 fakeSelection = fakeSelection.Count < 1 ? noisifier.PrimaryNoise : fakeSelection;
                 Int32 prevFinalUnnoised = 0, maxRoundLength, offset = 0, messageChunk;
 
@@ -142,7 +149,7 @@ namespace JabrAPI
                 using FileStream inputStream  = new(Path.Combine(absoluteInputDirectory, fileName),       FileMode.Open,   FileAccess.Read);
                 using FileStream outputStream = new(Path.Combine(absoluteOutputDirectory, finalFileName), FileMode.Create, FileAccess.Write);
 
-                Int32 outputLength = noisifier.settings.OutputLength, initialLength = 0;
+                Int32 outputLength = 0/*noisifierRef.settings.OutputLength*/, initialLength = 0;
                 using (BinaryReader lengthReader = new(lengthStream))
                 {
                     while (lengthReader.Read() != -1) initialLength++;
