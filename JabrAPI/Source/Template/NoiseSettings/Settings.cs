@@ -15,8 +15,7 @@ namespace JabrAPI
 
             bool useDynamicOutputIntervals = true,
             OutputInterval[]? dynamicOutputIntervals = null,
-            OutputInterval.IntervalChoiceSetting intervalChoiceSetting
-            = OutputInterval.IntervalChoiceSetting.PICK_SMALLEST_WITH_LOWEST_DIFFERENCE,
+            OutputInterval.IntervalFilters? intervalChoiceSetting = null,
             OutputInterval.LengthChoiceSetting lengthChoiceSetting
             = OutputInterval.LengthChoiceSetting.CHOOSE_RANDOM_FROM_VALID,
 
@@ -73,8 +72,7 @@ namespace JabrAPI
 
             bool useDynamicOutputIntervals = true,
             OutputInterval[]? dynamicOutputIntervals = null,
-            OutputInterval.IntervalChoiceSetting intervalChoiceSetting
-            = OutputInterval.IntervalChoiceSetting.PICK_SMALLEST_WITH_LOWEST_DIFFERENCE,
+            OutputInterval.IntervalFilters? intervalChoiceSetting = null,
             OutputInterval.LengthChoiceSetting lengthChoiceSetting
             = OutputInterval.LengthChoiceSetting.CHOOSE_RANDOM_FROM_VALID,
 

@@ -7,8 +7,7 @@
 
         public bool   UseDynamicOutputIntervals = true;
         public OutputInterval[] DynamicOutputIntervals = [];
-        public OutputInterval.IntervalChoiceSetting IntervalChoiceSetting
-             = OutputInterval.IntervalChoiceSetting.PICK_SMALLEST_WITH_LOWEST_DIFFERENCE;
+        public OutputInterval.IntervalFilters IntervalChoiceSetting = new();
         public OutputInterval.LengthChoiceSetting LengthChoiceSetting
              = OutputInterval.LengthChoiceSetting.CHOOSE_RANDOM_FROM_VALID;
 
@@ -36,8 +35,7 @@
             
             bool  useDynamicOutputIntervals = true,
             OutputInterval[]? dynamicOutputIntervals = null,
-            OutputInterval.IntervalChoiceSetting intervalChoiceSetting
-            = OutputInterval.IntervalChoiceSetting.PICK_SMALLEST_WITH_LOWEST_DIFFERENCE,
+            OutputInterval.IntervalFilters? intervalChoiceSetting = null,
             OutputInterval.LengthChoiceSetting lengthChoiceSetting
             = OutputInterval.LengthChoiceSetting.CHOOSE_RANDOM_FROM_VALID,
 
@@ -118,8 +116,7 @@
 
             bool useDynamicOutputIntervals = true,
             OutputInterval[]? dynamicOutputIntervals = null,
-            OutputInterval.IntervalChoiceSetting intervalChoiceSetting
-            = OutputInterval.IntervalChoiceSetting.PICK_SMALLEST_WITH_LOWEST_DIFFERENCE,
+            OutputInterval.IntervalFilters? intervalChoiceSetting = null,
             OutputInterval.LengthChoiceSetting lengthChoiceSetting
             = OutputInterval.LengthChoiceSetting.CHOOSE_RANDOM_FROM_VALID,
 
@@ -143,7 +140,7 @@
 
             UseDynamicOutputIntervals = useDynamicOutputIntervals;
             DynamicOutputIntervals    = [.. dynamicOutputIntervals ?? []];
-            IntervalChoiceSetting = intervalChoiceSetting;
+            IntervalChoiceSetting = intervalChoiceSetting ?? new();
             LengthChoiceSetting   = lengthChoiceSetting;
 
             OutputExtendingCoefficient      = outputExtendingCoefficient;

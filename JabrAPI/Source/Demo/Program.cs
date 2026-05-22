@@ -54,7 +54,7 @@ namespace JabrAPI
 
             //reKey.Noisifier.Set.Default(['A', 'b', 'o', 'a', '\r', '\n', 'h', 'e', 'l', ' ', 'w', 'r', 'd', '2', '8', ',', '.', '?', '!',
             //'i', 'f', 'y', 'u', 'n', 'g', 't', 's', '-', 'T', 'H', 'E', 'c', 'm', 'k', 'N', 'O', 'I', 'S', 'F', 'R']);
-            //reKey.Noisifier.settings.InitFromPreset(MasqueradePreset.HTTP_2_gRPC);
+            reKey.Noisifier.settings.InitFromPreset(MasqueradePreset.HTTP_2_gRPC);
             reKey.Noisifier.Next();
 
             reKey.Noisifier.RandomReseedInterval = 8192;
