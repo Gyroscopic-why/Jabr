@@ -17,39 +17,22 @@ namespace JabrAPI
             static public List<Byte> AddNoiseFastTextToBinary(string message, IEncryptionKey reKey, string fakeSelection, Func<string, Byte[]> convertRule)
             {
                 Noisifier noisifierRef = reKey.Noisifier;
-                Int32 chunkSize = (Int32)noisifierRef.settings.ChunkSize,
+                SecureRandom random = new(noisifierRef.RandomReseedInterval);
+                Int32 chunkSize = (Int32) noisifierRef.settings.ChunkSize, initialLength = message.Length,
                   hardChunkSize = (Int32)(chunkSize * noisifierRef.settings.HardChunkSizeToSoftCoefficient);
                 if (chunkSize < 2) chunkSize = 2;
                 if (hardChunkSize < chunkSize) hardChunkSize = chunkSize;
 
 
-                Int32 outputLength = 0/*noisifierRef.settings.OutputLength*/, initialLength = message.Length;
-
-                if (outputLength == 0)
-                    outputLength = (Int32)Math.Pow
+                Int32 outputLength = OutputInterval.OutputLength
                     (
-                        2,
-                        noisifierRef.settings.ForceFullBoundary ?
-                            (Int32)noisifierRef.settings.BoundaryAlignment
-                            : Math.Min
-                            (
-                                (Int32)noisifierRef.settings.BoundaryAlignment,
-                                (Int32)Math.Ceiling(Math.Log2(initialLength))
-                                    + (Int32)noisifierRef.settings.DynamicBoundaryOffset
-                            )
+                        initialLength,
+                        noisifierRef.settings.DynamicOutputIntervals,
+                        noisifierRef.settings.IntervalChoiceSetting,
+                        noisifierRef.settings.LengthChoiceSetting,
+                        random
                     );
-
-                if (initialLength > outputLength)
-                {
-                    if (noisifierRef.settings.DoExtendOutputIfLessThanInitial)
-                        outputLength = (Int32)
-                        (
-                            outputLength *
-                            (1 + initialLength / outputLength) *
-                            noisifierRef.settings.OutputExtendingCoefficient
-                        );
-                    else return [.. convertRule(message)];
-                }
+                if (initialLength >= outputLength) return [.. convertRule(message)];
 
 
                 Int32 maxSyntropy = Miscellaneous.CalculateMaxNonEntropy
@@ -61,9 +44,7 @@ namespace JabrAPI
                 double maxAvgNoiseCount = 2.0 * (outputLength - initialLength) / (initialLength + 1);
                 double avgNoisePerCharInRound = (double)initialLength / outputLength;
 
-                SecureRandom random = new(128);
                 List<Byte> result = new(outputLength);
-
                 fakeSelection = fakeSelection == "" ? noisifierRef.PrimaryNoise : fakeSelection;
                 Int32 prevFinalUnnoised = 0, maxRoundLength, offset = 0, messageChunk;
 
@@ -133,7 +114,7 @@ namespace JabrAPI
             {
                 Noisifier noisifierRef = reKey.Noisifier;
                 SecureRandom random = new(noisifierRef.RandomReseedInterval);
-                Int32 chunkSize = (Int32)noisifierRef.settings.ChunkSize,
+                Int32 chunkSize = (Int32)noisifierRef.settings.ChunkSize, initialLength = 0,
                   hardChunkSize = (Int32)(chunkSize * noisifierRef.settings.HardChunkSizeToSoftCoefficient);
                 if (chunkSize < 2) chunkSize = 2;
                 if (hardChunkSize < chunkSize) hardChunkSize = chunkSize;
@@ -147,8 +128,6 @@ namespace JabrAPI
                 }
                 else finalFileName = fileName + ".noisedv5";
 
-
-                Int32 initialLength = 0;
 
                 using FileStream outputStream = new(Path.Combine(absoluteOutputDirectory, finalFileName), FileMode.Create, FileAccess.Write);
                 using StreamReader reader = new(Path.Combine(absoluteInputDirectory, fileName));
@@ -170,45 +149,19 @@ namespace JabrAPI
                         noisifierRef.settings.LengthChoiceSetting,
                         random
                     );
-
-                if (outputLength == 0)
-                    outputLength = (Int32)Math.Pow
-                    (
-                        2,
-                        noisifierRef.settings.ForceFullBoundary ?
-                            (Int32)noisifierRef.settings.BoundaryAlignment
-                            : Math.Min
-                            (
-                                (Int32)noisifierRef.settings.BoundaryAlignment,
-                                (Int32)Math.Ceiling(Math.Log2(initialLength))
-                                    + (Int32)noisifierRef.settings.DynamicBoundaryOffset
-                            )
-                    );
-
-
-                if (initialLength > outputLength)
+                if (initialLength >= outputLength)
                 {
-                    if (noisifierRef.settings.DoExtendOutputIfLessThanInitial)
-                        outputLength = (Int32)
-                        (
-                            outputLength *
-                            (1 + initialLength / outputLength) *
-                            noisifierRef.settings.OutputExtendingCoefficient
-                        );
-                    else
-                    {
-                        Int32 charsRead;
-                        char[] readBuffer = new char[chunkSize];
+                    Int32 charsRead;
+                    char[] readBuffer = new char[chunkSize];
 
-                        while ((charsRead = reader.ReadBlock(readBuffer, 0, chunkSize)) > 0)
-                        {
-                            writer.Write
-                            (
-                                convertRule(new string (readBuffer[0..charsRead]))
-                            );
-                        }
-                        return;
+                    while ((charsRead = reader.ReadBlock(readBuffer, 0, chunkSize)) > 0)
+                    {
+                        writer.Write
+                        (
+                            convertRule(new string (readBuffer[0..charsRead]))
+                        );
                     }
+                    return;
                 }
 
 

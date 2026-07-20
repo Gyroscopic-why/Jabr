@@ -32,8 +32,7 @@ namespace JabrAPI
 
             bool forceFullBoundary = false,
             DynamicBoundaryOffset dynamicBoundaryOffset = DynamicBoundaryOffset.Minimize,
-            TextChunkSize chunkSize = TextChunkSize.c4096,
-            TextBoundaryAlignment boundaryAlignment = TextBoundaryAlignment.c256
+            TextChunkSize chunkSize = TextChunkSize.c4096
             ) : INoiseSettings(
                 masqueradePreset,
                 keepOriginalFileExtension,
@@ -56,11 +55,7 @@ namespace JabrAPI
 
                 forceFullBoundary,
                 dynamicBoundaryOffset
-            )
-        {
-            public TextBoundaryAlignment BoundaryAlignment
-            { get; set; } = boundaryAlignment;
-
+        )   {
             public TextChunkSize ChunkSize { get; set; } = chunkSize;
         }
 
@@ -90,8 +85,7 @@ namespace JabrAPI
 
             bool forceFullBoundary = false,
             DynamicBoundaryOffset dynamicBoundaryOffset = DynamicBoundaryOffset.Minimize,
-            BinaryChunkSize chunkSize = BinaryChunkSize.KByte8,
-            BinaryBoundaryAlignment boundaryAlignment = BinaryBoundaryAlignment.KByte1
+            BinaryChunkSize chunkSize = BinaryChunkSize.KByte8
             ) : INoiseSettings(
                 masqueradePreset,
                 keepOriginalFileExtension,
@@ -114,11 +108,7 @@ namespace JabrAPI
 
                 forceFullBoundary,
                 dynamicBoundaryOffset
-            )
-        {
-            public BinaryBoundaryAlignment BoundaryAlignment
-            { get; set; } = boundaryAlignment;
-
+        )   {
             public BinaryChunkSize ChunkSize { get; set; } = chunkSize;
         }
     }

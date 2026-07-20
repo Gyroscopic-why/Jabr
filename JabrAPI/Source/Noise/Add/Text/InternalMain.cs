@@ -1,8 +1,9 @@
-﻿using AVcontrol;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
+using System.Collections.Generic;
+
+
+using AVcontrol;
 
 
 
@@ -14,15 +15,14 @@ namespace JabrAPI
         {
             static public string AddFastText(string message, Noisifier noisifier, string fakeSelection)
             {
-                SecureRandom random = new(128);
-                Int32 chunkSize = (Int32)noisifier.settings.ChunkSize,
+                SecureRandom random = new(noisifier.RandomReseedInterval);
+                Int32 chunkSize = (Int32)noisifier.settings.ChunkSize, initialLength = message.Length,
                   hardChunkSize = (Int32)(chunkSize * noisifier.settings.HardChunkSizeToSoftCoefficient);
                 if (chunkSize   < 2) chunkSize = 2;
                 if (hardChunkSize <  chunkSize) hardChunkSize = chunkSize;
 
 
-                Int32 initialLength = message.Length,
-                    outputLength = OutputInterval.OutputLength
+                Int32 outputLength = OutputInterval.OutputLength
                     (
                         initialLength,
                         noisifier.settings.DynamicOutputIntervals,
@@ -30,33 +30,7 @@ namespace JabrAPI
                         noisifier.settings.LengthChoiceSetting,
                         random
                     );
-
-
-                if (outputLength == 0)
-                    outputLength = (Int32)Math.Pow
-                    (
-                        2,
-                        noisifier.settings.ForceFullBoundary ?
-                            (Int32)noisifier.settings.BoundaryAlignment
-                            : Math.Min
-                            (
-                                (Int32)noisifier.settings.BoundaryAlignment,
-                                (Int32)Math.Ceiling(Math.Log2(initialLength))
-                                    + (Int32)noisifier.settings.DynamicBoundaryOffset
-                            )
-                    );
-
-                if (initialLength > outputLength)
-                {
-                    if (noisifier.settings.DoExtendOutputIfLessThanInitial)
-                        outputLength = (Int32)
-                        (
-                            outputLength *
-                            (1 + initialLength / outputLength) *
-                            noisifier.settings.OutputExtendingCoefficient
-                        );
-                    else return message;
-                }
+                if (initialLength >= outputLength) return message;
 
 
                 Int32 maxSyntropy = Miscellaneous.CalculateMaxNonEntropy
@@ -124,12 +98,14 @@ namespace JabrAPI
 
                 return new string([.. result]);
             }
+            
 
 
             static public void AddFastTextFile(string absoluteInputDirectory, string fileName,
                 string absoluteOutputDirectory, Noisifier noisifier)
             {
-                Int32 chunkSize = (Int32)noisifier.settings.ChunkSize,
+                SecureRandom random = new(noisifier.RandomReseedInterval);
+                Int32 chunkSize = (Int32)noisifier.settings.ChunkSize, initialLength = 0,
                   hardChunkSize = (Int32)(chunkSize * noisifier.settings.HardChunkSizeToSoftCoefficient);
                 if (chunkSize   < 2) chunkSize = 2;
                 if (hardChunkSize <  chunkSize) hardChunkSize = chunkSize;
@@ -144,7 +120,6 @@ namespace JabrAPI
                 else finalFileName = fileName + ".noisedv5";
 
 
-                Int32 outputLength = 0/*noisifierRef.settings.OutputLength*/, initialLength = 0;
                 using (StreamReader lengthReader = new(Path.Combine(absoluteInputDirectory, fileName)))
                 {
                     while (lengthReader.Read() != -1) initialLength++;
@@ -152,42 +127,25 @@ namespace JabrAPI
                     lengthReader.Close();
                     lengthReader.Dispose();
                 }
+                Int32 outputLength = OutputInterval.OutputLength
+                (
+                    initialLength,
+                    noisifier.settings.DynamicOutputIntervals,
+                    noisifier.settings.IntervalChoiceSetting,
+                    noisifier.settings.LengthChoiceSetting,
+                    random
+                );
 
 
-                if (outputLength == 0)
-                    outputLength = (Int32)Math.Pow
-                    (
-                        2,
-                        noisifier.settings.ForceFullBoundary ?
-                            (Int32)noisifier.settings.BoundaryAlignment
-                            : Math.Min
-                            (
-                                (Int32)noisifier.settings.BoundaryAlignment,
-                                (Int32)Math.Ceiling(Math.Log2(initialLength))
-                                    + (Int32)noisifier.settings.DynamicBoundaryOffset
-                            )
-                    );
-
-
-                if (initialLength > outputLength)
+                if (initialLength >= outputLength)
                 {
-                    if (noisifier.settings.DoExtendOutputIfLessThanInitial)
-                        outputLength = (Int32)
-                        (
-                            outputLength *
-                            (1 + initialLength / outputLength) *
-                            noisifier.settings.OutputExtendingCoefficient
-                        );
-                    else
-                    {
-                        File.Copy
-                        (
-                            Path.Combine(absoluteInputDirectory, fileName),
-                            Path.Combine(absoluteOutputDirectory, finalFileName),
-                            false  //  overwrite
-                        );
-                        return;
-                    }
+                    File.Copy
+                    (
+                        Path.Combine(absoluteInputDirectory, fileName),
+                        Path.Combine(absoluteOutputDirectory, finalFileName),
+                        false  //  overwrite
+                    );
+                    return;
                 }
 
 
@@ -199,8 +157,6 @@ namespace JabrAPI
                     );
                 double maxAvgNoiseCount = 2.0 * (outputLength - initialLength) / (initialLength + 1);
                 double avgNoisePerCharInRound = (double)initialLength / outputLength;
-
-                SecureRandom random = new(noisifier.RandomReseedInterval);
 
                 using StreamReader reader = new(Path.Combine(absoluteInputDirectory, fileName));
                 using StreamWriter writer = new(Path.Combine(absoluteOutputDirectory, finalFileName));

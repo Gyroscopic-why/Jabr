@@ -47,7 +47,6 @@ namespace JabrAPI
             binKey.Noisifier.Next();
 
             binKey.Noisifier.RandomReseedInterval = 8192;
-            binKey.Noisifier.settings.BoundaryAlignment = BinaryBoundaryAlignment.KByte8;
             binKey.Noisifier.settings.KeepOriginalFileExtension = false;
 
 
@@ -58,7 +57,6 @@ namespace JabrAPI
             reKey.Noisifier.Next();
 
             reKey.Noisifier.RandomReseedInterval = 8192;
-            reKey.Noisifier.settings.BoundaryAlignment = TextBoundaryAlignment.c8192;
             reKey.Noisifier.settings.KeepOriginalFileExtension = false;
 
 
@@ -213,7 +211,6 @@ namespace JabrAPI
             //aboba += fileContent + aboba + fileContent;
             double valueBias = 1.4, powerBias = 1.33;
 
-            reKey.Noisifier.settings.BoundaryAlignment = TextBoundaryAlignment.c2048;
             reKey.Noisifier.settings.ForceFullBoundary = false;
             reKey.Noisifier.settings.DynamicBoundaryOffset = DynamicBoundaryOffset.x2;
 
