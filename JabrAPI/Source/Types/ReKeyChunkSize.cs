@@ -1,9 +1,6 @@
-﻿
-
-
-namespace JabrAPI
+﻿namespace JabrAPI
 {
-    public enum BinaryChunkSize
+    public enum ChunkSize
     {
         Byte128  = 128,
         Byte256  = 256,
@@ -22,27 +19,5 @@ namespace JabrAPI
         KByte512 = 524_288,
 
         MByte1   = 1_048_576
-    }
-
-
-    public enum TextChunkSize
-    {
-        c128 = 128,
-        c256 = 256,
-        c512 = 512,
-
-        c1024 = 1_024,
-        c2048 = 2_048,
-        c4096 = 4_096,
-        c8192 = 8_192,
-
-        c16384  =  16_384,
-        c32768  =  32_768,
-        c65536  =  65_536,
-        c131072 = 131_072,
-        c262144 = 262_144,
-        c524288 = 524_288,
-
-        c1048576 = 1_048_576
     }
 }

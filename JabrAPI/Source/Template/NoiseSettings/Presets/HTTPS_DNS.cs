@@ -7,7 +7,7 @@ namespace JabrAPI.Template
 {
     static internal partial class SettingsPresets
     {
-        static internal readonly INoiseSettings HTTPS_DNS = new
+        static internal readonly Noise.Settings HTTPS_DNS = new
         (
             MasqueradePreset.HTTPS_DNS,
             true,
@@ -40,7 +40,8 @@ namespace JabrAPI.Template
             25.0,
             66.66,
             false,
-            DynamicBoundaryOffset.Minimize
+            DynamicBoundaryOffset.Minimize,
+            ChunkSize.KByte16
         );
     }
 }

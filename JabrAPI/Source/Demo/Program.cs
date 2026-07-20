@@ -402,8 +402,8 @@ namespace JabrAPI
                 //for (var j = 0; j < bincrypted.Count; j++)
                 //    Write(bincrypted[j] + " ");
 
-                reKey.ChunkSize = TextChunkSize.c4096;
-                binKey.ChunkSize = BinaryChunkSize.Byte512;
+                reKey.ChunkSize = ChunkSize.KByte8;
+                binKey.ChunkSize = ChunkSize.Byte512;
                 Write("\n\tSAFEENC: " + RE5.Encrypt.Text(aboba, reKey, true));
                 Write("\n\tSAFEDEC: " + RE5.Decrypt.Text(RE5.Encrypt.Text(aboba, reKey, true), reKey, true));
                 //List<Byte> safeBytes = RE5.Encrypt.Binary(lolinit, binKey, true);

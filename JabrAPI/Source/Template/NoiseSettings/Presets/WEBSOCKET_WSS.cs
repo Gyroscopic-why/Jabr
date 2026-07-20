@@ -7,7 +7,7 @@ namespace JabrAPI.Template
 {
     static internal partial class SettingsPresets
     {
-        static internal readonly INoiseSettings WEBSOCKET_WSS = new
+        static internal readonly Noise.Settings WEBSOCKET_WSS = new
         (
             MasqueradePreset.WEBSOCKET_WSS,
             true,
@@ -41,7 +41,8 @@ namespace JabrAPI.Template
             25.0,
             66.66,
             false,
-            DynamicBoundaryOffset.Minimize
+            DynamicBoundaryOffset.Minimize,
+            ChunkSize.KByte16
         );
     }
 }

@@ -7,7 +7,7 @@ namespace JabrAPI.Template
 {
     static internal partial class SettingsPresets
     {
-        static internal readonly INoiseSettings DEFAULT = new
+        static internal readonly Noise.Settings DEFAULT = new
         (
             MasqueradePreset.DEFAULT,
             true,
@@ -36,7 +36,8 @@ namespace JabrAPI.Template
             25.0,
             66.66,
             false,
-            DynamicBoundaryOffset.Minimize
+            DynamicBoundaryOffset.Minimize,
+            ChunkSize.KByte16
         );
     }
 }

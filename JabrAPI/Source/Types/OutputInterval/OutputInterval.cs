@@ -28,9 +28,10 @@ namespace JabrAPI
             if (options == null || options.Length == 0) return 0;
 
             randomRef ??= new SecureRandom();
-            OutputInterval outputInterval = ChooseInterval(curLength, options, randomRef, intervalSetting);
+            OutputInterval? outputInterval = options.Length == 1
+                ? options[0] : ChooseInterval(curLength, options, randomRef, intervalSetting);
 
-            return Math.Max
+            return outputInterval == null ? 0 : Math.Max
             (
                 curLength,
                 lengthSetting switch
@@ -47,7 +48,7 @@ namespace JabrAPI
             );
         }
 
-        static private OutputInterval ChooseInterval(Int32 curLength,
+        static private OutputInterval? ChooseInterval(Int32 curLength,
             OutputInterval[] options, SecureRandom randomRef,
             IntervalFilters intervalFilters)
         {
@@ -96,21 +97,22 @@ namespace JabrAPI
                 }
             }
 
-            return options
-                [
-                    ChooseIntervalId
+            var chosenIntervalId =
+                ChooseIntervalId
+                (
+                    FilterOutValidIntervals
                     (
-                        FilterOutValidIntervals
-                        (
-                            validIntervals,
-                            intervalFilters,
-                            paramCounting,
-                            ref allChance
-                        ),
-                        allChance,
-                        randomRef
-                    )
-                ];
+                        validIntervals,
+                        intervalFilters,
+                        paramCounting,
+                        ref allChance
+                    ),
+                    allChance,
+                    randomRef
+                );
+
+            if (chosenIntervalId < 0 || chosenIntervalId >= optionsCount) return null;
+            else return options[chosenIntervalId];
         }
 
         static private List<MiniInterval> FilterOutValidIntervals(
@@ -121,7 +123,7 @@ namespace JabrAPI
         {
             foreach (var filter in intervalFilters.FiltersPriorities)
             {
-                if (valid.Count == 1) break;
+                if (valid.Count <= 1) break;
 
                 valid = filter switch
                 {
@@ -180,8 +182,10 @@ namespace JabrAPI
         }
         static private Int32 ChooseIntervalId(List<MiniInterval> validIntervals, double allChance, SecureRandom randomRef)
         {
-            if (allChance == 0.0)
-                allChance = validIntervals.Sum(p => p.Probability);
+            if (validIntervals.Count == 0) return -1;
+            if (validIntervals.Count == 1) return validIntervals[0].Id;
+
+            if (allChance == 0.0) allChance = validIntervals.Sum(p => p.Probability);
             double randomChoice = randomRef.NextDouble(allChance);
 
             foreach (MiniInterval interval in validIntervals)
@@ -189,7 +193,7 @@ namespace JabrAPI
                 randomChoice -= interval.Probability;
                 if (randomChoice < 0) return interval.Id;
             }
-            return Math.Max(0, validIntervals.Count - 1);
+            return -1;
         }
     }
 }

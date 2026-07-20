@@ -7,7 +7,7 @@ namespace JabrAPI.Template
 {
     static internal partial class SettingsPresets
     {
-        static internal readonly INoiseSettings HTTP_3_QUIC = new
+        static internal readonly Noise.Settings HTTP_3_QUIC = new
         (
             MasqueradePreset.HTTP_3_QUIC,
             true,
@@ -41,7 +41,8 @@ namespace JabrAPI.Template
             25.0,
             66.66,
             false,
-            DynamicBoundaryOffset.Minimize
+            DynamicBoundaryOffset.Minimize,
+            ChunkSize.KByte16
         );
     }
 }
