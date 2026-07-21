@@ -69,6 +69,13 @@ namespace JabrAPI
 
                 ImportFromBinary(exportData);
             }
+            public BinaryKey(Byte[] exportData)
+            {
+                _setHelper = new(this);
+                _validationHelper = new(this);
+
+                ImportFromBinary(exportData);
+            }
         }
     }
 }

@@ -106,63 +106,44 @@ namespace JabrAPI
                _complexNoise.Length + ":" + _complexNoise;
 
 
-        public bool ImportFromBinary(List<Byte> data, bool throwExceptions = false)
+
+        public bool ImportFromBinary(List<Byte> exportData, bool throwExceptions = false)
+            => ImportFromBinary(exportData.ToArray(), throwExceptions);
+        public bool ImportFromBinary(Byte[] exportData, bool throwExceptions = false)
         {
             try
             {
-                Int32 primaryCount = FromBinary.BigEndian<Int32>(data.GetRange(0, 4));
-
-
-                if (data.Count < primaryCount + 8)
+                Int32 primaryCount = FromBinary.BigEndian<Int32>(exportData[0..4]);
+                if (exportData.Length < primaryCount + 8)
                 {
                     if (throwExceptions)
                         throw new ArgumentException
                         (
                             $"Data length is insufficient for the specified primaryNoiseCount" +
-                            $" {primaryCount + 8} from data[0-4]",
-                            nameof(data)
+                            $" {primaryCount + 8} from exportData[0-4]",
+                            nameof(exportData)
                         );
                     return false;
                 }
 
-
-                _primaryNoise = FromBinary.Utf16
-                (
-                    data.GetRange
-                    (
-                        4,
-                        primaryCount
-                    )
-                );
+                _primaryNoise = FromBinary.Utf16(exportData[4..(4 + primaryCount)]);
 
 
-                Int32 complexCount = FromBinary.BigEndian<Int32>
-                (
-                    data.GetRange(primaryCount + 4, 4)
-                );
-
-                if (data.Count < complexCount + primaryCount + 8)
+                Int32 complexCount = FromBinary.BigEndian<Int32>(exportData[(primaryCount + 4)..(primaryCount + 8)]);
+                if (exportData.Length < complexCount + primaryCount + 8)
                 {
                     if (throwExceptions)
                         throw new ArgumentException
                         (
                             $"Data length is insufficient for the specified complexNoiseCount" +
                             $" {complexCount + primaryCount + 8}" +
-                            $"from data[{primaryCount + 4}-{primaryCount + 8}]",
-                            nameof(data)
+                            $"from exportData[{primaryCount + 4}-{primaryCount + 8}]",
+                            nameof(exportData)
                         );
                     return false;
                 }
 
-
-                _complexNoise = FromBinary.Utf16
-                (
-                    data.GetRange
-                    (
-                        primaryCount + 8,
-                        complexCount
-                    )
-                );
+                _complexNoise = FromBinary.Utf16(exportData[(primaryCount + 8)..(primaryCount + 8 + complexCount)]);
             }
             catch
             {
@@ -171,7 +152,22 @@ namespace JabrAPI
             }
             return true;
         }
-        public List<Byte> ExportAsBinary()
+
+        public Byte[] ExportAsBinary()
+        {
+            Byte[] exportedPrimary = ToBinary.Utf16(_primaryNoise);
+            Byte[] exportedComplex = ToBinary.Utf16(_complexNoise);
+
+            return
+            [
+                .. ToBinary.BigEndian(exportedPrimary.Length),
+                .. exportedPrimary,
+
+                .. ToBinary.BigEndian(exportedComplex.Length),
+                .. exportedComplex
+            ];
+        }
+        public List<Byte> ExportAsBinaryList()
         {
             Byte[] exportedPrimary = ToBinary.Utf16(_primaryNoise);
             Byte[] exportedComplex = ToBinary.Utf16(_complexNoise);

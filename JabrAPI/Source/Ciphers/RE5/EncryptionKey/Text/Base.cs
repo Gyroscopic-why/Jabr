@@ -57,6 +57,7 @@ namespace JabrAPI
 
                 Set.ShiftCount(shiftCount);
             }
+
             public EncryptionKey(EncryptionKey otherKey, bool fullCopy = true)
             {
                 _setHelper = new(this);
@@ -74,6 +75,13 @@ namespace JabrAPI
             }
 
             public EncryptionKey(List<Byte> binaryExportData, bool throwExceptions = false)
+            {
+                _setHelper = new(this);
+                _validateHelper = new(this);
+
+                ImportFromBinary(binaryExportData, throwExceptions);
+            }
+            public EncryptionKey(Byte[] binaryExportData, bool throwExceptions = false)
             {
                 _setHelper = new(this);
                 _validateHelper = new(this);

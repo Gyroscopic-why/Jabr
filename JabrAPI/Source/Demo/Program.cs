@@ -215,7 +215,7 @@ namespace JabrAPI
             reKey.Noisifier.settings.DynamicBoundaryOffset = DynamicBoundaryOffset.x2;
 
             Int32 maxNonEntropy = 0, extendBuffer;
-            for (var i = 0; i < 1_000; i++)
+            for (var i = 0; i < 1_0; i++)
             {
                 Write("\n\tAttempt: " + ++attemptCount);
                 //reKey.Set.Sensitive.ExAlphabet("Xv+");
@@ -544,16 +544,16 @@ namespace JabrAPI
 
 
 
-            RE5.EncryptionKey initial = new(true);
-            RE5.EncryptionKey copy = new(false);
+            RE5.BinaryKey initial = new(true);
+            RE5.BinaryKey copy = new(false);
             Stopwatch timer = new();
 
-            List<Byte> exportBuffer = [];
+            Byte[] exportBuffer = [];
 
             for (var hide = 0; hide < 1; hide++)
             {
                 List<Int64> ms1 = [], ms2 = [];
-                const Int64 totalAttempts = 10, iterationsPerAttempt = 100;
+                const Int64 totalAttempts = 10, iterationsPerAttempt = 100_000;
                 Write($"\n\n\n\t\t[i]  - Starting benchmark of {totalAttempts * iterationsPerAttempt / 1_000}k Key Export & Import");
 
                 for (var attempt = 0; attempt < totalAttempts; attempt++)
@@ -571,7 +571,7 @@ namespace JabrAPI
                         timer.Start();
 
                         for (var i = 0; i < iterationsPerAttempt; i++)
-                                exportBuffer = initial.ExportAsBinary();
+                            exportBuffer = initial.ExportAsBinary();
                             //Noise.Add.TextFile(filePath, fileName, reKey, true);
 
                         timer.Stop();
@@ -599,9 +599,9 @@ namespace JabrAPI
                     {
                         Write("\n\t\t\tVALIDATING - ");
 
-                        List<Byte> import = copy.ExportAsBinary();
+                        Byte[] import = copy.ExportAsBinary();
 
-                        if (import.Count != exportBuffer.Count)
+                        if (import.Length != exportBuffer.Length)
                         {
                             ForegroundColor = ConsoleColor.Green;
                             Write("\tFAILURE! See differences:");
@@ -621,7 +621,7 @@ namespace JabrAPI
                         {
                             bool doesMatch = true;
 
-                            for (var i = 0; i < exportBuffer.Count; i++)
+                            for (var i = 0; i < exportBuffer.Length; i++)
                             {
                                 if (import[i] != exportBuffer[i])
                                 {
@@ -637,7 +637,7 @@ namespace JabrAPI
                                     foreach (var infoByte in import)
                                         Write(infoByte);
 
-                                    i += exportBuffer.Count;
+                                    i += exportBuffer.Length;
                                     doesMatch = false;
 
                                     ReadKey();

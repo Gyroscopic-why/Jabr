@@ -65,9 +65,9 @@ namespace JabrAPI.Template
 
 
 
-        abstract public bool ImportFromBinary(List<Byte> data, bool throwExceptions = false);
+        abstract public bool ImportFromBinary(Byte[] data, bool throwExceptions = false);
 
-        abstract public List<Byte> ExportAsBinary();
+        abstract public Byte[] ExportAsBinary();
 
 
 

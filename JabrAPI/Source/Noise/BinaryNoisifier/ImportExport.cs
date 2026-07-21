@@ -7,42 +7,44 @@ namespace JabrAPI
 {
     public partial class BinaryNoisifier
     {
-        public bool ImportFromBinary(List<Byte> data, bool throwExceptions = false)
+        public bool ImportFromBinary(List<Byte> exportData, bool throwExceptions = false)
+            => ImportFromBinary(exportData.ToArray(), throwExceptions);
+        public bool ImportFromBinary(Byte[] exportData, bool throwExceptions = false)
         {
             try
             {
-                Byte primaryCount = data[0];
-                if (data.Count < primaryCount + 1)
+                Byte primaryCount = exportData[0];
+                if (exportData.Length < primaryCount + 1)
                 {
                     if (throwExceptions)
                         throw new ArgumentException
                         (
                             $"Data length is insufficient for the specified primaryNoiseCount" +
-                            $" {primaryCount} from data[0]",
-                            nameof(data)
+                            $" {primaryCount} from exportData[0]",
+                            nameof(exportData)
                         );
                     return false;
                 }
 
                 _primaryNoise.Clear();
-                _primaryNoise.AddRange(data.GetRange(1, primaryCount));
+                _primaryNoise.AddRange(exportData[1..(primaryCount + 1)]);
 
 
-                Byte complexCount = data[primaryCount + 1];
-                if (data.Count < complexCount + primaryCount + 2)
+                Byte complexCount = exportData[primaryCount + 1];
+                if (exportData.Length < complexCount + primaryCount + 2)
                 {
                     if (throwExceptions)
                         throw new ArgumentException
                         (
                             $"Data length is insufficient for the specified complexNoiseCount" +
-                            $" {complexCount} from data[{primaryCount + 2}]",
-                            nameof(data)
+                            $" {complexCount} from exportData[{primaryCount + 2}]",
+                            nameof(exportData)
                         );
                     return false;
                 }
 
                 _complexNoise.Clear();
-                _complexNoise.AddRange(data.GetRange(primaryCount + 2, complexCount));
+                _complexNoise.AddRange(exportData[(primaryCount + 2)..(complexCount + primaryCount + 2)]);
             }
             catch
             {
@@ -53,17 +55,27 @@ namespace JabrAPI
         }
 
 
-        public List<Byte> ExportAsBinary()
+        public Byte[] ExportAsBinary()
         {
-            List<Byte> result = [];
+            return
+            [
+                (Byte)_primaryNoise.Count,
+                .. _primaryNoise,
 
-            result.Add((Byte)(_primaryNoise.Count));
-            result.AddRange(_primaryNoise);
+                (Byte)_complexNoise.Count,
+                .. _complexNoise
+            ];
+        }
+        public List<Byte> ExportAsBinaryList()
+        {
+            return
+            [
+                (Byte)_primaryNoise.Count,
+                .. _primaryNoise,
 
-            result.Add((Byte)(_complexNoise.Count));
-            result.AddRange(_complexNoise);
-
-            return result;
+                (Byte)_complexNoise.Count,
+                .. _complexNoise
+            ];
         }
     }
 }
