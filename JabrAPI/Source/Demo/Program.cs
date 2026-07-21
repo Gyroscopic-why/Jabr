@@ -211,9 +211,6 @@ namespace JabrAPI
             //aboba += fileContent + aboba + fileContent;
             double valueBias = 1.4, powerBias = 1.33;
 
-            reKey.Noisifier.settings.ForceFullBoundary = false;
-            reKey.Noisifier.settings.DynamicBoundaryOffset = DynamicBoundaryOffset.x2;
-
             Int32 maxNonEntropy = 0, extendBuffer;
             for (var i = 0; i < 1_0; i++)
             {

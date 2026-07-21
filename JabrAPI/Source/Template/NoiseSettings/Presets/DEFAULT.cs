@@ -11,7 +11,6 @@ namespace JabrAPI.Template
         (
             MasqueradePreset.DEFAULT,
             true,
-            true,
             [],
             new
             (
@@ -27,17 +26,13 @@ namespace JabrAPI.Template
                 ]
             ),
             OutputInterval.LengthChoiceSetting.CHOOSE_RANDOM_FROM_VALID,
-            1.8742,
-            false,
+            ChunkSize.KByte16,
             4.0,
             true,
             ExpectedEntropy.C1_Medium,
             50.0,
             25.0,
-            66.66,
-            false,
-            DynamicBoundaryOffset.Minimize,
-            ChunkSize.KByte16
+            66.66
         );
     }
 }

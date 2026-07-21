@@ -11,7 +11,6 @@ namespace JabrAPI.Template
         (
             MasqueradePreset.WEBSOCKET_WSS,
             true,
-            true,
             [
                 new (5,  64,   120),
                 new (45, 100,  350),
@@ -32,17 +31,13 @@ namespace JabrAPI.Template
                 ]
             ),
             OutputInterval.LengthChoiceSetting.CHOOSE_RANDOM_FROM_VALID,
-            1.8742,
-            false,
-            4,
+            ChunkSize.KByte16,
+            4.0,
             true,
             ExpectedEntropy.C1_Medium,
             50.0,
             25.0,
-            66.66,
-            false,
-            DynamicBoundaryOffset.Minimize,
-            ChunkSize.KByte16
+            66.66
         );
     }
 }
