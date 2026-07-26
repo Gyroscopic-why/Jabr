@@ -43,7 +43,7 @@ namespace JabrAPI.Legacy
             List<Int16> shifts = reKey.Shifts; string prAlphabet = reKey.PrAlphabet, exAlphabet = reKey.ExAlphabet;
 
 
-            Int32 maxEncodingLength = Numsys.AutoAsList
+            Int32 maxEncodingLength = Numsys.AutoAsList<Int32>
             (
                 Math.Ceiling
                 (
@@ -59,7 +59,7 @@ namespace JabrAPI.Legacy
 
             ids[0] = prAlphabet.IndexOf(message[0]);
             buffer[0] = ids[0] + shifts[0];
-            string encoding = Numsys.ToCustomAsString
+            string encoding = Numsys.ToCustomAsString128
             (
                 (buffer[0] / exLength).ToString(),
                 10,
@@ -76,7 +76,7 @@ namespace JabrAPI.Legacy
                 ids[curId] = prAlphabet.IndexOf(message[curId]);
                 buffer[curId] = ids[curId] + shifts[curId % shCount] + ids[curId - 1];
 
-                encoding = Numsys.ToCustomAsString
+                encoding = Numsys.ToCustomAsString128
                 (
                     (buffer[curId] / exLength).ToString(),
                     10,
@@ -136,7 +136,7 @@ namespace JabrAPI.Legacy
                 );
             Int32 maxEncodingLength = exLength == 10 ?
                 Utils.DigitCount(helper)  // Optimisation for base 10 encoding
-              : Numsys.AsList
+              : Numsys.AsList128<Int32>
               (
                   helper.ToString(),
                   10,
@@ -145,7 +145,7 @@ namespace JabrAPI.Legacy
 
             Int32 realMessageLength = encryptedLength / (maxEncodingLength + 1);
             Int32[] decodedIds = new Int32[realMessageLength];
-            Int32 parsedEncoding = (Int32)Numsys.ToDecimalFromCustom
+            Int32 parsedEncoding = (Int32)Numsys.ToDecimalFromCustom128
             (
                 Utils.Interval
                 (
@@ -168,7 +168,7 @@ namespace JabrAPI.Legacy
                 encCurId += maxEncodingLength + 1;
                 buffer[curId] = ids[encCurId] - decodedIds[curId - 1] - shifts[curId % shCount];
 
-                parsedEncoding = (Int32)Numsys.ToDecimalFromCustom
+                parsedEncoding = (Int32)Numsys.ToDecimalFromCustom128
                 (
                     Utils.Interval
                     (

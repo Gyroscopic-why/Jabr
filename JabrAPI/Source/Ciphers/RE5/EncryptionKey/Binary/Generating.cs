@@ -101,8 +101,7 @@ namespace JabrAPI
 
                 GenerateRandomShifts(count, 0, (Byte)(_externalAlphabet.Count - 1));
             }
-            public void GenerateRandomShifts()
-                => GenerateRandomShifts(_random.Next(128, 384));
+            public void GenerateRandomShifts() => GenerateRandomShifts(_shCount);
         }
     }
 }

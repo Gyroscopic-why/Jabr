@@ -16,13 +16,7 @@ namespace JabrAPI
             {
                 GenerateRandomPrimary();
                 GenerateRandomExternal();
-
-                if (_shifts.Count < 2)
-                {
-                    if (_shCount < 2) GenerateRandomShifts();
-                    else GenerateRandomShifts(_shCount);
-                }
-                else GenerateRandomShifts(_shifts.Count);
+                GenerateRandomShifts(_shCount);
 
                 _noisifier.Set.Default([.. External]);
                 _noisifier.Next(false);
@@ -320,8 +314,7 @@ namespace JabrAPI
 
                 GenerateRandomShifts(count, 0, (Int16)(_externalAlphabet.Length - 1));
             }
-            public void GenerateRandomShifts()
-                    => GenerateRandomShifts(_random.Next(128, 384));
+            public void GenerateRandomShifts() => GenerateRandomShifts(_shCount);
         }
     }
 }

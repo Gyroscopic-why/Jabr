@@ -113,7 +113,7 @@ namespace JabrAPI
                     _reKey._externalAllowed  = [.. DEFAULT.CHARACTERS.WITHOUT_WSPACE];
 
                     _reKey._primaryMaxLength  = _reKey._primaryNecessary.Count;
-                    _reKey._externalMaxLength = 8;
+                    _reKey._externalMaxLength = 33;
                 }
                 public override void ShiftCount(Int32 count) => _reKey._shCount = count;
 

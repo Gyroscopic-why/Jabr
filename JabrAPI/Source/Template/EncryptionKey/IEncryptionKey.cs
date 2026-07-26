@@ -14,7 +14,7 @@ namespace JabrAPI.Template
         protected readonly Noisifier _noisifier = new();
 
         protected readonly List<Int16> _shifts = [0];
-        protected Int32 _shCount = 0;
+        protected Int32 _shCount = SecureRandom.LazyInstance.Next(64, 128);
 
 
 
@@ -122,6 +122,6 @@ namespace JabrAPI.Template
                 _shifts.Add((Int16)_random.Next(minVal, maxVal));
         }
         public void GenerateRandomShifts(Int16 minVal, Int16 maxVal)
-            => GenerateRandomShifts(_random.Next(256, 512), minVal, maxVal);
+            => GenerateRandomShifts(_shCount, minVal, maxVal);
     }
 }

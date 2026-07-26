@@ -5,10 +5,10 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PublishAot>True</PublishAot>
+    <PublishAot>False</PublishAot>
     <SignAssembly>True</SignAssembly>
     <Title>JabrAPI</Title>
-    <Version>5.0.0-Theta-2</Version>
+    <Version>5.0.0-Theta-3</Version>
     <Authors>Gyroscopic</Authors>
     <Description>Cryptography API for RE ciphers from the Jabr family</Description>
     <PackageProjectUrl>https://github.com/Gyroscopic-why/Jabr</PackageProjectUrl>

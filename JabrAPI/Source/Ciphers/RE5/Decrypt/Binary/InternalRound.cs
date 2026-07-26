@@ -23,7 +23,7 @@ namespace JabrAPI
                 ref Int32 decodedId)
             {
                 Int32 shCount = shifts.Count, encCurId = 0;
-                Int32 parsedEncoding = (Int32)Numsys.ToDecimalFromCustom
+                Int32 parsedEncoding = (Int32)Numsys.ToDecimalFromCustom128
                 (
                     encryptedChunk[1..maxEncodingLength],
                     exLength,
@@ -48,7 +48,7 @@ namespace JabrAPI
                         - decodedId
                         - shifts[curId % shCount];
 
-                    parsedEncoding = (Int32)Numsys.ToDecimalFromCustom
+                    parsedEncoding = (Int32)Numsys.ToDecimalFromCustom128
                     (
                         encryptedChunk[(encCurId + 1)..(encCurId + maxEncodingLength)],
                         exLength,

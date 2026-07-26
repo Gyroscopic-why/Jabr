@@ -29,7 +29,7 @@ namespace JabrAPI
                     );
                 Int32 maxEncodingLength = exLength == 10 ?
                     Utils.DigitCount(helper) + 1  // Optimisation for base 10 encoding
-                    : Numsys.AsList
+                    : Numsys.AsList128<Int32>
                     (
                         helper.ToString(),
                         10,
@@ -107,7 +107,7 @@ namespace JabrAPI
                     );
                 Int32 maxEncodingLength = exLength == 10 ?
                     Utils.DigitCount(helper) + 1  // Optimisation for base 10 encoding
-                    : Numsys.AsList
+                    : Numsys.AsList128<Int32>
                     (
                         helper.ToString(),
                         10,

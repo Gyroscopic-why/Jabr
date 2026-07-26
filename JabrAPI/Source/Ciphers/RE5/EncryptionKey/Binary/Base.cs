@@ -17,7 +17,7 @@ namespace JabrAPI
             private readonly List<Byte> _primaryAlphabet = [];
             private readonly List<Byte> _externalAlphabet = [];
 
-            private Byte _compactedPrMaxLength = 255, _compactedExMaxLength = 7;
+            private Byte _compactedPrMaxLength = 255, _compactedExMaxLength = 32;
 
 
 

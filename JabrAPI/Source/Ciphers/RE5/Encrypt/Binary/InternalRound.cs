@@ -23,7 +23,7 @@ namespace JabrAPI
                 Int32 buffer = prAlphabet.IndexOf(messageChunk[0]), curFinal = prevId + buffer + shifts[0];
                 prevId = buffer;
 
-                List<Byte> encoding = Numsys.ToCustomAsBinary
+                List<Byte> encoding = Numsys.ToCustomAsBinary128
                 (
                     Split.BigEndian<Int32, Byte>(curFinal / exLength, 10),
                     10,
@@ -42,7 +42,7 @@ namespace JabrAPI
                     curFinal = buffer + prevId + shifts[curId % shCount];
                     prevId   = buffer;
 
-                    encoding = Numsys.ToCustomAsBinary
+                    encoding = Numsys.ToCustomAsBinary128
                     (
                         Split.BigEndian<Int32, Byte>(curFinal / exLength, 10),
                         10,

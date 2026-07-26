@@ -126,7 +126,7 @@ namespace JabrAPI
                 public override void Default()
                 {
                     _binKey._compactedPrMaxLength = 255;
-                    _binKey._compactedExMaxLength = 7;
+                    _binKey._compactedExMaxLength = 32;
                 }
                 public override void ShiftCount(Int32 count) => _binKey._shCount = count;
 

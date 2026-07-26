@@ -23,7 +23,7 @@ namespace JabrAPI
                 Int32 buffer = prAlphabet.IndexOf(messageChunk[0]), curFinal = prevId + buffer + shifts[0];
                 prevId = buffer;
 
-                string encoding = Numsys.ToCustomAsString
+                string encoding = Numsys.ToCustomAsString128
                 (
                     (curFinal / exLength).ToString(),
                     10,
@@ -42,7 +42,7 @@ namespace JabrAPI
                     curFinal = buffer + prevId + shifts[curId % shCount];
                     prevId = buffer;
 
-                    encoding = Numsys.ToCustomAsString
+                    encoding = Numsys.ToCustomAsString128
                     (
                         (curFinal / exLength).ToString(),
                         10,
