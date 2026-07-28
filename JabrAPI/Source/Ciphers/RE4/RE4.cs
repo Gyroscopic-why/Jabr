@@ -235,13 +235,7 @@ namespace JabrAPI
             override protected private void GenerateAll()
             {
                 GenerateRandomAlphabet();
-
-                if (_shifts.Count < 2)
-                {
-                    if (_shCount < 2) GenerateRandomShifts();
-                    else GenerateRandomShifts(_shCount);
-                }
-                else GenerateRandomShifts(_shifts.Count);
+                GenerateRandomShifts();
             }
 
 
@@ -457,7 +451,7 @@ namespace JabrAPI
                 GenerateRandomShifts(count, 0, _alphabet.Length - 1);
             }
             public void GenerateRandomShifts()
-                => GenerateRandomShifts(_random.Next(256, 512));
+                => GenerateRandomShifts(_shCount);
         }
         public class BinaryKey
         {
