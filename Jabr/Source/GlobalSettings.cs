@@ -29,45 +29,46 @@ namespace Jabr
         static public bool gUseShortcuts = true;
 
 
-            //  Current selected cipher version
-            //     > 1 <    = RE1
-            //     > 2 <    = RE2
+            //  Legacy selected cipher version
+            //  !  > 1 <    = RE1    Unsupported because of legacy compatibility issues
+            //  !  > 2 <    = RE2    Unsupported because of legacy compatibility issues
             //     > 3 <    = RE3
             //     > 4 <    = RE4
-            //
-            //  !  > 5 <    = RE5  :D
-        static public byte gVersion = 4;
+            //  !  > 5 <    = RE5    Unsupported because of client version (v1.4.3)
+        static public bool gUseRE3 = false;
+        static public bool gUseRE4 = true;
 
 
 
         static public void ChangeSettings()
         {
-            string UserInput = "";
+            string userInput = "";
 
-            while (UserInput != "0")
+            while (userInput != "0" || !gUseRE3 && !gUseRE4)
             {
                 Write("\n\n\n");
                 if (gClearUsed)
                 {
                     Clear();
+                    ForegroundColor = ConsoleColor.Gray;
                     Write("\n\n\n\t\t\t   Добро пожаловать в Jabr " + gProgramVersion + "!\n\n\n");
                     Write("\t\t\t--->  Изменение настроек  <---\n\n");
                 }
 
                 Write("\t\t[?]  - Изменить версию используемого шифра:\n");
                 ForegroundColor = ConsoleColor.DarkGray;
-                if (gVersion == 1) ForegroundColor = ConsoleColor.Green;
-                Write("\t\t  > 1 <    - РЕ1, Защита: 3/5, скорость: 1/5\n");
+                Write("\t\t   -1-     - РЕ1, Больше не поддерживается\n");
+                Write("\t\t   -2-     - РЕ2, Больше не поддерживается\n");
                 ForegroundColor = ConsoleColor.DarkGray;
-                if (gVersion == 2) ForegroundColor = ConsoleColor.Green;
-                Write("\t\t  > 2 <    - РЕ2, Защита: 3/5, скорость: 2/5\n");
+                if (gUseRE3) ForegroundColor = ConsoleColor.Green;
+                Write("\t\t  > 3 <    - РЕ3, Защита:  4/10, скорость: 10/10\n");
                 ForegroundColor = ConsoleColor.DarkGray;
-                if (gVersion == 3) ForegroundColor = ConsoleColor.Green;
-                Write("\t\t  > 3 <    - РЕ3, Защита: 3/5, скорость: 5/5\n");
+                if (gUseRE4) ForegroundColor = ConsoleColor.Green;
+                Write("\t\t  > 4 <    - РЕ4, Защита:  5/10, скорость: 9/10   (По умолчанию)\n");
                 ForegroundColor = ConsoleColor.DarkGray;
-                if (gVersion == 4) ForegroundColor = ConsoleColor.Green;
-                Write("\t\t  > 4 <    - РЕ4, Защита: 5/5, скорость: 4/5   (По умолчанию)\n");
-                ForegroundColor = ConsoleColor.White;
+                Write("\t\t   -5-     - РЕ5, Защита: 10/10, скорость: 8/10\n");
+                Write("\t\t                  (Не поддерживается клиентом версии 4)\n");
+                ForegroundColor = ConsoleColor.Gray;
 
                 Write("\n\t\t  > 6 <    - Выводить дополнительную информацию о процессе шифрования: ");
                 if (gShowInfo)
@@ -80,7 +81,7 @@ namespace Jabr
                     ForegroundColor = ConsoleColor.Red;
                     Write("Нет");
                 }
-                ForegroundColor = ConsoleColor.White;
+                ForegroundColor = ConsoleColor.Gray;
 
                 Write("\n\t\t  > 7 <    - Стирать использованную информацию: ");
                 if (gClearUsed)
@@ -93,7 +94,7 @@ namespace Jabr
                     ForegroundColor = ConsoleColor.Red;
                     Write("Нет");
                 }
-                ForegroundColor = ConsoleColor.White;
+                ForegroundColor = ConsoleColor.Gray;
 
                 Write("\n\t\t  > 8 <    - Упростить ввод данных: ");
                 if (gSimplified)
@@ -106,7 +107,7 @@ namespace Jabr
                     ForegroundColor = ConsoleColor.Red;
                     Write("Нет");
                 }
-                ForegroundColor = ConsoleColor.White;
+                ForegroundColor = ConsoleColor.Gray;
 
                 Write("\n\t\t  > 9 <    - Использовать быстрые команды для шифровки: ");
                 if (gUseShortcuts)
@@ -121,28 +122,27 @@ namespace Jabr
                 }
                 ForegroundColor = ConsoleColor.White;
 
-                Write("\n\t\t  > 0 <    - Назад");
+                Write("\n\t\t  > 0 <    - Назад\n\n");
 
-                Write("\n\n\t\tВаш выбор: ");
-                UserInput = ReadLine().Trim();
-                switch (UserInput)
+                if (userInput == "0")
                 {
-                    case "1":
-                        gVersion = 1;
-                        break;
-                    case "2":
-                        gVersion = 2;
-                        break;
+                    ForegroundColor = ConsoleColor.Red;
+                    Write("\t\t[!]  - Необходимо выбрать хотя бы 1 протокол шифрования");
+                    ForegroundColor = ConsoleColor.White;
+                }
+
+
+                Write("\n\t\tВаш выбор: ");
+                userInput = ReadLine().Trim();
+                switch (userInput)
+                {
                     case "3":
-                        gVersion = 3;
+                        gUseRE3 = !gUseRE3;
                         break;
                     case "4":
-                        gVersion = 4;
+                        gUseRE4 = !gUseRE4;
                         break;
 
-                    //case "5":
-                    //gVersion = 5;
-                    //break;
 
                     case "6":
                         gShowInfo = !gShowInfo;
@@ -161,6 +161,7 @@ namespace Jabr
             if (gClearUsed)
             {
                 Clear();
+                ForegroundColor = ConsoleColor.Gray;
                 Write("\n\n\n\t\t\t   Добро пожаловать в Jabr " + gProgramVersion + "!");
             }
         }

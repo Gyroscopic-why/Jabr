@@ -43,20 +43,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Source/CipherParametersIO.cs" />
-    <Compile Include="Source/CryptingLogic.cs" />
-    <Compile Include="Source/GlobalSettings.cs" />
-    <Compile Include="Source/GlobalVariables.cs" />
-    <Compile Include="Source/ShortcutLogic.cs" />
-    <Compile Include="Source/CipherSource.cs" />
-    <Compile Include="Source/Program.cs" />
     <Compile Include="Properties/AssemblyInfo.cs" />
+    <Compile Include="Source\CipherParametersIO.cs" />
+    <Compile Include="Source\CipherSource.cs" />
+    <Compile Include="Source\CryptingLogic.cs" />
+    <Compile Include="Source\GlobalSettings.cs" />
+    <Compile Include="Source\GlobalVariables.cs" />
+    <Compile Include="Source\Program.cs" />
+    <Compile Include="Source\ProgramInfo.cs" />
+    <Compile Include="Source\ShortcutLogic.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="bin\Release\Jabr.exe.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Source\" />
+    <Content Include="bin\Release\Jabr.exe" />
+    <Content Include="bin\Release\Jabr.pdb" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

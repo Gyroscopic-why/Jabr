@@ -1,9 +1,13 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+
 
 using static Jabr.GlobalSettings;
 using static Jabr.GlobalVariables;
 using static Jabr.CryptingLogic;
 using static Jabr.ParametersLogicIO;
+using System.Linq;
+
 
 
 namespace Jabr
@@ -17,121 +21,118 @@ namespace Jabr
             {   // Check for crypting type ("+" encryption,  "-" decryption) for the initial shortcut recognition
 
                 gShortcutError = 2;
-                // !!! Only needed for error output in my GetTask function,
-                // you can easily delete this in your code if you dont have such a system
-                //
-                // gShortcutError = 2  means that we found an attempt to use a shortcut
-                // So we asume the shortcut recognition failed, so we prepare the error message
-                // If the shortcut parse is succesfull, we will reasign the gShortcutError value to 0
-                //
-                // I do the asigning here for optimisation to the error output
-                // However, in the future I will split it to get more details why the parsing failed
 
-                if (userInput[1] == '1' || userInput[1] == '2' || userInput[1] == '3' || userInput[1] == '4')
-                {   // Check for cipher version, currently supported: RE1, RE2, RE3, RE4
+                if (userInput[1] == '3' || userInput[1] == '4')
+                {   // Check for cipher version, currently supported: RE3, RE4
 
-                    int[] curJointPos = new int[2]; // Find the posID of the joints "::" used in shortcuts
+                    Int32[] jointPositions = { userInput.Length - 1, 0, 0 };
+                    // Find the posID of the joints "::" used in shortcuts
 
-                    curJointPos[0] = GetJointPosition(userInput, userInput.Length - 2);
-                    //Try to find the first joint pos
-
-                    if (curJointPos[0] != -1)
-                    {   // If the joint was found
-
-                        curJointPos[1] = GetJointPosition(userInput, curJointPos[0] - 1);
-                        //Try to find the second joint
-
-                        if (curJointPos[1] != -1)
-                        {   // If the second joint was found
-                            ReadShortcut(userInput, curJointPos); // Try to find the shortcut
+                    for (var i = 1; i < 3; i++)
+                    {
+                        jointPositions[i] = GetJointPosition(userInput, jointPositions[i - 1] - 1);
+                        if (jointPositions[i] == -1)
+                        {
+                            gShortcutError = i + 2;
+                            i++;
                         }
                     }
+
+                    if (gShortcutError == 2) ReadShortcut(userInput, NormalizeJointArrayForReading(jointPositions));
                 }
+                else gShortcutError = 7;
             }
         }
             //  Basic checking for a shortcut existence
             //  If a shortcut is possible - read and parse it
 
-        static public void ReadShortcut(string shortcut, int[] jointPos)
+        static public void ReadShortcut(string shortcut, Int32[] jointPos)
         {
-            // Note that the joints are stored backwards int the array (jp[0] = joint 2, jp[1] = joint 1)
+            string expAlphabet = shortcut.Substring(jointPos[0] + 2, jointPos[1] - jointPos[0] - 2);
+            string temp = shortcut.Substring(jointPos[1] + 2);  //  expected shifts
 
 
-                //  Expected alphabet from the shortcut
-            string expAlphabet = "";
-
-
-                //  temp will temporary hold the expected shift, then the message
-            string temp = ""; 
-
-
-                //  Expected shift parameter from the shortcut
-            int expShift;
-
-
-
-            for (int i = jointPos[1] + 2; i < jointPos[0]; i++)
-                expAlphabet += shortcut[i]; //  Get the alphabet between joint 1 && 2
-
-
-            for (int i = jointPos[0] + 2; i < shortcut.Length; i++)
-                temp += shortcut[i];        //  Get the shift  after the second joint
-
-
-
-            if (int.TryParse(temp, out expShift)) 
+            if (ParseShiftsFromShortcut(temp, expAlphabet.Length, out List<Int32> expShifts))
             {
-                //  Check if the shift is valid (is an integer)
+                temp = shortcut.Substring(2, jointPos[0] - 2);  //  reuse for storing the message
 
-                
-                //  Check that the shift is valid
-                if (expShift < expAlphabet.Length && expShift > 0) 
-                {   
-                    //  RE validation is:
-                    //  when the shift for the alphabet is more than 0,
-                    //  and less than the alphabet length
+                //  true = simplified (without extra questions to the user)
+                if (CheckAlphabet(expAlphabet, temp, true))
+                {
+                    if (shortcut[0] == '+')
+                         Encrypt(byte.Parse(shortcut[1].ToString()), gShowInfo,
+                             temp, expAlphabet, expShifts);
+                    else Decrypt(byte.Parse(shortcut[1].ToString()), gShowInfo,
+                             temp, expAlphabet, expShifts);
 
-
-                    temp = ""; // The message will be stored in "str temp" rather than another string for optimisation
-
-                    for (int i = 2; i < jointPos[1]; i++)
-                    {
-                        temp += shortcut[i]; // Get the message
-                    }
-
-                    if (CheckAlphabet(expAlphabet, temp, true)) //true = simplified (without extra questions to the user)
-                    {   //If the alphabet is valid, then use the shortcut
-
-                        if (shortcut[0] == '+') Encrypt(byte.Parse(shortcut[1].ToString()), gShowInfo, temp, gEncrypted, expAlphabet, expShift);
-                        else Decrypt(byte.Parse(shortcut[1].ToString()), gShowInfo, gDecrypted, temp, expAlphabet, expShift);
-                        
-
-
-                        gShortcutError = 0;
-                        //  !!!!! Only needed for error output in my GetTask function,
-                        //  you can easily delete this in your code if you dont have such a system
-                        //
-                        //  gShortcutError = 0, means that the parsing of a shortcut was succesfull,
-                        //  therefore no errors was detected
-                    }
+                    gShortcutError = 0;  //  = successfull shortcut parsing and processing
                 }
             }
         }
             //  Main logic function for reading and parsing a shortcut
             //  If successfully finds a shortcut - executes it
 
-        static public int GetJointPosition(string tempString, int startID)
+        static public Int32 GetJointPosition(string tempString, Int32 startID)
         {
-            int position = -1; // Propose the joint doesn't exist
+            Int32 position = -1;
 
-            for (int i = startID; i > 1 && position == -1; i--)
-            {   // start searching for the joint "::" from the end
+            for (var i = startID; i > 1 && position == -1; i--)
+            {
                 if (tempString[i] == ':' && tempString[i - 1] == ':') position = i - 1;
-            }   // if the joint "::" was found, return the posID of the first ':' char
+            }
 
             return position;
         }
             //  Getting the joint possitions in the shortcut (used for parsing)
 
+        static public Int32[] NormalizeJointArrayForReading(Int32[] jointPos)
+        {
+            Int32[] normalizedJoints = new Int32[2];
+            normalizedJoints[0] = jointPos[2];
+            normalizedJoints[1] = jointPos[1];
+            return normalizedJoints;
+        }
+        //  Normalizing the joint positions array for easier reading
+
+        static public bool ParseShiftsFromShortcut(string parseInput, Int32 maxValue, out List<Int32> shifts)
+        {
+            shifts = new List<Int32>();
+            Int32 expShCount = parseInput.Count(c => c == ',') + 1;
+            Int32 prevShiftsEndId = 0, nextShiftEndId;
+
+            for (var i = 0; i < expShCount; i++)
+            {
+                if (prevShiftsEndId + 1 > parseInput.Length) break;
+
+                nextShiftEndId = parseInput.IndexOf(',', prevShiftsEndId);
+                if (nextShiftEndId == -1) nextShiftEndId = parseInput.Length;
+
+                if (Int32.TryParse
+                    (
+                        parseInput.Substring
+                        (
+                            prevShiftsEndId, nextShiftEndId - prevShiftsEndId
+                        ),
+                        out Int32 buffer
+                ))
+                {
+                    if (buffer > 0 && buffer < maxValue) shifts.Add(buffer);
+                    else
+                    {
+                        gShortcutError = 6;
+                        return false;
+                    }
+                }
+                else
+                {
+                    gShortcutError = 5;
+                    return false;
+                }
+
+                prevShiftsEndId = nextShiftEndId + 1;
+            }
+
+            return true;
+        }
     }
 }

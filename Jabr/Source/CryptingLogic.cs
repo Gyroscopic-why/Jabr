@@ -14,75 +14,67 @@ namespace Jabr
     internal class CryptingLogic
     {
         
-        static public void GetInfo(byte Type)
+        static public void GetInfo(Byte type)
         {
-            switch (gVersion)
-            {
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                    GetMessage  (gSimplified, Type, gVersion);
-                    GetAlphabet (gSimplified, Type);
-                    GetShift    (gSimplified);
-                    break;
-
-                case 5:         // REserved for later, get the joke? REserved? XD
-                    break;
-
-                default:
-                    break;
-            }
+            GetMessage  (gSimplified, type);
+            GetAlphabet (gSimplified, type);
+            GetShifts   (gSimplified, type);
         }
              //  Get parameters for the encryption/decryption process
 
 
         //---------------  Encryption / Decryption  management logic  -----------------------------------//
-        static public void Encrypt(byte cipherVersion, bool showAdvInfo, string decrypted, string encrypted, string alphabet, int shift)
+        static public void Encrypt(Byte cipherVersion, bool showAdvInfo, string decrypted, string alphabet, List<Int32> shifts)
         {
-            var encrypt = new Dictionary<byte, Action>()  {
-            { 1, () => encrypted = ERE1(decrypted, alphabet, shift) },
-            { 2, () => encrypted = ERE2(decrypted, alphabet, shift) },
-            { 3, () => encrypted = ERE3(decrypted, alphabet, shift) },
-            { 4, () => encrypted = ERE4(decrypted, alphabet, shift) }   };
+            string encRE3 = "", encRE4 = "";
+            bool showRE3 = false, showRE4 = false;
 
-            var enInfo = new Dictionary<byte, Action>()  {
-            { 1, () => ERE1Info(encrypted, decrypted, alphabet, shift) },
-            { 2, () => ERE2Info(encrypted, decrypted, alphabet, shift) },
-            { 3, () => ERE3Info(encrypted, decrypted, alphabet, shift) },
-            { 4, () => ERE4Info(encrypted, decrypted, alphabet, shift) }   };
+            if (cipherVersion == 3 || cipherVersion == 255 && gUseRE3)
+            {
+                encRE3 = ERE3(decrypted, alphabet, shifts);
+                if (showAdvInfo) ERE3Info(encRE3, decrypted, alphabet, shifts);
+                showRE3 = true;
+            }
+            if (cipherVersion == 4 || cipherVersion == 255 && gUseRE4)
+            {
+                encRE4 = ERE4(decrypted, alphabet, shifts);
+                if (showAdvInfo) ERE4Info(encRE4, decrypted, alphabet, shifts);
+                showRE4 = true;
+            }
 
-            encrypt[cipherVersion]();
-            if (showAdvInfo) enInfo[cipherVersion]();
-            ShowResult(encrypted, "За", cipherVersion); // Clean version through var
+            if (showRE3) ShowResult(encRE3, "За", 3);
+            if (showRE4) ShowResult(encRE4, "За", 4);
         }
-        static public void Decrypt(byte cipherVersion, bool showAdvInfo, string decrypted, string encrypted, string alphabet, int shift)
+        static public void Decrypt(Byte cipherVersion, bool showAdvInfo, string encrypted, string alphabet, List<Int32> shifts)
         {
-            var decrypt = new Dictionary<byte, Action>()  {
-            { 1, () => decrypted = DRE1(encrypted, alphabet, shift) },
-            { 2, () => decrypted = DRE2(encrypted, alphabet, shift) },
-            { 3, () => decrypted = DRE3(encrypted, alphabet, shift) },
-            { 4, () => decrypted = DRE4(encrypted, alphabet, shift) }   };
+            string decRE3 = "", decRE4 = "";
+            bool showRE3 = false, showRE4 = false;
 
-            var deInfo = new Dictionary<byte, Action>()  {
-            { 1, () => DRE1Info(encrypted, decrypted, alphabet, shift) },
-            { 2, () => DRE2Info(encrypted, decrypted, alphabet, shift) },
-            { 3, () => DRE3Info(encrypted, decrypted, alphabet, shift) },
-            { 4, () => DRE4Info(encrypted, decrypted, alphabet, shift) }   };
+            if (cipherVersion == 3 || cipherVersion == 255 && gUseRE3)
+            {
+                decRE3 = DRE3(encrypted, alphabet, shifts);
+                if (showAdvInfo) DRE3Info(decRE3, encrypted, alphabet, shifts);
+                showRE3 = true;
+            }
+            if (cipherVersion == 4 || cipherVersion == 255 && gUseRE4)
+            {
+                decRE4 = DRE4(encrypted, alphabet, shifts);
+                if (showAdvInfo) DRE4Info(decRE4, encrypted, alphabet, shifts);
+                showRE4 = true;
+            }
 
-            decrypt[cipherVersion]();
-            if (showAdvInfo) deInfo[cipherVersion]();
-            ShowResult(decrypted, "Де", cipherVersion); // Clean version through var
+            if (showRE3) ShowResult(decRE3, "Де", 3);
+            if (showRE4) ShowResult(decRE4, "Де", 4);
         }
 
 
 
         //---------------------------  Process result  --------------------------------------------------//
-        static public void ShowResult(string result, string type, int cipherVersion)
+        static public void ShowResult(string result, string type, Int32 cipherVersion)
         {
-            Write("\n\t\t[=]  - " + type + "кодированное с помощью РЕ" + cipherVersion + " сообщение: ");
+            Write("\n\t\t[=]  - " + type + "шифрованное с помощью РЕ" + cipherVersion + " сообщение: ");
             BackgroundColor = ConsoleColor.DarkGreen;
-            Write(result); //Write the result
+            Write(result);  //  Write the result
             BackgroundColor = ConsoleColor.Black;
             Write("\n");
         }
