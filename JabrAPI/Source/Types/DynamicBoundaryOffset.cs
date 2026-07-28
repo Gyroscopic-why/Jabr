@@ -1,0 +1,21 @@
+﻿namespace JabrAPI
+{
+    public enum DynamicBoundaryOffset
+    {
+        Minimize = 0,
+
+        x2 = 1,
+        x4 = 2,
+        x8 = 3,
+
+        x16 = 4,
+        x32 = 5,
+        x64 = 6,
+
+        x128 = 7,
+        x256 = 8,
+        x512 = 9,
+
+        x1024 = 10,
+    }
+}
